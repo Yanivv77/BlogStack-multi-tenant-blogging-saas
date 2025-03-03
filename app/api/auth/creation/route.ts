@@ -10,12 +10,14 @@ export async function GET() {
     throw new Error("Something went wrong");
   }
 
+  // Check if user exists in database
   let dbUser = await prisma.user.findUnique({
     where: {
       id: user.id,
     },
   });
 
+  // If user doesn't exist, create them
   if (!dbUser) {
     dbUser = await prisma.user.create({
       data: {
@@ -23,15 +25,11 @@ export async function GET() {
         firstName: user.given_name ?? "",
         lastName: user.family_name ?? "",
         email: user.email ?? "",
-        profilePicture:
+        profileImage:
           user.picture ?? `https://avatar.vercel.sh/${user.given_name}`,
       },
     });
   }
 
-  return NextResponse.redirect(
-    process.env.NODE_ENV === "production"
-      ? "https://blogstack.vercel.app/dashboard"
-      : "http://localhost:3000/dashboard"
-  );
+  return NextResponse.redirect(new URL("/dashboard", process.env.KINDE_SITE_URL));
 }

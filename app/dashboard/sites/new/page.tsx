@@ -1,5 +1,6 @@
 "use client";
 
+import { CreateSiteAction } from "@/app/actions";
 import {
   Card,
   CardContent,
@@ -18,9 +19,9 @@ import { siteSchema } from "@/app/utils/zodSchemas";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 
 export default function NewSiteRoute() {
-
+  const [lastResult, action] = useActionState(CreateSiteAction, undefined);
   const [form, fields] = useForm({
-
+    lastResult,
 
     onValidate({ formData }) {
       return parseWithZod(formData, {
@@ -40,7 +41,7 @@ export default function NewSiteRoute() {
             Create your Site here. Click the button below once your done...
           </CardDescription>
         </CardHeader>
-        <form id={form.id} onSubmit={form.onSubmit} >
+        <form id={form.id} onSubmit={form.onSubmit} action={action}>
           <CardContent>
             <div className="flex flex-col gap-y-6">
               <div className="grid gap-2">
