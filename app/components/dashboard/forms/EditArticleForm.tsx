@@ -15,7 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Atom } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import TailwindEditor from "../EditorWrapper";
 import { SubmitButton } from "../SubmitButtons";
 import { useActionState, useState } from "react";
 import { JSONContent } from "novel";
@@ -24,6 +23,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { CreatePostAction, EditPostActions } from "@/app/actions";
 import slugify from "react-slugify";
+import TailwindAdvancedEditor from "../posts_editor/EditorWrapper";
 
 interface iAppProps {
   data: {
@@ -177,7 +177,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               defaultValue={fields.articleContent.initialValue}
               value={JSON.stringify(value)}
             />
-            <TailwindEditor onChange={setValue} initialValue={value} />
+            <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
             <p className="text-red-500 text-sm">
               {fields.articleContent.errors}
             </p>

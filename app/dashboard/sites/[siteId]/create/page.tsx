@@ -1,7 +1,7 @@
 "use client";
 
 import { CreatePostAction } from "@/app/actions";
-import TailwindEditor from "@/app/components/dashboard/EditorWrapper";
+import TailwindEditor from "@/app/components/dashboard/posts_editor/EditorWrapper";
 import { UploadDropzone } from "@/app/utils/UploadthingComponents";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import slugify from "react-slugify";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 import { useParams } from 'next/navigation';
+import TailwindAdvancedEditor from "@/app/components/dashboard/posts_editor/EditorWrapper";
 
 export default function ArticleCreationRoute() {
   const params = useParams();
@@ -69,72 +70,7 @@ export default function ArticleCreationRoute() {
         <h1 className="text-xl font-semibold">Create Article</h1>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Article Details</CardTitle>
-          <CardDescription>
-            Lipsum dolor sit amet, consectetur adipiscing elit
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            className="flex flex-col gap-6"
-            id={form.id}
-            onSubmit={form.onSubmit}
-            action={action}
-          >
-            <input type="hidden" name="siteId" value={siteId} />
-            <div className="grid gap-2">
-              <Label>Title</Label>
-              <Input
-                key={fields.title.key}
-                name={fields.title.name}
-                defaultValue={fields.title.initialValue}
-                placeholder="Nextjs blogging application"
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
-              />
-              <p className="text-red-500 text-sm">{fields.title.errors}</p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label>Slug</Label>
-              <Input
-                key={fields.slug.key}
-                name={fields.slug.name}
-                defaultValue={fields.slug.initialValue}
-                placeholder="Article Slug"
-                onChange={(e) => setSlugValue(e.target.value)}
-                value={slug}
-              />
-              <Button
-                onClick={handleSlugGeneration}
-                className="w-fit"
-                variant="secondary"
-                type="button"
-              >
-                <Atom className="size-4 mr-2" /> Generate Slug
-              </Button>
-              <p className="text-red-500 text-sm">{fields.slug.errors}</p>
-            </div>
-
-            <div className="grid gap-2">
-              <Label>Small Description</Label>
-              <Textarea
-                key={fields.smallDescription.key}
-                name={fields.smallDescription.name}
-                defaultValue={fields.smallDescription.initialValue}
-                placeholder="Small Description for your blog article..."
-                className="h-32"
-                value={smallDescription}
-                onChange={(e) => setSmallDescription(e.target.value)}
-              />
-              <p className="text-red-500 text-sm">
-                {fields.smallDescription.errors}
-              </p>
-            </div>
-
-            <div className="grid gap-2">
+      <div className="grid gap-2">
               <Label>Cover Image</Label>
               <input
                 type="hidden"
@@ -167,6 +103,70 @@ export default function ArticleCreationRoute() {
               <p className="text-red-500 text-sm">{fields.coverImage.errors}</p>
             </div>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>Article Details</CardTitle>
+          <CardDescription>
+            Lipsum dolor sit amet, consectetur adipiscing elit
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="flex flex-col gap-6"
+            id={form.id}
+            onSubmit={form.onSubmit}
+            action={action}
+          >
+            <input type="hidden" name="siteId" value={siteId} />
+            <div className="grid gap-2">
+              <Label>Title</Label>
+              <Input
+                key={fields.title.key}
+                name={fields.title.name}
+                placeholder="Nextjs blogging application"
+                onChange={(e) => setTitle(e.target.value)}
+                value={title}
+              />
+              <p className="text-red-500 text-sm">{fields.title.errors}</p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Slug</Label>
+              <Input
+                key={fields.slug.key}
+                name={fields.slug.name}
+                placeholder="Article Slug"
+                onChange={(e) => setSlugValue(e.target.value)}
+                value={slug}
+              />
+              <Button
+                onClick={handleSlugGeneration}
+                className="w-fit"
+                variant="secondary"
+                type="button"
+              >
+                <Atom className="size-4 mr-2" /> Generate Slug
+              </Button>
+              <p className="text-red-500 text-sm">{fields.slug.errors}</p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Small Description</Label>
+              <Textarea
+                key={fields.smallDescription.key}
+                name={fields.smallDescription.name}
+                placeholder="Small Description for your blog article..."
+                onChange={(e) => setSmallDescription(e.target.value)}
+                value={smallDescription}
+                className="h-32"
+              />
+              <p className="text-red-500 text-sm">
+                {fields.smallDescription.errors}
+              </p>
+            </div>
+
+
+
             <div className="grid gap-2">
               <Label>Article Content</Label>
               <input
@@ -176,7 +176,7 @@ export default function ArticleCreationRoute() {
                 defaultValue={fields.articleContent.initialValue}
                 value={JSON.stringify(value)}
               />
-              <TailwindEditor onChange={setValue} initialValue={value} />
+              <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
               <p className="text-red-500 text-sm">
                 {fields.articleContent.errors}
               </p>
