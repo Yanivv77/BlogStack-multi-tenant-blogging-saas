@@ -16,7 +16,7 @@ import { Atom } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
 import { SubmitButton } from "../SubmitButtons";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { JSONContent } from "novel";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
@@ -24,6 +24,7 @@ import { PostSchema } from "@/app/utils/zodSchemas";
 import { CreatePostAction, EditPostActions } from "@/app/actions";
 import slugify from "react-slugify";
 import TailwindAdvancedEditor from "../posts_editor/EditorWrapper";
+import { getUploadedImages, clearUploadedImages, addExistingImages } from "../posts_editor/image-upload";
 
 interface iAppProps {
   data: {
@@ -31,20 +32,31 @@ interface iAppProps {
     title: string;
     smallDescription: string;
     articleContent: any;
+    contentImages?: string[];
     id: string;
-    image: string;
+    postCoverImage: string;
   };
   siteId: string;
 }
 
 export function EditArticleForm({ data, siteId }: iAppProps) {
-  const [imageUrl, setImageUrl] = useState<string>(data.image || "");
+  const [imageUrl, setImageUrl] = useState<string>(data.postCoverImage || "");
   const [value, setValue] = useState<JSONContent | undefined>(
     data.articleContent
   );
   const [slug, setSlugValue] = useState<string>(data.slug || "");
   const [title, setTitle] = useState<string>(data.title || "");
   const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
+  
+  // Initialize uploaded images with existing content images
+  useEffect(() => {
+    clearUploadedImages();
+    // If there are existing content images, re-add them to the tracking array
+    if (data.contentImages && Array.isArray(data.contentImages)) {
+      // Add existing images to our tracking array
+      addExistingImages(data.contentImages);
+    }
+  }, [data.contentImages]);
 
   const [lastResult, action] = useActionState(EditPostActions, undefined);
   const [form, fields] = useForm({
@@ -139,9 +151,8 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <Label>Cover Image</Label>
             <input
               type="hidden"
-              name={fields.coverImage.name}
-              key={fields.coverImage.key}
-              defaultValue={fields.coverImage.initialValue}
+              name={fields.postCoverImage.name}
+              key={fields.postCoverImage.key}
               value={imageUrl}
             />
             {imageUrl ? (
@@ -165,7 +176,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               />
             )}
 
-            <p className="text-red-500 text-sm">{fields.coverImage.errors}</p>
+            <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>
           </div>
 
           <div className="grid gap-2">
@@ -174,8 +185,13 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               type="hidden"
               name={fields.articleContent.name}
               key={fields.articleContent.key}
-              defaultValue={fields.articleContent.initialValue}
               value={JSON.stringify(value)}
+            />
+            <input
+              type="hidden"
+              name={fields.contentImages.name}
+              key={fields.contentImages.key}
+              value={JSON.stringify(getUploadedImages())}
             />
             <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
             <p className="text-red-500 text-sm">

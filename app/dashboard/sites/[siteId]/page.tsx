@@ -37,6 +37,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import * as React from 'react';
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
 
 async function getData(userId: string, siteId: string) {
   /* const data = await prisma.post.findMany({
@@ -66,7 +67,7 @@ async function getData(userId: string, siteId: string) {
       subdirectory: true,
       posts: {
         select: {
-          image: true,
+          postCoverImage: true,
           title: true,
           createdAt: true,
           id: true,
@@ -151,7 +152,7 @@ export default async function SiteIdRoute(props: {
                     <TableRow key={item.id}>
                       <TableCell>
                         <Image
-                          src={item.image}
+                          src={item.postCoverImage || DEFAULT_IMAGE_URL}
                           width={64}
                           height={64}
                           alt="Article Cover Image"

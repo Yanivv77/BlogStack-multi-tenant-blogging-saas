@@ -1,7 +1,6 @@
 "use client";
 
 import { CreatePostAction } from "@/app/actions";
-import TailwindEditor from "@/app/components/dashboard/posts_editor/EditorWrapper";
 import { UploadDropzone } from "@/app/utils/UploadthingComponents";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { Button } from "@/components/ui/button";
@@ -21,12 +20,13 @@ import { ArrowLeft, Atom } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { JSONContent } from "novel";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { toast } from "sonner";
 import slugify from "react-slugify";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 import { useParams } from 'next/navigation';
 import TailwindAdvancedEditor from "@/app/components/dashboard/posts_editor/EditorWrapper";
+import { getUploadedImages, clearUploadedImages } from "@/app/components/dashboard/posts_editor/image-upload";
 
 export default function ArticleCreationRoute() {
   const params = useParams();
@@ -37,6 +37,12 @@ export default function ArticleCreationRoute() {
   const [title, setTitle] = useState<string>("");
   const [smallDescription, setSmallDescription] = useState<string>("");
   const [lastResult, action] = useActionState(CreatePostAction, undefined);
+  
+  // Clear uploaded images when component mounts
+  useEffect(() => {
+    clearUploadedImages();
+  }, []);
+  
   const [form, fields] = useForm({
     lastResult,
 
@@ -71,36 +77,36 @@ export default function ArticleCreationRoute() {
       </div>
 
       <div className="grid gap-2">
-              <Label>Cover Image</Label>
-              <input
-                type="hidden"
-                name={fields.coverImage.name}
-                key={fields.coverImage.key}
-                value={imageUrl}
-              />
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt="Uploaded Image"
-                  className="object-cover w-[200px] h-[200px] rounded-lg"
-                  width={200}
-                  height={200}
-                />
-              ) : (
-                <UploadDropzone
-                  onClientUploadComplete={(res) => {
-                    setImageUrl(res[0].url);
-                    toast.success("Image has been uploaded");
-                  }}
-                  endpoint="imageUploader"
-                  onUploadError={() => {
-                    toast.error("Something went wrong...");
-                  }}
-                />
-              )}
+        <Label>Cover Image</Label>
+        <input
+          type="hidden"
+          name={fields.postCoverImage.name}
+          key={fields.postCoverImage.key}
+          value={imageUrl}
+        />
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt="Uploaded Image"
+            className="object-cover w-[200px] h-[200px] rounded-lg"
+            width={200}
+            height={200}
+          />
+        ) : (
+          <UploadDropzone
+            onClientUploadComplete={(res) => {
+              setImageUrl(res[0].ufsUrl);
+              toast.success("Image has been uploaded");
+            }}
+            endpoint="imageUploader"
+            onUploadError={() => {
+              toast.error("Something went wrong...");
+            }}
+          />
+        )}
 
-              <p className="text-red-500 text-sm">{fields.coverImage.errors}</p>
-            </div>
+        <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>
+      </div>
 
       <Card>
         <CardHeader>
@@ -171,6 +177,12 @@ export default function ArticleCreationRoute() {
                 name={fields.articleContent.name}
                 key={fields.articleContent.key}
                 value={JSON.stringify(value)}
+              />
+              <input
+                type="hidden"
+                name={fields.contentImages.name}
+                key={fields.contentImages.key}
+                value={JSON.stringify(getUploadedImages())}
               />
               <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
               <p className="text-red-500 text-sm">

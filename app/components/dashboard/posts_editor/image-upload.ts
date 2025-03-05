@@ -5,6 +5,30 @@ import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
 const { uploadFiles } = generateReactHelpers<OurFileRouter>();
 
+// Store uploaded image URLs for later use
+let uploadedImages: string[] = [];
+
+// Function to get all uploaded images
+export const getUploadedImages = () => {
+  return [...uploadedImages];
+};
+
+// Function to clear the uploaded images array
+export const clearUploadedImages = () => {
+  uploadedImages = [];
+};
+
+// Function to add existing images to the tracking array
+export const addExistingImages = (urls: string[]) => {
+  if (Array.isArray(urls)) {
+    urls.forEach(url => {
+      if (url && !uploadedImages.includes(url)) {
+        uploadedImages.push(url);
+      }
+    });
+  }
+};
+
 const onUpload = async (file: File) => {
   return new Promise((resolve, reject) => {
     toast.loading("Uploading image...");
@@ -18,6 +42,9 @@ const onUpload = async (file: File) => {
         
         // Extract the URL from the response
         const url = res[0].url;
+        
+        // Add to our tracked images
+        uploadedImages.push(url);
         
         // Preload the image
         const image = new Image();

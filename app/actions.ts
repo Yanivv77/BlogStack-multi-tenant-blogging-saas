@@ -1,7 +1,6 @@
 "use server"
 
 import { parseWithZod } from "@conform-to/zod";
-import {getKindeServerSession} from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
 import { PostSchema, SiteCreationSchema, siteSchema } from "./utils/zodSchemas";
 import prisma from "./utils/db";
@@ -14,14 +13,23 @@ export async function CreateSiteAction(prevState: any, formData: FormData) {
      return redirect("/api/auth/login")
  }
 
- const submission = await parseWithZod(
-    formData,
-    {schema: siteSchema}
- )
+ const submission = await parseWithZod(formData, {
+  schema: SiteCreationSchema({
+    async isSubdirectoryUnique() {
+      const exisitngSubDirectory = await prisma.site.findUnique({
+        where: {
+          subdirectory: formData.get("subdirectory") as string,
+        },
+      });
+      return !exisitngSubDirectory;
+    },
+  }),
+  async: true,
+});
 
- if(submission.status !== "success") {
-    return submission.reply()
- }
+  if (submission.status !== "success") {
+    return submission.reply();
+  }
 
  const response = await prisma.site.create({
   data: {
@@ -29,6 +37,7 @@ export async function CreateSiteAction(prevState: any, formData: FormData) {
     name: submission.value.name,
     subdirectory: submission.value.subdirectory,
     userId: user.id,
+    siteImageCover: submission.value.siteImageCover 
   },
 });
 
@@ -54,7 +63,7 @@ export async function CreatePostAction(prevState: any, formData: FormData) {
       smallDescription: submission.value.smallDescription,
       slug: submission.value.slug,
       articleContent: JSON.parse(submission.value.articleContent),
-      image: submission.value.coverImage,
+      postCoverImage: submission.value.postCoverImage,
       userId: user.id,
       siteId: formData.get("siteId") as string,
     },
@@ -84,7 +93,7 @@ export async function EditPostActions(prevState: any, formData: FormData) {
       smallDescription: submission.value.smallDescription,
       slug: submission.value.slug,
       articleContent: JSON.parse(submission.value.articleContent),
-      image: submission.value.coverImage,
+      postCoverImage: submission.value.postCoverImage
     },
   });
 
@@ -106,14 +115,17 @@ export async function DeletePost(formData: FormData) {
 
 export async function UpdateImage(formData: FormData) {
   const user = await requireUser();
-
+  
+  const siteImageCover = formData.get("siteImageCover") as string;
+  
   const data = await prisma.site.update({
     where: {
       userId: user.id,
       id: formData.get("siteId") as string,
     },
     data: {
-      imageUrl: formData.get("imageUrl") as string,
+      // Only include siteImageCover if it has a value
+      ...(siteImageCover ? { siteImageCover } : {})
     },
   });
 

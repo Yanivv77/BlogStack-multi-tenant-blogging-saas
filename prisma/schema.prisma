@@ -19,7 +19,7 @@ model User {
   email        String
   firstName    String
   lastName     String
-  profileImage String
+  profileImage String?
   customerId   String? @unique
 
   createdAt DateTime @default(now())
@@ -35,8 +35,7 @@ model Site {
   subdirectory String   @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  imageUrl String?
+  siteImageCover String?
   User     User?   @relation(fields: [userId], references: [id])
   userId   String?
   posts    Post[]
@@ -48,7 +47,8 @@ model Post {
   title            String
   articleContent   Json
   smallDescription String
-  image            String
+  postCoverImage   String?  
+  contentImages    Json?     
   slug             String @unique
 
   createdAt DateTime @default(now())

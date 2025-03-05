@@ -10,9 +10,9 @@ import prisma from "../utils/db";
 import { requireUser } from "../utils/requireUser";
 import SitesRoute from "./sites/page";
 import Image from "next/image";
-import Defaultimage from "@/public/default.png";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { DEFAULT_IMAGE_URL } from "../utils/constants";
 
 async function getData(userId: string) {
   const [sites, articles] = await Promise.all([
@@ -51,7 +51,7 @@ export default async function DashboardIndexPage() {
           {sites.map((item) => (
             <Card key={item.id}>
               <Image
-                src={item.imageUrl ?? Defaultimage}
+                src={item.siteImageCover || DEFAULT_IMAGE_URL}
                 alt={item.name}
                 className="rounded-t-lg object-cover w-full h-[200px]"
                 width={400}
@@ -89,7 +89,7 @@ export default async function DashboardIndexPage() {
           {articles.map((item) => (
             <Card key={item.id}>
               <Image
-                src={item.image ?? Defaultimage}
+                src={item.postCoverImage || DEFAULT_IMAGE_URL}
                 alt={item.title}
                 className="rounded-t-lg object-cover w-full h-[200px]"
                 width={400}

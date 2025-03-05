@@ -12,8 +12,8 @@ import { FileIcon, PlusCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import Defaultimage from "@/public/default.png";
 import { EmptyState } from "@/app/components/dashboard/EmptyState";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
 
 async function getData(userId: string) {
   const data = await prisma.site.findMany({
@@ -59,7 +59,7 @@ export default async function SitesRoute() {
           {data.map((item) => (
             <Card key={item.id}>
               <Image
-                src={item.imageUrl ?? Defaultimage}
+                src={item.siteImageCover || DEFAULT_IMAGE_URL}
                 alt={item.name}
                 className="rounded-t-lg object-cover w-full h-[200px]"
                 width={400}

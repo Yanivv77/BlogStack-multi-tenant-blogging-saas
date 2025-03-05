@@ -17,9 +17,16 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { siteSchema } from "@/app/utils/zodSchemas";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
+import { useState } from "react";
+import { UploadDropzone } from "@/app/utils/UploadthingComponents";
+import { toast } from "sonner";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 export default function NewSiteRoute() {
   const [lastResult, action] = useActionState(CreateSiteAction, undefined);
+  const [siteImageCover, setSiteImageCover] = useState<string | null>(null);
+  
   const [form, fields] = useForm({
     lastResult,
 
@@ -32,6 +39,7 @@ export default function NewSiteRoute() {
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+  
   return (
     <div className="flex flex-col flex-1 items-center justify-center">
       <Card className="max-w-[450px]">
@@ -80,6 +88,49 @@ export default function NewSiteRoute() {
                   {fields.description.errors}
                 </p>
               </div>
+
+              <div className="grid gap-2">
+                <Label>Site Cover Image (Optional)</Label>
+                {siteImageCover ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="relative w-full h-40">
+                      <Image
+                        src={siteImageCover}
+                        alt="Site cover"
+                        fill
+                        className="object-cover rounded-md"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => setSiteImageCover(null)}
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                ) : (
+                  <UploadDropzone
+                    endpoint="imageUploader"
+                    onClientUploadComplete={(res: any) => {
+                      setSiteImageCover(res[0].url);
+                      toast.success("Image uploaded successfully!");
+                    }}
+                    onUploadError={(error: Error) => {
+                      toast.error(`ERROR! ${error.message}`);
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Hidden input to store the image URL */}
+              {siteImageCover && (
+                <input
+                  type="hidden"
+                  name={fields.siteImageCover.name}
+                  value={siteImageCover}
+                />
+              )}
             </div>
           </CardContent>
           <CardFooter>
