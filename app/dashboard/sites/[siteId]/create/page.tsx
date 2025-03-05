@@ -76,7 +76,6 @@ export default function ArticleCreationRoute() {
                 type="hidden"
                 name={fields.coverImage.name}
                 key={fields.coverImage.key}
-                defaultValue={fields.coverImage.initialValue}
                 value={imageUrl}
               />
               {imageUrl ? (
@@ -165,15 +164,12 @@ export default function ArticleCreationRoute() {
               </p>
             </div>
 
-
-
             <div className="grid gap-2">
               <Label>Article Content</Label>
               <input
                 type="hidden"
                 name={fields.articleContent.name}
                 key={fields.articleContent.key}
-                defaultValue={fields.articleContent.initialValue}
                 value={JSON.stringify(value)}
               />
               <TailwindAdvancedEditor onChange={setValue} initialValue={value} />

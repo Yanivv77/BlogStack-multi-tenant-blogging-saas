@@ -1,46 +1,38 @@
 import { createImageUpload } from "novel";
 import { toast } from "sonner";
+import { generateReactHelpers } from "@uploadthing/react";
+import type { OurFileRouter } from "@/app/api/uploadthing/core";
 
-const onUpload = (file: File) => {
-  const promise = fetch("/api/upload", {
-    method: "POST",
-    headers: {
-      "content-type": file?.type || "application/octet-stream",
-      "x-vercel-filename": file?.name || "image.png",
-    },
-    body: file,
-  });
+const { uploadFiles } = generateReactHelpers<OurFileRouter>();
 
+const onUpload = async (file: File) => {
   return new Promise((resolve, reject) => {
-    toast.promise(
-      promise.then(async (res) => {
-        // Successfully uploaded image
-        if (res.status === 200) {
-          const { url } = (await res.json()) as { url: string };
-          // preload the image
-          const image = new Image();
-          image.src = url;
-          image.onload = () => {
-            resolve(url);
-          };
-          // No blob store configured
-        } else if (res.status === 401) {
-          resolve(file);
-          throw new Error("`BLOB_READ_WRITE_TOKEN` environment variable not found, reading image locally instead.");
-          // Unknown error
-        } else {
-          throw new Error("Error uploading image. Please try again.");
+    toast.loading("Uploading image...");
+    
+    // Use the uploadFiles helper from UploadThing
+    uploadFiles("imageUploader", { files: [file] })
+      .then((res) => {
+        if (!res || res.length === 0) {
+          throw new Error("Upload failed");
         }
-      }),
-      {
-        loading: "Uploading image...",
-        success: "Image uploaded successfully.",
-        error: (e) => {
-          reject(e);
-          return e.message;
-        },
-      },
-    );
+        
+        // Extract the URL from the response
+        const url = res[0].url;
+        
+        // Preload the image
+        const image = new Image();
+        image.src = url;
+        image.onload = () => {
+          toast.dismiss();
+          toast.success("Image uploaded successfully");
+          resolve(url);
+        };
+      })
+      .catch((error) => {
+        toast.dismiss();
+        toast.error(error.message || "Error uploading image");
+        reject(error);
+      });
   });
 };
 
@@ -51,8 +43,8 @@ export const uploadFn = createImageUpload({
       toast.error("File type not supported.");
       return false;
     }
-    if (file.size / 1024 / 1024 > 20) {
-      toast.error("File size too big (max 20MB).");
+    if (file.size / 1024 / 1024 > 4) {
+      toast.error("File size too big (max 4MB).");
       return false;
     }
     return true;
