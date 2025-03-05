@@ -38,12 +38,13 @@ interface iAppProps {
 }
 
 export function EditArticleForm({ data, siteId }: iAppProps) {
-  const [imageUrl, setImageUrl] = useState<undefined | string>(data.image);
+  const [imageUrl, setImageUrl] = useState<string>(data.image || "");
   const [value, setValue] = useState<JSONContent | undefined>(
     data.articleContent
   );
-  const [slug, setSlugValue] = useState<undefined | string>(data.slug);
-  const [title, setTitle] = useState<undefined | string>(data.title);
+  const [slug, setSlugValue] = useState<string>(data.slug || "");
+  const [title, setTitle] = useState<string>(data.title || "");
+  const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
 
   const [lastResult, action] = useActionState(EditPostActions, undefined);
   const [form, fields] = useForm({
@@ -124,7 +125,8 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <Textarea
               key={fields.smallDescription.key}
               name={fields.smallDescription.name}
-              defaultValue={data.smallDescription}
+              value={smallDescription}
+              onChange={(e) => setSmallDescription(e.target.value)}
               placeholder="Small Description for your blog article..."
               className="h-32"
             />

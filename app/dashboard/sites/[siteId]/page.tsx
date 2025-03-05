@@ -36,6 +36,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import * as React from 'react';
 
 async function getData(userId: string, siteId: string) {
   /* const data = await prisma.post.findMany({
@@ -80,10 +81,8 @@ async function getData(userId: string, siteId: string) {
   return data;
 }
 
-export default async function SiteIdRoute({
-  params,
-}: {
-  params: { siteId: string };
+export default async function SiteIdRoute(props: {
+  params: { siteId: string }
 }) {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -92,7 +91,10 @@ export default async function SiteIdRoute({
     return redirect("/api/auth/login");
   }
 
-  const data = await getData(user.id, params.siteId);
+  // Access params directly
+  const siteId = props.params.siteId;
+
+  const data = await getData(user.id, siteId);
 
   return (
     <>
@@ -104,13 +106,13 @@ export default async function SiteIdRoute({
           </Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link href={`/dashboard/sites/${params.siteId}/settings`}>
+          <Link href={`/dashboard/sites/${siteId}/settings`}>
             <Settings className="size-4 mr-2" />
             Settings
           </Link>
         </Button>
         <Button asChild>
-          <Link href={`/dashboard/sites/${params.siteId}/create`}>
+          <Link href={`/dashboard/sites/${siteId}/create`}>
             <PlusCircle className="size-4 mr-2" />
             Create Article
           </Link>
@@ -122,7 +124,7 @@ export default async function SiteIdRoute({
           title="You dont have any Articles created"
           description="You currently dont have any articles. please create some so that you can see them right here"
           buttonText="Create Article"
-          href={`/dashboard/sites/${params.siteId}/create`}
+          href={`/dashboard/sites/${siteId}/create`}
         />
       ) : (
         <div>
@@ -185,14 +187,14 @@ export default async function SiteIdRoute({
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild>
                               <Link
-                                href={`/dashboard/sites/${params.siteId}/${item.id}`}
+                                href={`/dashboard/sites/${siteId}/${item.id}`}
                               >
                                 Edit
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem asChild>
                               <Link
-                                href={`/dashboard/sites/${params.siteId}/${item.id}/delete`}
+                                href={`/dashboard/sites/${siteId}/${item.id}/delete`}
                               >
                                 Delete
                               </Link>

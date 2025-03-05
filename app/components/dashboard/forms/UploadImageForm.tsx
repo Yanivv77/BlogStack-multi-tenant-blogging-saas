@@ -20,7 +20,7 @@ interface iAppProps {
 }
 
 export function UploadImageForm({ siteId }: iAppProps) {
-  const [imageUrl, setImageUrl] = useState<undefined | string>(undefined);
+  const [imageUrl, setImageUrl] = useState<string>("");
   return (
     <Card>
       <CardHeader>
