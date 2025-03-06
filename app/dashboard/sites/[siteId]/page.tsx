@@ -92,8 +92,9 @@ export default async function SiteIdRoute(props: {
     return redirect("/api/auth/login");
   }
 
-  // Access params directly
-  const siteId = props.params.siteId;
+  // Await the params object before accessing its properties
+  const params = await props.params;
+  const siteId = params.siteId;
 
   const data = await getData(user.id, siteId);
 
@@ -151,13 +152,15 @@ export default async function SiteIdRoute(props: {
                   {data.posts.map((item) => (
                     <TableRow key={item.id}>
                       <TableCell>
-                        <Image
-                          src={item.postCoverImage || DEFAULT_IMAGE_URL}
-                          width={64}
-                          height={64}
-                          alt="Article Cover Image"
-                          className="size-16 rounded-md object-cover"
-                        />
+                        <div className="relative w-16 h-16">
+                          <Image
+                            src={item.postCoverImage || DEFAULT_IMAGE_URL}
+                            alt="Article Cover Image"
+                            className="rounded-md object-cover"
+                            fill
+                            sizes="64px"
+                          />
+                        </div>
                       </TableCell>
                       <TableCell className="font-medium">
                         {item.title}

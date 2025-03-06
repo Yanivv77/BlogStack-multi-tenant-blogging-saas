@@ -31,14 +31,14 @@ import { getUploadedImages, clearUploadedImages } from "@/app/components/dashboa
 export default function ArticleCreationRoute() {
   const params = useParams();
   const siteId = params.siteId as string;
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [value, setValue] = useState<JSONContent | undefined>(undefined);
   const [slug, setSlugValue] = useState<string>("");
   const [title, setTitle] = useState<string>("");
   const [smallDescription, setSmallDescription] = useState<string>("");
   const [lastResult, action] = useActionState(CreatePostAction, undefined);
   
-  // Clear uploaded images when component mounts
+
   useEffect(() => {
     clearUploadedImages();
   }, []);
@@ -58,10 +58,13 @@ export default function ArticleCreationRoute() {
     const titleInput = title;
 
     if (titleInput?.length === 0 || titleInput === undefined) {
-      return toast.error("Pleaes create a title first");
+      return toast.error("Please create a title first");
     }
 
-    setSlugValue(slugify(titleInput));
+    // Generate a slug that follows the regex pattern: lowercase letters, numbers, and hyphens
+    const generatedSlug = slugify(titleInput);
+
+    setSlugValue(generatedSlug);
 
     return toast.success("Slug has been created");
   }
@@ -77,32 +80,56 @@ export default function ArticleCreationRoute() {
       </div>
 
       <div className="grid gap-2">
-        <Label>Cover Image</Label>
-        <input
-          type="hidden"
-          name={fields.postCoverImage.name}
-          key={fields.postCoverImage.key}
-          value={imageUrl}
-        />
+        <Label>Cover Image (Optional)</Label>
+        {imageUrl && (
+          <input
+            type="hidden"
+            name={fields.postCoverImage.name}
+            key={fields.postCoverImage.key}
+            value={imageUrl}
+          />
+        )}
         {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt="Uploaded Image"
-            className="object-cover w-[200px] h-[200px] rounded-lg"
-            width={200}
-            height={200}
-          />
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative w-[200px] h-[200px]">
+              <Image
+                src={imageUrl}
+                alt="Uploaded Image"
+                className="object-cover rounded-lg"
+                fill
+                sizes="200px"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setImageUrl(null)}
+              className="w-auto"
+            >
+              Remove Image
+            </Button>
+          </div>
         ) : (
-          <UploadDropzone
-            onClientUploadComplete={(res) => {
-              setImageUrl(res[0].ufsUrl);
-              toast.success("Image has been uploaded");
-            }}
-            endpoint="imageUploader"
-            onUploadError={() => {
-              toast.error("Something went wrong...");
-            }}
-          />
+          <div className="flex justify-center">
+            <UploadDropzone
+              onClientUploadComplete={(res: any) => {
+                console.log("Upload response:", res[0]);
+                const imageUrl = res[0].ufsUrl;
+                setImageUrl(imageUrl);
+                toast.success("Image uploaded successfully!");
+              }}
+              endpoint="imageUploader"
+              onUploadError={(error: Error) => {
+                toast.error(`ERROR! ${error.message}`);
+              }}
+              config={{ mode: "auto" }}
+              appearance={{
+                button: "hidden",
+                allowedContent: "hidden",
+                container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
+              }}
+            />
+          </div>
         )}
 
         <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>
@@ -176,7 +203,7 @@ export default function ArticleCreationRoute() {
                 type="hidden"
                 name={fields.articleContent.name}
                 key={fields.articleContent.key}
-                value={JSON.stringify(value)}
+                value={value ? JSON.stringify(value) : '{}'}
               />
               <input
                 type="hidden"

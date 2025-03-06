@@ -92,8 +92,8 @@ export default function NewSiteRoute() {
               <div className="grid gap-2">
                 <Label>Site Cover Image (Optional)</Label>
                 {siteImageCover ? (
-                  <div className="flex flex-col gap-2">
-                    <div className="relative w-full h-40">
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-full max-w-[400px] h-40">
                       <Image
                         src={siteImageCover}
                         alt="Site cover"
@@ -105,21 +105,32 @@ export default function NewSiteRoute() {
                       type="button"
                       variant="destructive"
                       onClick={() => setSiteImageCover(null)}
+                      className="w-auto"
                     >
                       Remove Image
                     </Button>
                   </div>
                 ) : (
-                  <UploadDropzone
-                    endpoint="imageUploader"
-                    onClientUploadComplete={(res: any) => {
-                      setSiteImageCover(res[0].url);
-                      toast.success("Image uploaded successfully!");
-                    }}
-                    onUploadError={(error: Error) => {
-                      toast.error(`ERROR! ${error.message}`);
-                    }}
-                  />
+                  <div className="flex justify-center">
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      onClientUploadComplete={(res: any) => {
+                        console.log("Upload response:", res[0]);
+                        const imageUrl = res[0].ufsUrl;
+                        setSiteImageCover(imageUrl);
+                        toast.success("Image uploaded successfully!");
+                      }}
+                      onUploadError={(error: Error) => {
+                        toast.error(`ERROR! ${error.message}`);
+                      }}
+                      config={{ mode: "auto" }}
+                      appearance={{
+                        button: "hidden",
+                        allowedContent: "hidden",
+                        container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
+                      }}
+                    />
+                  </div>
                 )}
               </div>
 

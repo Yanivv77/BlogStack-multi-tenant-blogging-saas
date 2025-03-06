@@ -10,51 +10,88 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { SubmitButton } from "../SubmitButtons";
 import { toast } from "sonner";
 import { UpdateImage } from "@/app/actions";
+import { Button } from "@/components/ui/button";
 
 interface iAppProps {
   siteId: string;
 }
 
 export function UploadImageForm({ siteId }: iAppProps) {
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Function to handle form submission
+  const submitForm = useCallback(() => {
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    }
+  }, []);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Image</CardTitle>
         <CardDescription>
-          This is the image of your site. you can change it here
+          This is the image of your site. It will be updated automatically after upload.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt="Uploaded Image"
-            width={200}
-            height={200}
-            className="size-[200px] object-cover rounded-lg"
-          />
+          <div className="flex flex-col items-center gap-2">
+            <div className="relative w-[200px] h-[200px]">
+              <Image
+                src={imageUrl}
+                alt="Uploaded Image"
+                className="object-cover rounded-lg"
+                fill
+                sizes="200px"
+              />
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => setImageUrl(null)}
+              className="w-auto"
+            >
+              Remove Image
+            </Button>
+          </div>
         ) : (
-          <UploadDropzone
-            endpoint="imageUploader"
-            onClientUploadComplete={(res) => {
-              setImageUrl(res[0].url);
-              toast.success("Image has been uploaded");
-            }}
-            onUploadError={() => {
-              toast.error("Something went wrong.");
-            }}
-          />
+          <div className="flex justify-center">
+            <UploadDropzone
+              endpoint="imageUploader"
+              onClientUploadComplete={(res: any) => {
+                console.log("Upload response:", res[0]);
+                const imageUrl = res[0].ufsUrl;
+                setImageUrl(imageUrl);
+                toast.success("Image uploaded successfully!");
+                
+                // Automatically submit the form after upload
+                setTimeout(submitForm, 500);
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`ERROR! ${error.message}`);
+              }}
+              config={{ mode: "auto" }}
+              appearance={{
+                button: "hidden",
+                allowedContent: "hidden",
+                container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
+              }}
+            />
+          </div>
         )}
       </CardContent>
-      <CardFooter>
-        <form action={UpdateImage}>
+      <CardFooter className="flex justify-center">
+        <form ref={formRef} action={UpdateImage}>
           <input type="hidden" name="siteId" value={siteId} />
-          <input type="hidden" name="imageUrl" value={imageUrl} />
+          {imageUrl && (
+            <input type="hidden" name="siteImageCover" value={imageUrl} />
+          )}
           <SubmitButton text="Change Image" />
         </form>
       </CardFooter>

@@ -23,10 +23,10 @@ export const ourFileRouter = {
       // This code RUNS ON YOUR SERVER after upload
       console.log("Upload complete for userId:", metadata.userId);
 
-      console.log("file url", file.ufsUrl);
+      console.log("file ufsUrl", file.ufsUrl);
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { uploadedBy: metadata.userId };
+      return { uploadedBy: metadata.userId, ufsUrl: file.ufsUrl };
     }),
 } satisfies FileRouter;
 

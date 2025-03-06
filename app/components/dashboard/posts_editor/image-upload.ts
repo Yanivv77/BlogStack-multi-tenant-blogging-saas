@@ -41,7 +41,7 @@ const onUpload = async (file: File) => {
         }
         
         // Extract the URL from the response
-        const url = res[0].url;
+        const url = res[0].ufsUrl;
         
         // Add to our tracked images
         uploadedImages.push(url);

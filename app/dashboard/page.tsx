@@ -50,13 +50,15 @@ export default async function DashboardIndexPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
           {sites.map((item) => (
             <Card key={item.id}>
-              <Image
-                src={item.siteImageCover || DEFAULT_IMAGE_URL}
-                alt={item.name}
-                className="rounded-t-lg object-cover w-full h-[200px]"
-                width={400}
-                height={200}
-              />
+              <div className="relative w-full h-[200px]">
+                <Image
+                  src={item.siteImageCover || DEFAULT_IMAGE_URL}
+                  alt={item.name}
+                  className="rounded-t-lg object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
               <CardHeader>
                 <CardTitle className="truncate">{item.name}</CardTitle>
                 <CardDescription className="line-clamp-3">
@@ -88,13 +90,15 @@ export default async function DashboardIndexPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
           {articles.map((item) => (
             <Card key={item.id}>
-              <Image
-                src={item.postCoverImage || DEFAULT_IMAGE_URL}
-                alt={item.title}
-                className="rounded-t-lg object-cover w-full h-[200px]"
-                width={400}
-                height={200}
-              />
+              <div className="relative w-full h-[200px]">
+                <Image
+                  src={item.postCoverImage || DEFAULT_IMAGE_URL}
+                  alt={item.title}
+                  className="rounded-t-lg object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              </div>
               <CardHeader>
                 <CardTitle className="truncate">{item.title}</CardTitle>
                 <CardDescription className="line-clamp-3">
