@@ -79,62 +79,6 @@ export default function ArticleCreationRoute() {
         <h1 className="text-xl font-semibold">Create Article</h1>
       </div>
 
-      <div className="grid gap-2">
-        <Label>Cover Image (Optional)</Label>
-        {imageUrl && (
-          <input
-            type="hidden"
-            name={fields.postCoverImage.name}
-            key={fields.postCoverImage.key}
-            value={imageUrl}
-          />
-        )}
-        {imageUrl ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="relative w-[200px] h-[200px]">
-              <Image
-                src={imageUrl}
-                alt="Uploaded Image"
-                className="object-cover rounded-lg"
-                fill
-                sizes="200px"
-              />
-            </div>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setImageUrl(null)}
-              className="w-auto"
-            >
-              Remove Image
-            </Button>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <UploadDropzone
-              onClientUploadComplete={(res: any) => {
-                console.log("Upload response:", res[0]);
-                const imageUrl = res[0].ufsUrl;
-                setImageUrl(imageUrl);
-                toast.success("Image uploaded successfully!");
-              }}
-              endpoint="imageUploader"
-              onUploadError={(error: Error) => {
-                toast.error(`ERROR! ${error.message}`);
-              }}
-              config={{ mode: "auto" }}
-              appearance={{
-                button: "hidden",
-                allowedContent: "hidden",
-                container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
-              }}
-            />
-          </div>
-        )}
-
-        <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>
-      </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Article Details</CardTitle>
@@ -150,6 +94,63 @@ export default function ArticleCreationRoute() {
             action={action}
           >
             <input type="hidden" name="siteId" value={siteId} />
+            {/* Hidden input to store the post cover image URL */}
+            {imageUrl && (
+              <input
+                type="hidden"
+                name={fields.postCoverImage.name}
+                key={fields.postCoverImage.key}
+                value={imageUrl}
+              />
+            )}
+            
+            <div className="grid gap-2">
+              <Label>Cover Image (Optional)</Label>
+              {imageUrl ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative w-[200px] h-[200px]">
+                    <Image
+                      src={imageUrl}
+                      alt="Uploaded Image"
+                      className="object-cover rounded-lg"
+                      fill
+                      sizes="200px"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setImageUrl(null)}
+                    className="w-auto"
+                  >
+                    Remove Image
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex justify-center">
+                  <UploadDropzone
+                    onClientUploadComplete={(res: any) => {
+                      console.log("Upload response:", res[0]);
+                      const imageUrl = res[0].ufsUrl;
+                      setImageUrl(imageUrl);
+                      toast.success("Image uploaded successfully!");
+                    }}
+                    endpoint="imageUploader"
+                    onUploadError={(error: Error) => {
+                      toast.error(`ERROR! ${error.message}`);
+                    }}
+                    config={{ mode: "auto" }}
+                    appearance={{
+                      button: "hidden",
+                      allowedContent: "hidden",
+                      container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
+                    }}
+                  />
+                </div>
+              )}
+              <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>
+            </div>
+
             <div className="grid gap-2">
               <Label>Title</Label>
               <Input
