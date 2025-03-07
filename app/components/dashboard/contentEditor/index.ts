@@ -12,7 +12,6 @@ export { default as EditorWrapper } from './EditorWrapper';
 export * from './core/types';
 export { defaultExtensions } from './core/extensions';
 export { slashCommand, suggestionItems } from './core/slash-command';
-export { defaultEditorContent } from './core/content';
 
 // UI components
 export { MenuSwitch } from './ui/MenuSwitch';
