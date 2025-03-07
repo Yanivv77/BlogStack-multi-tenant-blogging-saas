@@ -16,6 +16,7 @@ export { slashCommand, suggestionItems } from './core/slash-command';
 // UI components
 export { MenuSwitch } from './ui/MenuSwitch';
 export { ToolbarButton } from './ui/ToolbarButton';
+export { SeoRecommendations } from './ui/SeoRecommendations';
 
 // Hooks
 export { useEditorState } from './hooks/useEditorState';

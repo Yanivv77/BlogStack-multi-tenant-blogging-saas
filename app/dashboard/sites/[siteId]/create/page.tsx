@@ -35,6 +35,7 @@ import {
   clearFormDraft, 
   clearEditorStorage 
 } from "@/app/components/dashboard/contentEditor";
+import { SeoRecommendations } from "@/app/components/dashboard/contentEditor/ui/SeoRecommendations";
 
 export default function ArticleCreationRoute() {
   const params = useParams();
@@ -392,6 +393,13 @@ export default function ArticleCreationRoute() {
               <p className="text-red-500 text-sm">
                 {fields.articleContent.errors}
               </p>
+              
+              {/* SEO Recommendations */}
+              <SeoRecommendations 
+                content={value} 
+                title={title} 
+                smallDescription={smallDescription} 
+              />
             </div>
 
             <SubmitButton text="Create Article" />
