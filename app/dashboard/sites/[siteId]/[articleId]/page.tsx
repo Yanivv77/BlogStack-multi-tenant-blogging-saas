@@ -59,8 +59,12 @@ async function getData(articleId: string, userId: string, siteId: string) {
 export default async function EditArticlePage({
   params
 }: {
-  params: { siteId: string; articleId: string }
+  params: { siteId: string; articleId: string } | Promise<{ siteId: string; articleId: string }>
 }) {
+  // Await params before accessing its properties
+  const resolvedParams = await params;
+  const { siteId, articleId } = resolvedParams;
+
   // Get user session
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -72,20 +76,20 @@ export default async function EditArticlePage({
 
   // Get article data
   try {
-    const data = await getData(params.articleId, user.id, params.siteId);
+    const data = await getData(articleId, user.id, siteId);
 
     return (
       <div className="space-y-5">
         <div className="flex items-center">
           <Button asChild size="icon" variant="outline" className="mr-3">
-            <Link href={`/dashboard/sites/${params.siteId}`}>
+            <Link href={`/dashboard/sites/${siteId}`}>
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
           <h1 className="text-xl font-semibold">Edit Article</h1>
         </div>
 
-        <EditArticleForm data={data} siteId={params.siteId} />
+        <EditArticleForm data={data} siteId={siteId} />
       </div>
     );
   } catch (error) {
@@ -95,7 +99,7 @@ export default async function EditArticlePage({
       <div className="space-y-5">
         <div className="flex items-center">
           <Button asChild size="icon" variant="outline" className="mr-3">
-            <Link href={`/dashboard/sites/${params.siteId}`}>
+            <Link href={`/dashboard/sites/${siteId}`}>
               <ArrowLeft className="size-4" />
             </Link>
           </Button>
@@ -108,7 +112,7 @@ export default async function EditArticlePage({
             The article you're trying to edit doesn't exist or you don't have permission to edit it.
           </p>
           <Button asChild>
-            <Link href={`/dashboard/sites/${params.siteId}`}>
+            <Link href={`/dashboard/sites/${siteId}`}>
               Back to site
             </Link>
           </Button>
