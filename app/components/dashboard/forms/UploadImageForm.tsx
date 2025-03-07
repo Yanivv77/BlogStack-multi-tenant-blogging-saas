@@ -51,14 +51,6 @@ export function UploadImageForm({ siteId }: iAppProps) {
                 sizes="200px"
               />
             </div>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => setImageUrl(null)}
-              className="w-auto"
-            >
-              Remove Image
-            </Button>
           </div>
         ) : (
           <div className="flex justify-center">
@@ -92,7 +84,7 @@ export function UploadImageForm({ siteId }: iAppProps) {
           {imageUrl && (
             <input type="hidden" name="siteImageCover" value={imageUrl} />
           )}
-          <SubmitButton text="Change Image" />
+          
         </form>
       </CardFooter>
     </Card>
