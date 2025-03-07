@@ -25,8 +25,7 @@ import { toast } from "sonner";
 import slugify from "react-slugify";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 import { useParams } from 'next/navigation';
-import TailwindAdvancedEditor from "@/app/components/dashboard/posts_editor/EditorWrapper";
-import { getUploadedImages, clearUploadedImages } from "@/app/components/dashboard/posts_editor/image-upload";
+import { EditorWrapper, getUploadedImages, clearUploadedImages } from "@/app/components/dashboard/contentEditor";
 
 export default function ArticleCreationRoute() {
   const params = useParams();
@@ -212,7 +211,7 @@ export default function ArticleCreationRoute() {
                 key={fields.contentImages.key}
                 value={JSON.stringify(getUploadedImages())}
               />
-              <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
+              <EditorWrapper onChange={setValue} initialValue={value} />
               <p className="text-red-500 text-sm">
                 {fields.articleContent.errors}
               </p>

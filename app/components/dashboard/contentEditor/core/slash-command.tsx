@@ -14,7 +14,7 @@ import {
   Youtube,
 } from "lucide-react";
 import { Command, createSuggestionItems, renderItems } from "novel";
-import { uploadFn } from "./image-upload";
+import { uploadFn } from "../utils/image-upload";
 
 export const suggestionItems = createSuggestionItems([
   // {
@@ -119,7 +119,19 @@ export const suggestionItems = createSuggestionItems([
         if (input.files?.length) {
           const file = input.files[0];
           const pos = editor.view.state.selection.from;
-          uploadFn(file, editor.view, pos);
+          
+          // Upload the file to get the URL
+          try {
+            const imageUrl = await uploadFn(file);
+            
+            // Insert image at cursor position
+            const { schema } = editor.view.state;
+            const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
+            const transaction = editor.view.state.tr.replaceSelectionWith(node);
+            editor.view.dispatch(transaction);
+          } catch (error) {
+            console.error('Error uploading image:', error);
+          }
         }
       };
       input.click();

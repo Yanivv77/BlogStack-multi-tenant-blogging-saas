@@ -23,8 +23,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { CreatePostAction, EditPostActions } from "@/app/actions";
 import slugify from "react-slugify";
-import TailwindAdvancedEditor from "../posts_editor/EditorWrapper";
-import { getUploadedImages, clearUploadedImages, addExistingImages } from "../posts_editor/image-upload";
+import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages } from "../contentEditor";
 
 interface iAppProps {
   data: {
@@ -218,7 +217,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               key={fields.contentImages.key}
               value={JSON.stringify(getUploadedImages())}
             />
-            <TailwindAdvancedEditor onChange={setValue} initialValue={value} />
+            <EditorWrapper onChange={setValue} initialValue={value} />
             <p className="text-red-500 text-sm">
               {fields.articleContent.errors}
             </p>
