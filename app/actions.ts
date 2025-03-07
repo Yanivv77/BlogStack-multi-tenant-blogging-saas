@@ -214,13 +214,41 @@ export async function UpdateImage(formData: FormData) {
 
 export async function DeleteSite(formData: FormData) {
   const user = await requireUser();
+  
+  if (!user || !user.id) {
+    return { status: "error", errors: ["You must be logged in to delete a site"] };
+  }
+  
+  const siteId = formData.get("siteId") as string;
+  
+  if (!siteId) {
+    return { status: "error", errors: ["Missing site information"] };
+  }
 
-  const data = await prisma.site.delete({
-    where: {
-      userId: user.id,
-      id: formData.get("siteId") as string,
-    },
-  });
+  try {
+    // First verify the site belongs to the user
+    const site = await prisma.site.findFirst({
+      where: {
+        id: siteId,
+        userId: user.id,
+      },
+    });
 
-  return redirect("/dashboard/sites");
+    if (!site) {
+      return { status: "error", errors: ["Site not found or you don't have permission to delete it"] };
+    }
+
+    // Delete the site (this will cascade delete all associated posts)
+    await prisma.site.delete({
+      where: {
+        id: siteId,
+        userId: user.id,
+      },
+    });
+
+    return { status: "success", errors: [] };
+  } catch (error) {
+    console.error("Error deleting site:", error);
+    return { status: "error", errors: ["Failed to delete site. Please try again."] };
+  }
 }

@@ -75,6 +75,9 @@ async function getData(userId: string, siteId: string) {
           createdAt: true,
           postCoverImage: true,
         },
+        orderBy: {
+          createdAt: 'desc'
+        }
       },
     },
   });
@@ -86,7 +89,7 @@ async function getData(userId: string, siteId: string) {
 }
 
 export default async function SiteIdRoute(props: {
-  params: { siteId: string }
+  params: { siteId: string } | Promise<{ siteId: string }>
 }) {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -137,7 +140,7 @@ export default async function SiteIdRoute(props: {
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Articles</CardTitle>
+              <CardTitle>Articles ({data?.posts?.length || 0})</CardTitle>
               <CardDescription>
                 Manage your Articles in a simple and intuitive interface
               </CardDescription>
