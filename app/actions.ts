@@ -150,15 +150,44 @@ export async function EditPostActions(prevState: any, formData: FormData) {
 
 export async function DeletePost(formData: FormData) {
   const user = await requireUser();
+  
+  if (!user || !user.id) {
+    return { status: "error", errors: ["You must be logged in to delete an article"] };
+  }
+  
+  const articleId = formData.get("articleId") as string;
+  const siteId = formData.get("siteId") as string;
+  
+  if (!articleId || !siteId) {
+    return { status: "error", errors: ["Missing article or site information"] };
+  }
 
-  const data = await prisma.post.delete({
-    where: {
-      userId: user.id,
-      id: formData.get("articleId") as string,
-    },
-  });
+  try {
+    // First verify the article belongs to the user
+    const article = await prisma.post.findFirst({
+      where: {
+        id: articleId,
+        userId: user.id,
+      },
+    });
 
-  return redirect(`/dashboard/sites/${formData.get("siteId")}`);
+    if (!article) {
+      return { status: "error", errors: ["Article not found or you don't have permission to delete it"] };
+    }
+
+    // Delete the article
+    await prisma.post.delete({
+      where: {
+        id: articleId,
+        userId: user.id,
+      },
+    });
+
+    return { status: "success", errors: [] };
+  } catch (error) {
+    console.error("Error deleting article:", error);
+    return { status: "error", errors: ["Failed to delete article. Please try again."] };
+  }
 }
 
 export async function UpdateImage(formData: FormData) {

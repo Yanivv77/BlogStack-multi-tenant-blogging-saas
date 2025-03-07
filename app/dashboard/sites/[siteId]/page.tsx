@@ -200,10 +200,14 @@ export default async function SiteIdRoute(props: {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              // onClick={() => handleChange(post.id)}
+                              
                               className="text-red-600"
                             >
-                              Delete Article
+                               <Link
+                                href={`/dashboard/sites/${params.siteId}/${post.id}/delete`}
+                              >
+                                Delete
+                              </Link>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
