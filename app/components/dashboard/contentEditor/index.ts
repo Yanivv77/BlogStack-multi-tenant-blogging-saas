@@ -39,5 +39,11 @@ export {
   saveHtmlContent,
   saveEditorContent,
   loadEditorContent,
-  clearEditorStorage
+  clearEditorStorage,
+  saveFormDraft,
+  loadFormDraft,
+  hasFormDraft,
+  clearFormDraft,
+  clearAllStorage,
+  type FormDraft
 } from './utils/storage'; 

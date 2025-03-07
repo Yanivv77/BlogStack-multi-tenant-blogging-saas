@@ -6,6 +6,15 @@ import { useDebouncedCallback } from "use-debounce";
 import { saveHtmlContent, saveEditorContent, loadEditorContent } from "../utils/storage";
 
 /**
+ * Empty document with a single empty paragraph
+ * Used as default content for the editor when no content is provided
+ */
+const EMPTY_DOCUMENT: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }]
+};
+
+/**
  * Custom hook for managing editor state
  * Handles content loading, saving, and word count
  */
@@ -28,6 +37,8 @@ export function useEditorState(options: {
    * Saves content to localStorage and triggers onChange callback
    */
   const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
+    if (!editor) return;
+    
     const json = editor.getJSON();
     
     // Update word count
@@ -54,17 +65,35 @@ export function useEditorState(options: {
 
   // Handle editor updates
   const handleUpdate = ({ editor }: { editor: EditorInstance }) => {
+    if (!editor) return;
+    
     debouncedUpdates(editor);
     setSaveStatus("Unsaved");
   };
 
   // Load initial content on mount
   useEffect(() => {
+    console.log("useEditorState: Initializing with value:", initialValue);
+    
     if (initialValue) {
+      // If we have initialValue prop, use it directly
       setInitialContent(initialValue);
+      console.log("useEditorState: Using provided initialValue");
     } else if (autosave) {
+      // Otherwise try to load from storage if autosave is enabled
       const content = loadEditorContent();
-      if (content) setInitialContent(content);
+      if (content) {
+        setInitialContent(content);
+        console.log("useEditorState: Loaded content from localStorage");
+      } else {
+        // If nothing in storage, use empty content
+        setInitialContent(EMPTY_DOCUMENT);
+        console.log("useEditorState: No content found, using empty doc");
+      }
+    } else {
+      // If autosave disabled and no initialValue, use empty content
+      setInitialContent(EMPTY_DOCUMENT);
+      console.log("useEditorState: No initialValue provided, using empty doc");
     }
   }, [initialValue, autosave]);
 

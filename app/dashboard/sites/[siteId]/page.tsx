@@ -1,3 +1,5 @@
+// This file will remain a server component
+
 import { EmptyState } from "@/app/components/dashboard/EmptyState";
 import prisma from "@/app/utils/db";
 import { Badge } from "@/components/ui/badge";
@@ -38,7 +40,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import * as React from 'react';
 import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
+import { DraftButtons } from "@/app/components/dashboard/DraftButtons";
 
+// Keep all database fetching and server-side code here
 async function getData(userId: string, siteId: string) {
   /* const data = await prisma.post.findMany({
     where: {
@@ -63,23 +67,22 @@ async function getData(userId: string, siteId: string) {
       id: siteId,
       userId: userId,
     },
-    select: {
-      subdirectory: true,
+    include: {
       posts: {
         select: {
-          postCoverImage: true,
+          id: true,
           title: true,
           createdAt: true,
-          id: true,
-        },
-        orderBy: {
-          createdAt: "desc",
+          postCoverImage: true,
         },
       },
     },
   });
 
-  return data;
+  return {
+    posts: data?.posts || [],
+    subdirectory: data?.subdirectory || "",
+  };
 }
 
 export default async function SiteIdRoute(props: {
@@ -113,21 +116,23 @@ export default async function SiteIdRoute(props: {
             Settings
           </Link>
         </Button>
-        <Button asChild>
-          <Link href={`/dashboard/sites/${siteId}/create`}>
-            <PlusCircle className="size-4 mr-2" />
-            Create Article
-          </Link>
-        </Button>
+        {/* Use the client component for draft-aware buttons */}
+        <DraftButtons siteId={siteId} />
       </div>
 
       {data?.posts === undefined || data.posts.length === 0 ? (
-        <EmptyState
-          title="You dont have any Articles created"
-          description="You currently dont have any articles. please create some so that you can see them right here"
-          buttonText="Create Article"
-          href={`/dashboard/sites/${siteId}/create`}
-        />
+        <div className="flex h-[50vh] shrink-0 items-center justify-center rounded-md border border-dashed">
+          <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
+            <h3 className="mt-4 text-lg font-semibold">
+              You dont have any Articles created
+            </h3>
+            <p className="mb-4 mt-2 text-sm text-muted-foreground">
+              You currently dont have any articles. please create some so that you can see them right here
+            </p>
+            {/* Use the client component for draft-aware buttons */}
+            <DraftButtons siteId={siteId} />
+          </div>
+        </div>
       ) : (
         <div>
           <Card>
@@ -149,59 +154,56 @@ export default async function SiteIdRoute(props: {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.posts.map((item) => (
-                    <TableRow key={item.id}>
+                  {data?.posts?.map((post: {
+                    id: string;
+                    title: string;
+                    createdAt: Date;
+                    postCoverImage: string | null;
+                  }) => (
+                    <TableRow key={post.id}>
                       <TableCell>
-                        <div className="relative w-16 h-16">
+                        <div className="relative w-12 h-12">
                           <Image
-                            src={item.postCoverImage || DEFAULT_IMAGE_URL}
-                            alt="Article Cover Image"
-                            className="rounded-md object-cover"
                             fill
-                            sizes="64px"
+                            src={post.postCoverImage || DEFAULT_IMAGE_URL}
+                            alt="Cover Image"
+                            className="rounded-md object-cover"
+                            sizes="48px"
                           />
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {item.title}
+                      <TableCell>{post.title}</TableCell>
+                      <TableCell>
+                        <Badge>Published</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant="outline"
-                          className="bg-green-500/10 text-green-500"
-                        >
-                          Published
-                        </Badge>
+                        {new Date(post.createdAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>
-                        {new Intl.DateTimeFormat("en-US", {
-                          dateStyle: "medium",
-                        }).format(item.createdAt)}
-                      </TableCell>
-
-                      <TableCell className="text-end">
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button size="icon" variant="ghost">
-                              <MoreHorizontal className="size-4" />
+                            <Button variant="ghost" className="h-4 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>
+                              Article Actions
+                            </DropdownMenuLabel>
                             <DropdownMenuItem asChild>
                               <Link
-                                href={`/dashboard/sites/${siteId}/${item.id}`}
+                                href={`/dashboard/sites/${siteId}/${post.id}`}
                               >
-                                Edit
+                                Edit Article
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link
-                                href={`/dashboard/sites/${siteId}/${item.id}/delete`}
-                              >
-                                Delete
-                              </Link>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              // onClick={() => handleChange(post.id)}
+                              className="text-red-600"
+                            >
+                              Delete Article
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

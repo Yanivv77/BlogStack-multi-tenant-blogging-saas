@@ -13,7 +13,7 @@ import {
   handleImageDrop,
   handleImagePaste,
 } from "novel";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { defaultExtensions } from "./core/extensions";
 import { ColorSelector } from "./selectors/color-selector";
 import { LinkSelector } from "./selectors/link-selector";
@@ -125,6 +125,18 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(true);
   
+  // Log initial value to debug draft loading
+  useEffect(() => {
+    if (initialValue === undefined) {
+      console.log("EditorWrapper: initialValue is undefined - will use empty document");
+    } else if (initialValue === null) {
+      console.log("EditorWrapper: initialValue is null - will use empty document");
+    } else {
+      console.log("EditorWrapper: received initialValue", 
+        typeof initialValue === 'object' ? 'object' : initialValue);
+    }
+  }, [initialValue]);
+  
   // Use our custom hook for editor state management
   const { 
     initialContent, 
@@ -132,12 +144,24 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
     wordCount, 
     handleUpdate 
   } = useEditorState({
-    onChange,
-    initialValue,
+    onChange: (content) => {
+      // Pass the content to the parent component for draft saving
+      if (onChange) {
+        onChange(content);
+        console.log("Editor content changed, reporting to parent");
+      }
+    },
+    // Only pass initialValue if it's defined and not null
+    initialValue: initialValue || undefined,
     highlightCodeFn: highlightCodeblocks
   });
 
-  if (!initialContent) return null;
+  // Show loading indicator while waiting for content
+  if (!initialContent) {
+    return <div className="min-h-[500px] w-full border-muted bg-background flex items-center justify-center">
+      <p className="text-muted-foreground">Loading editor...</p>
+    </div>;
+  }
 
   return (
     <div className="relative w-full">
