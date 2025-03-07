@@ -253,14 +253,6 @@ export default function ArticleCreationRoute() {
           <Button 
             size="sm" 
             variant="outline" 
-            onClick={handleSaveDraft}
-            className="flex items-center"
-          >
-            Save Draft
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline" 
             onClick={resetForm}
             className="flex items-center"
           >
