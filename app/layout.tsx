@@ -5,6 +5,7 @@ import "./prosemirror.css";
 
 import { ThemeProvider } from "./components/dashboard/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { ServiceWorkerRegistration } from "./components/ServiceWorkerRegistration";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,6 +37,7 @@ export default function RootLayout({
         >
           {children}
           <Toaster richColors closeButton />
+          <ServiceWorkerRegistration />
         </ThemeProvider>
       </body>
     </html>
