@@ -23,7 +23,7 @@ import { parseWithZod } from "@conform-to/zod";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { CreatePostAction, EditPostActions } from "@/app/actions";
 import slugify from "react-slugify";
-import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages } from "../contentEditor";
+import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages, SeoRecommendations } from "../contentEditor";
 
 interface iAppProps {
   data: {
@@ -68,6 +68,19 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+
+  // Add a useEffect to show toast messages when the article is successfully saved
+  useEffect(() => {
+    if (lastResult) {
+      // Check if it has a status property
+      const result = lastResult as any; // Type assertion for safer access
+      if (result.status === "success") {
+        toast.success("Article updated successfully!");
+      } else if (result.status === "error") {
+        toast.error(result.message || "Failed to update article");
+      }
+    }
+  }, [lastResult]);
 
   function handleSlugGeneration() {
     const titleInput = title;
@@ -221,6 +234,13 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <p className="text-red-500 text-sm">
               {fields.articleContent.errors}
             </p>
+            
+            {/* SEO Recommendations */}
+            <SeoRecommendations 
+              content={value} 
+              title={title} 
+              smallDescription={smallDescription} 
+            />
           </div>
 
           <SubmitButton text="Edit Article" />
