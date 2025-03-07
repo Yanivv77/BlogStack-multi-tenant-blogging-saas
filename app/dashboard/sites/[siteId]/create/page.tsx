@@ -148,52 +148,71 @@ export default function ArticleCreationRoute() {
     };
   }, [title, slug, smallDescription, imageUrl, value, siteId, isNewArticle]);
 
-  // Reset form to create a new article
-  const resetForm = () => {
-    // Clear form fields
-    setTitle("");
-    setSlugValue("");
-    setSmallDescription("");
-    setImageUrl(null);
-    setValue(undefined);
-    
-    // Clear all storage
-    clearUploadedImages();
+  // Simplify draft handling with a single function to clear all drafts
+  const clearAllDrafts = () => {
     clearFormDraft();
     clearEditorStorage();
-    
-    // Mark as new article
-    setIsNewArticle(true);
-    
-    toast.success("Form cleared for new article");
+    clearUploadedImages();
+    console.log("All drafts cleared");
   };
 
-  // Manual save button
-  const handleSaveDraft = () => {
-    saveDraftImmediately();
-    setIsNewArticle(false); // Mark as not a new article after explicitly saving
-    toast.success("Draft saved successfully");
+  // Type guard for custom action result
+  const isCustomActionResult = (result: any): result is { status: string; errors: string[] } => {
+    return result && typeof result.status === 'string' && Array.isArray(result.errors);
   };
 
   // Handle form submission success
   useEffect(() => {
     if (lastResult) {
-      try {
-        const resultString = JSON.stringify(lastResult);
-        if (resultString.includes('success')) {
-          clearFormDraft();
-          clearUploadedImages();
-          clearEditorStorage();
-          toast.success("Article submitted successfully");
-        }
-      } catch (e) {
-        console.error('Error processing form result:', e);
+      if (isCustomActionResult(lastResult) && lastResult.status === "success") {
+        clearAllDrafts();
+        toast.success("Article created successfully");
+        // Redirect to the site page
+        router.push(`/dashboard/sites/${siteId}`);
+      } else if (isCustomActionResult(lastResult) && lastResult.status === "error" && lastResult.errors.length > 0) {
+        // Display error messages
+        lastResult.errors.forEach((error: string) => toast.error(error));
+      } else if (lastResult.status === "success") {
+        // Handle standard submission result success
+        clearAllDrafts();
+        toast.success("Article created successfully");
+        router.push(`/dashboard/sites/${siteId}`);
       }
     }
-  }, [lastResult]);
+  }, [lastResult, siteId, router]);
+
+  // Reset form to create a new article
+  const resetForm = () => {
+    setTitle("");
+    setSlugValue("");
+    setSmallDescription("");
+    setImageUrl(null);
+    setValue(undefined);
+    clearAllDrafts();
+    // Set as new article if we're using that state
+    if (typeof setIsNewArticle === 'function') {
+      setIsNewArticle(true);
+    }
+    toast.success("Form cleared for new article");
+  };
+
+  // Manual save button with simplified logic
+  const handleSaveDraft = () => {
+    if (title || slug || smallDescription || imageUrl || value) {
+      saveDraftImmediately();
+      // Set as not a new article if we're using that state
+      if (typeof setIsNewArticle === 'function') {
+        setIsNewArticle(false);
+      }
+      toast.success("Draft saved successfully");
+    } else {
+      toast.info("Nothing to save - add some content first");
+    }
+  };
 
   const [form, fields] = useForm({
-    lastResult,
+    // Cast lastResult to any to avoid type issues with the custom action result
+    lastResult: lastResult as any,
 
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: PostSchema });
@@ -222,7 +241,7 @@ export default function ArticleCreationRoute() {
     <>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <Button size="icon" variant="outline" className="mr-3" asChild>
+          <Button asChild size="icon" variant="outline" className="mr-3">
             <Link href={`/dashboard/sites/${siteId}`}>
               <ArrowLeft className="size-4" />
             </Link>

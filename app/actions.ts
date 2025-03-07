@@ -52,7 +52,7 @@ export async function CreatePostAction(prevState: any, formData: FormData) {
   const submission = await parseWithZod(formData, {
     schema: PostCreationSchema({
       async isSlugUnique() {
-        const existingSlug = await prisma.post.findUnique({
+        const existingSlug = await prisma.post.findFirst({
           where: {
             slug: formData.get("slug") as string,
           },
@@ -67,20 +67,43 @@ export async function CreatePostAction(prevState: any, formData: FormData) {
     return submission.reply();
   }
 
-  const data = await prisma.post.create({
-    data: {
-      title: submission.value.title,
-      smallDescription: submission.value.smallDescription,
-      slug: submission.value.slug,
-      articleContent: JSON.parse(submission.value.articleContent),
-      postCoverImage: submission.value.postCoverImage || null,
-      contentImages: submission.value.contentImages ? JSON.parse(submission.value.contentImages) : null,
-      userId: user.id,
-      siteId: formData.get("siteId") as string,
-    },
-  });
+  try {
+    // Process content images
+    let contentImages;
+    if (submission.value.contentImages) {
+      try {
+        contentImages = JSON.parse(submission.value.contentImages);
+      } catch (e) {
+        contentImages = []; // Default to empty array if parsing fails
+      }
+    }
 
-  return redirect(`/dashboard/sites/${formData.get("siteId")}`);
+    // Get siteId from formData since it's not part of the schema
+    const siteId = formData.get("siteId") as string;
+    if (!siteId) {
+      return { status: "error", errors: ["Site ID is required"] };
+    }
+
+    // Create post in database
+    await prisma.post.create({
+      data: {
+        title: submission.value.title,
+        smallDescription: submission.value.smallDescription,
+        slug: submission.value.slug,
+        articleContent: JSON.parse(submission.value.articleContent),
+        postCoverImage: submission.value.postCoverImage || null,
+        contentImages: contentImages || [],
+        siteId: siteId,
+        userId: user.id,
+      },
+    });
+
+    // Return success status for client-side handling
+    return { status: "success", errors: [] };
+  } catch (error) {
+    console.error("Error creating article:", error);
+    return { status: "error", errors: ["Failed to create article. Please try again."] };
+  }
 }
 
 export async function EditPostActions(prevState: any, formData: FormData) {
