@@ -5,27 +5,14 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
-import { memo } from "react";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { SocialTabProps } from "../utils/types";
 
-interface FormValues {
-  name: string;
-  subdirectory: string;
-  description: string;
-  email: string;
-  githubUrl: string;
-  linkedinUrl: string;
-  portfolioUrl: string;
-}
-
-interface SocialTabProps {
-  fields: any;
-  goToPrevTab: () => void;
-  formValues: FormValues;
-  handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-}
-
-export const SocialTab = memo(function SocialTab({ 
+/**
+ * SocialTab component for collecting social media links
+ * Final step in the site creation process
+ */
+export function SocialTab({ 
   fields, 
   goToPrevTab, 
   formValues, 
@@ -65,7 +52,7 @@ export const SocialTab = memo(function SocialTab({
                 autoComplete="email"
                 aria-describedby="email-hint email-error"
               />
-              {fields.email.errors && (
+              {fields.email?.errors && (
                 <div id="email-error" className="text-destructive text-sm">
                   {fields.email.errors}
                 </div>
@@ -93,7 +80,7 @@ export const SocialTab = memo(function SocialTab({
                 autoComplete="url"
                 aria-describedby="github-hint github-error"
               />
-              {fields.githubUrl.errors && (
+              {fields.githubUrl?.errors && (
                 <div id="github-error" className="text-destructive text-sm">
                   {fields.githubUrl.errors}
                 </div>
@@ -121,7 +108,7 @@ export const SocialTab = memo(function SocialTab({
                 autoComplete="url"
                 aria-describedby="linkedin-hint linkedin-error"
               />
-              {fields.linkedinUrl.errors && (
+              {fields.linkedinUrl?.errors && (
                 <div id="linkedin-error" className="text-destructive text-sm">
                   {fields.linkedinUrl.errors}
                 </div>
@@ -149,7 +136,7 @@ export const SocialTab = memo(function SocialTab({
                 autoComplete="url"
                 aria-describedby="portfolio-hint portfolio-error"
               />
-              {fields.portfolioUrl.errors && (
+              {fields.portfolioUrl?.errors && (
                 <div id="portfolio-error" className="text-destructive text-sm">
                   {fields.portfolioUrl.errors}
                 </div>
@@ -169,6 +156,7 @@ export const SocialTab = memo(function SocialTab({
           id="social-back-button"
           className="px-4"
           aria-label="Go back to branding tab"
+          data-testid="social-back-button"
         >
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
@@ -177,8 +165,9 @@ export const SocialTab = memo(function SocialTab({
           text="Create Site" 
           className="px-6"
           variant="default"
+          data-testid="create-site-button"
         />
       </CardFooter>
     </>
   );
-}); 
+} 

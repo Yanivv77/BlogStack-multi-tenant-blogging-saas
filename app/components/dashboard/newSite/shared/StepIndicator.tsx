@@ -1,21 +1,19 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { memo } from "react";
+import { StepIndicatorProps } from "../utils/types";
 
-interface StepIndicatorProps {
-  steps: string[];
-  activeIndex: number;
-  handleTabChange: (value: string) => void;
-}
-
-export const StepIndicator = memo(function StepIndicator({ 
+/**
+ * StepIndicator component for multi-step forms
+ * Shows the current step and progress through the form
+ */
+export function StepIndicator({ 
   steps, 
   activeIndex, 
   handleTabChange 
 }: StepIndicatorProps) {
   return (
-    <div className="bg-background border-b px-8 pt-8 pb-6">
+    <div className="bg-background border-b px-8 pt-8 pb-6" data-testid="step-indicator">
       <div className="max-w-md mx-auto">
         {/* Container for steps and progress bar */}
         <div className="relative">
@@ -43,7 +41,9 @@ export const StepIndicator = memo(function StepIndicator({
                 <div key={step} className="flex flex-col items-center">
                   {/* Step Circle */}
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      
                       // Only allow going back or to current step directly
                       // Future steps require validation via Next button
                       if (!isFuture) {
@@ -59,6 +59,8 @@ export const StepIndicator = memo(function StepIndicator({
                     )}
                     aria-label={`Go to ${step} step`}
                     disabled={isFuture}
+                    type="button" // Explicitly set type to button to prevent form submission
+                    data-testid={`step-button-${step}`}
                   >
                     {isCompleted ? (
                       <svg 
@@ -99,4 +101,4 @@ export const StepIndicator = memo(function StepIndicator({
       </div>
     </div>
   );
-}); 
+} 

@@ -71,65 +71,122 @@ async function verifyUserOwnsSite(siteId: string, userId: string) {
  * Creates a new site for the authenticated user
  */
 export async function CreateSiteAction(_prevState: any, formData: FormData) {
+  console.log("CreateSiteAction called with formData:", Object.fromEntries(formData.entries()));
+  
   const user = await getAuthenticatedUser();
   if (!user) {
-    return redirect("/api/auth/login");
+    console.log("No authenticated user found");
+    return { error: { _form: ["You must be logged in to create a site"] } };
   }
+  console.log("Authenticated user:", user.id);
 
-  const submission = await parseWithZod(formData, {
-    schema: SiteCreationSchema({
-      async isSubdirectoryUnique() {
-        const subdirectory = formData.get("subdirectory") as string;
-        const existingSite = await prisma.site.findFirst({
-          where: { subdirectory },
-        });
-        return !existingSite;
-      },
-    }),
-    async: true,
-  });
+  try {
+    // Extract form data manually to ensure proper types
+    const name = formData.get("name") as string;
+    const description = formData.get("description") as string;
+    const subdirectory = formData.get("subdirectory") as string;
+    const language = formData.get("language") as string || "English";
+    const email = formData.get("email") as string;
+    const githubUrl = formData.get("githubUrl") as string;
+    const linkedinUrl = formData.get("linkedinUrl") as string;
+    const portfolioUrl = formData.get("portfolioUrl") as string;
+    const siteImageCover = formData.get("siteImageCover") as string;
+    const logoImage = formData.get("logoImage") as string;
+    
+    console.log("Extracted form values:", {
+      name,
+      description,
+      subdirectory,
+      language,
+      email,
+      githubUrl,
+      linkedinUrl,
+      portfolioUrl,
+      siteImageCover,
+      logoImage
+    });
+    
+    // Validate required fields
+    const errors: Record<string, string[]> = {};
+    
+    if (!name || name.trim() === "") {
+      errors.name = ["Site name is required"];
+    }
+    
+    if (!description || description.trim() === "") {
+      errors.description = ["Description is required"];
+    }
+    
+    if (!subdirectory || subdirectory.trim() === "") {
+      errors.subdirectory = ["Subdirectory is required"];
+    } else if (!/^[a-zA-Z0-9-]+$/.test(subdirectory)) {
+      errors.subdirectory = ["Subdirectory can only contain letters, numbers, and hyphens"];
+    } else {
+      // Check if subdirectory is unique
+      const existingSite = await prisma.site.findFirst({
+        where: { subdirectory },
+      });
+      
+      if (existingSite) {
+        errors.subdirectory = ["This subdirectory is already taken"];
+      }
+    }
+    
+    // Return validation errors if any
+    if (Object.keys(errors).length > 0) {
+      console.log("Validation errors:", errors);
+      return { error: errors };
+    }
 
-  if (submission.status !== "success") {
-    return submission.reply();
-  }
-
-  const {
-    name,
-    description,
-    subdirectory,
-    siteImageCover,
-    logoImage,
-    email,
-    githubUrl,
-    linkedinUrl,
-    portfolioUrl,
-    language,
-  } = submission.value;
-
-  // Create the site
-  await prisma.site.create({
-    data: {
-      // Required fields
+    console.log("Creating site with data:", {
       name,
       description,
       subdirectory,
       userId: user.id,
-
-      // Optional fields: always include them, null if empty
       siteImageCover: toNullable(siteImageCover),
       logoImage: toNullable(logoImage),
       email: toNullable(email),
       githubUrl: toNullable(githubUrl),
       linkedinUrl: toNullable(linkedinUrl),
       portfolioUrl: toNullable(portfolioUrl),
-
-      // Language is an enum; use a default if none is provided
       language: language || "English",
-    } as any,
-  });
+    });
 
-  // Redirect to the user's sites
-  return redirect("/dashboard/sites");
+    // Create the site
+    const newSite = await prisma.site.create({
+      data: {
+        // Required fields
+        name,
+        description,
+        subdirectory,
+        userId: user.id,
+
+        // Optional fields: always include them, null if empty
+        siteImageCover: toNullable(siteImageCover),
+        logoImage: toNullable(logoImage),
+        email: toNullable(email),
+        githubUrl: toNullable(githubUrl),
+        linkedinUrl: toNullable(linkedinUrl),
+        portfolioUrl: toNullable(portfolioUrl),
+
+        // Language is an enum; use a default if none is provided
+        language: language || "English",
+      } as any,
+    });
+
+    console.log("Site created successfully:", newSite);
+    
+    // Return success with redirect URL instead of using redirect()
+    return { success: true, redirectUrl: "/dashboard/sites" };
+  } catch (error) {
+    console.error("Error creating site:", error);
+    
+    // Convert to the format expected by the form
+    const errorObj: Record<string, string[]> = {};
+    errorObj._form = [`Failed to create site: ${error instanceof Error ? error.message : 'Unknown error'}`];
+    
+    return { error: errorObj };
+  }
 }
 
 /**

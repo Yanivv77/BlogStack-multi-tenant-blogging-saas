@@ -1,7 +1,7 @@
 "use client";
 
 import { CreatePostAction } from "@/app/actions";
-import { UploadDropzone } from "@/app/utils/UploadthingComponents";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +50,7 @@ export default function ArticleCreationRoute() {
   const [lastResult, action] = useActionState(CreatePostAction, undefined);
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [isNewArticle, setIsNewArticle] = useState(searchParams.get('new') === 'true');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   
   // Handle the 'new' parameter to create an empty article, but only on first load
   useEffect(() => {
@@ -237,6 +238,9 @@ export default function ArticleCreationRoute() {
     return toast.success("Slug has been created");
   }
 
+  // Get optimized config
+  const optimizedConfig = getOptimizedDropzoneConfig();
+
   return (
     <>
       <div className="flex items-center justify-between mb-4">
@@ -310,24 +314,37 @@ export default function ArticleCreationRoute() {
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <UploadDropzone
-                    onClientUploadComplete={(res: any) => {
-                      console.log("Upload response:", res[0]);
-                      const imageUrl = res[0].ufsUrl;
-                      setImageUrl(imageUrl);
-                      toast.success("Image uploaded successfully!");
-                    }}
-                    endpoint="imageUploader"
-                    onUploadError={(error: Error) => {
-                      toast.error(`ERROR! ${error.message}`);
-                    }}
-                    config={{ mode: "auto" }}
-                    appearance={{
-                      button: "hidden",
-                      allowedContent: "hidden",
-                      container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px]"
-                    }}
-                  />
+                  {isUploadingImage ? (
+                    <div className="border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px] flex flex-col items-center justify-center h-[200px]">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <p className="text-sm text-muted-foreground">Uploading image...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      onUploadBegin={() => {
+                        setIsUploadingImage(true);
+                      }}
+                      onClientUploadComplete={(res: any) => {
+                        setIsUploadingImage(false);
+                        console.log("Upload response:", res[0]);
+                        const imageUrl = res[0].ufsUrl;
+                        setImageUrl(imageUrl);
+                        toast.success("Image uploaded successfully!");
+                      }}
+                      onUploadError={(error: Error) => {
+                        setIsUploadingImage(false);
+                        toast.error(`Upload failed: ${error.message}`);
+                      }}
+                      {...optimizedConfig}
+                      appearance={{
+                        ...optimizedConfig.appearance,
+                        container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px] h-[200px] flex flex-col items-center justify-center"
+                      }}
+                    />
+                  )}
                 </div>
               )}
               <p className="text-red-500 text-sm">{fields.postCoverImage.errors}</p>

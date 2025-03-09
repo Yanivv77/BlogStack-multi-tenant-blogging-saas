@@ -1,25 +1,19 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { UploadDropzone } from "@/app/utils/UploadthingComponents";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
 import { toast } from "sonner";
-import { memo } from "react";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { BrandingTabProps } from "../utils/types";
 
-interface BrandingTabProps {
-  fields: any;
-  siteImageCover: string;
-  setSiteImageCover: (url: string) => void;
-  logoImage: string;
-  setLogoImage: (url: string) => void;
-  goToNextTab: () => void;
-  goToPrevTab: () => void;
-}
-
-// Using memo to prevent unnecessary re-renders
-export const BrandingTab = memo(function BrandingTab({ 
+/**
+ * BrandingTab component for uploading site images
+ * Second step in the site creation process
+ */
+export function BrandingTab({ 
   fields, 
   siteImageCover, 
   setSiteImageCover, 
@@ -28,16 +22,29 @@ export const BrandingTab = memo(function BrandingTab({
   goToNextTab, 
   goToPrevTab 
 }: BrandingTabProps) {
-  // Handler for cover image upload
+  // Add loading states for better UX
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  
+  // Get optimized config
+  const optimizedConfig = getOptimizedDropzoneConfig();
+  
+  /**
+   * Handler for cover image upload
+   */
   const handleCoverImageUpload = (imageUrl: string) => {
+    setIsUploadingCover(false);
     setSiteImageCover(imageUrl);
     toast.success("Cover image uploaded successfully!");
   };
   
-  // Handler for logo image upload
+  /**
+   * Handler for logo image upload
+   */
   const handleLogoImageUpload = (imageUrl: string) => {
+    setIsUploadingLogo(false);
     setLogoImage(imageUrl);
-    toast.success("Image uploaded successfully!");
+    toast.success("Logo uploaded successfully!");
   };
   
   return (
@@ -78,22 +85,34 @@ export const BrandingTab = memo(function BrandingTab({
                 </div>
               ) : (
                 <div className="flex justify-center w-full">
-                  <UploadDropzone
-                    endpoint="imageUploader"
-                    onClientUploadComplete={(res: any) => {
-                      const imageUrl = res[0].ufsUrl;
-                      handleCoverImageUpload(imageUrl);
-                    }}
-                    onUploadError={(error: Error) => {
-                      toast.error(`ERROR! ${error.message}`);
-                    }}
-                    config={{ mode: "auto" }}
-                    appearance={{
-                      button: "hidden",
-                      allowedContent: "hidden",
-                      container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center"
-                    }}
-                  />
+                  {isUploadingCover ? (
+                    <div className="border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <p className="text-sm text-muted-foreground">Uploading image...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      onUploadBegin={() => {
+                        setIsUploadingCover(true);
+                      }}
+                      onClientUploadComplete={(res: any) => {
+                        const imageUrl = res[0].ufsUrl;
+                        handleCoverImageUpload(imageUrl);
+                      }}
+                      onUploadError={(error: Error) => {
+                        setIsUploadingCover(false);
+                        toast.error(`Upload failed: ${error.message}`);
+                      }}
+                      {...optimizedConfig}
+                      appearance={{
+                        ...optimizedConfig.appearance,
+                        container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center"
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -137,22 +156,34 @@ export const BrandingTab = memo(function BrandingTab({
                 </div>
               ) : (
                 <div className="flex justify-center">
-                  <UploadDropzone
-                    endpoint="imageUploader"
-                    onClientUploadComplete={(res: any) => {
-                      const imageUrl = res[0].ufsUrl;
-                      handleLogoImageUpload(imageUrl);
-                    }}
-                    onUploadError={(error: Error) => {
-                      toast.error(`ERROR! ${error.message}`);
-                    }}
-                    config={{ mode: "auto" }}
-                    appearance={{
-                      button: "hidden",
-                      allowedContent: "hidden",
-                      container: "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center"
-                    }}
-                  />
+                  {isUploadingLogo ? (
+                    <div className="border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <p className="text-sm text-muted-foreground">Uploading image...</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <UploadDropzone
+                      endpoint="imageUploader"
+                      onUploadBegin={() => {
+                        setIsUploadingLogo(true);
+                      }}
+                      onClientUploadComplete={(res: any) => {
+                        const imageUrl = res[0].ufsUrl;
+                        handleLogoImageUpload(imageUrl);
+                      }}
+                      onUploadError={(error: Error) => {
+                        setIsUploadingLogo(false);
+                        toast.error(`Upload failed: ${error.message}`);
+                      }}
+                      {...optimizedConfig}
+                      appearance={{
+                        ...optimizedConfig.appearance,
+                        container: "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center"
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -181,20 +212,22 @@ export const BrandingTab = memo(function BrandingTab({
           id="branding-back-button"
           className="px-4"
           aria-label="Go back to basics tab"
+          data-testid="branding-back-button"
         >
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
         <Button 
           type="button" 
-          onClick={goToNextTab} 
+          onClick={goToNextTab}
           className="gap-2 px-6"
           id="branding-next-button"
           aria-label="Continue to social tab"
+          data-testid="branding-continue-button"
         >
           Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/>
         </Button>
       </CardFooter>
     </>
   );
-}); 
+} 

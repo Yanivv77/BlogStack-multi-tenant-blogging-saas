@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
@@ -8,28 +8,37 @@ import { CreateSiteAction } from "@/app/actions";
 import { SiteCreationSchema } from "@/app/utils/zodSchemas";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { StepIndicator, BasicsTab, BrandingTab, SocialTab } from ".";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
-interface FormValues {
-  name: string;
-  subdirectory: string;
-  description: string;
-  language: string;
-  email: string;
-  githubUrl: string;
-  linkedinUrl: string;
-  portfolioUrl: string;
-}
+// Import types and utilities
+import { SiteFormValues, StepName } from "./utils/types";
+import { addHiddenInput } from "./utils/hooks";
 
+// Import components
+import { StepIndicator } from "./shared/StepIndicator";
+import { BasicsTab } from "./tabs/BasicsTab";
+import { BrandingTab } from "./tabs/BrandingTab";
+import { SocialTab } from "./tabs/SocialTab";
+
+/**
+ * NewSiteForm component
+ * Multi-step form for creating a new site
+ */
 export function NewSiteForm() {
-  const [lastResult, action] = useActionState(CreateSiteAction, undefined);
+  const router = useRouter();
+  const [lastResult, formAction] = useActionState(CreateSiteAction, undefined);
   const [siteImageCover, setSiteImageCover] = useState<string>("");
   const [logoImage, setLogoImage] = useState<string>("");
-  const [activeTab, setActiveTab] = useState("basics");
+  const [activeTab, setActiveTab] = useState<StepName>("basics");
+  
+  // Define steps for the form - memoize to prevent recreation
+  const steps: StepName[] = useMemo(() => ["basics", "branding", "social"], []);
   
   // State to track form values
-  const [formValues, setFormValues] = useState<FormValues>({
+  const [formValues, setFormValues] = useState<SiteFormValues>({
     name: "",
     subdirectory: "",
     description: "",
@@ -42,93 +51,87 @@ export function NewSiteForm() {
   
   const [form, fields] = useForm({
     id: "create-site-form",
-    lastResult,
-    shouldValidate: "onBlur",
+    lastResult: lastResult as any,
+    shouldValidate: "onSubmit",
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SiteCreationSchema() });
     },
   });
   
-  // Update form values when input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormValues(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  
-  // Initialize form values from DOM only once when the component mounts
+  // Handle form submission result
   useEffect(() => {
-    const formElement = document.getElementById(form.id) as HTMLFormElement;
-    if (formElement) {
-      const initialValues: Partial<FormValues> = {};
-      let hasChanges = false;
-      
-      // Collect initial values from form fields
-      const inputs = formElement.querySelectorAll('input, textarea');
-      inputs.forEach((element) => {
-        const input = element as HTMLInputElement | HTMLTextAreaElement;
-        if (input.name && Object.keys(formValues).includes(input.name) && input.value) {
-          const key = input.name as keyof FormValues;
-          initialValues[key] = input.value;
-          hasChanges = true;
-        }
-      });
-      
-      // Only update state if we found values
-      if (hasChanges) {
-        setFormValues(prev => ({
-          ...prev,
-          ...initialValues
-        }));
-      }
-    }
-    // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!lastResult) return;
+    
+    if (lastResult.success && lastResult.redirectUrl) {
+      toast.success("Site created successfully!");
+      router.push(lastResult.redirectUrl);
+    } 
+  }, [lastResult, router]);
+  
+  /**
+   * Update form values when input changes
+   */
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // Prevent any default behaviors
+    e.stopPropagation();
+    
+    const { name, value } = e.target;
+    setFormValues(prev => ({ ...prev, [name]: value }));
   }, []);
-
-  const handleTabChange = (value: string) => {
-    // Only allow tab change if validation passes for current tab
-    if (value !== activeTab) {
-      if (activeTab === "basics" && value !== "basics") {
-        if (!validateBasicsTab()) {
-          return;
-        }
-      }
-    }
-    setActiveTab(value);
-  };
-
-  const validateBasicsTab = () => {
+  
+  /**
+   * Set the active tab
+   */
+  const setTabExplicitly = useCallback((tabName: StepName) => {
+    setActiveTab(tabName);
+  }, []);
+  
+  /**
+   * Validate basics tab fields
+   */
+  const validateBasicsTab = useCallback(() => {
     let isValid = true;
+    const errors: string[] = [];
     
-    if (!formValues.name || formValues.name.trim() === "") {
+    if (!formValues.name?.trim()) {
       isValid = false;
+      errors.push("Site name is required");
     }
     
-    if (!formValues.subdirectory || formValues.subdirectory.trim() === "") {
+    if (!formValues.subdirectory?.trim()) {
       isValid = false;
+      errors.push("Subdirectory is required");
     }
     
     // Check for spaces in subdirectory
-    if (formValues.subdirectory.includes(" ")) {
+    if (formValues.subdirectory?.includes(" ")) {
       isValid = false;
+      errors.push("Subdirectory cannot contain spaces");
     }
     
     // Check for valid characters in subdirectory
-    if (!/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
+    if (formValues.subdirectory && !/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
       isValid = false;
+      errors.push("Subdirectory can only contain letters, numbers, and hyphens");
     }
     
-    if (!formValues.description || formValues.description.trim() === "") {
+    if (!formValues.description?.trim()) {
       isValid = false;
+      errors.push("Description is required");
     }
     
     return isValid;
-  };
+  }, [formValues.name, formValues.subdirectory, formValues.description]);
+  
+  /**
+   * Navigate to next tab
+   */
+  const goToNextTab = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
 
-  const goToNextTab = () => {
     if (activeTab === "basics") {
       if (validateBasicsTab()) {
         setActiveTab("branding");
@@ -136,20 +139,30 @@ export function NewSiteForm() {
     } else if (activeTab === "branding") {
       setActiveTab("social");
     }
-  };
-
-  const goToPrevTab = () => {
+  }, [activeTab, validateBasicsTab]);
+  
+  /**
+   * Navigate to previous tab
+   */
+  const goToPrevTab = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
     if (activeTab === "social") setActiveTab("branding");
     else if (activeTab === "branding") setActiveTab("basics");
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    // Only allow form submission from the social tab
+  }, [activeTab]);
+  
+  /**
+   * Handle form submission
+   */
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only proceed with submission from the social tab using explicit button clicks
     if (activeTab !== "social") {
-      e.preventDefault();
-      e.stopPropagation();
-      
       // Navigate to the appropriate tab instead
       if (activeTab === "basics") {
         if (validateBasicsTab()) {
@@ -158,23 +171,45 @@ export function NewSiteForm() {
       } else if (activeTab === "branding") {
         setActiveTab("social");
       }
+    } else {
+      // When on the social tab, prepare the form for submission
+      const formElement = e.currentTarget;
+      
+      // Add hidden fields for images if they exist
+      if (siteImageCover) {
+        addHiddenInput(formElement, 'siteImageCover', siteImageCover);
+      }
+      
+      if (logoImage) {
+        addHiddenInput(formElement, 'logoImage', logoImage);
+      }
+      
+      // Add all form values as hidden fields to ensure they're included
+      Object.entries(formValues).forEach(([key, value]) => {
+        if (value !== undefined) {
+          addHiddenInput(formElement, key, value);
+        }
+      });
     }
-  };
+  }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues]);
 
-  const steps = ["basics", "branding", "social"];
-  const activeIndex = steps.findIndex(step => step === activeTab);
+  // Memoize the active index calculation
+  const activeIndex = useMemo(() => 
+    steps.findIndex(step => step === activeTab), 
+    [steps, activeTab]
+  );
 
   return (
     <Card className="border shadow-sm overflow-hidden bg-card">
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs value={activeTab} className="w-full">
         <StepIndicator 
           steps={steps} 
           activeIndex={activeIndex} 
-          handleTabChange={handleTabChange} 
+          handleTabChange={setTabExplicitly} 
         />
         
         <form 
-          action={action} 
+          action={formAction}
           id={form.id} 
           className="space-y-6"
           onSubmit={handleSubmit}
