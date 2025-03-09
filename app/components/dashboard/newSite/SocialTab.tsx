@@ -69,7 +69,7 @@ export const SocialTab = memo(function SocialTab({
                 </div>
               )}
               <div className="text-[0.8rem] text-muted-foreground">
-                This email will be displayed as a contact option on your site (optional)
+                This email will be displayed as a contact option on your site
               </div>
             </div>
 
