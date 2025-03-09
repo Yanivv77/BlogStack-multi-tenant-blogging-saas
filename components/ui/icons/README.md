@@ -59,6 +59,7 @@ import { SimpleIcon } from '@/components/ui/icons/SimpleIcon';
 - `image` - Image/photo icon
 - `x` - Close/X icon
 - `arrowright` - Right arrow icon
+- `arrowleft` - Left arrow icon
 - `briefcase` - Briefcase/work icon
 
 ### Brand Icons

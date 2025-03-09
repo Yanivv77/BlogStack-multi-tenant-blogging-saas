@@ -167,13 +167,16 @@ export const SocialTab = memo(function SocialTab({
           variant="outline" 
           onClick={goToPrevTab}
           id="social-back-button"
+          className="px-4"
           aria-label="Go back to branding tab"
         >
+          <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
         <SubmitButton 
           text="Create Site" 
           className="px-6"
+          variant="default"
         />
       </CardFooter>
     </>

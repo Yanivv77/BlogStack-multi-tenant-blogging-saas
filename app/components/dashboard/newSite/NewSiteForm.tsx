@@ -15,6 +15,7 @@ interface FormValues {
   name: string;
   subdirectory: string;
   description: string;
+  language: string;
   email: string;
   githubUrl: string;
   linkedinUrl: string;
@@ -32,6 +33,7 @@ export function NewSiteForm() {
     name: "",
     subdirectory: "",
     description: "",
+    language: "English", // Default to English
     email: "",
     githubUrl: "",
     linkedinUrl: "",

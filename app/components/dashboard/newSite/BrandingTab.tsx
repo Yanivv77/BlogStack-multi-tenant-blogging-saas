@@ -179,8 +179,10 @@ export const BrandingTab = memo(function BrandingTab({
           variant="outline" 
           onClick={goToPrevTab}
           id="branding-back-button"
+          className="px-4"
           aria-label="Go back to basics tab"
         >
+          <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
         <Button 

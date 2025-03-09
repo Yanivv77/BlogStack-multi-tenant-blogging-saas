@@ -12,6 +12,7 @@ interface FormValues {
   name: string;
   subdirectory: string;
   description: string;
+  language: string;
   email?: string;
   githubUrl?: string;
   linkedinUrl?: string;
@@ -35,6 +36,7 @@ export const BasicsTab = memo(function BasicsTab({
     name?: string;
     subdirectory?: string;
     description?: string;
+    language?: string;
   }>({});
 
   // Handle subdirectory validation on input
@@ -81,6 +83,7 @@ export const BasicsTab = memo(function BasicsTab({
       name?: string;
       subdirectory?: string;
       description?: string;
+      language?: string;
     } = {};
     
     // Validate name
@@ -100,6 +103,13 @@ export const BasicsTab = memo(function BasicsTab({
     // Validate description
     if (!formValues.description || formValues.description.trim() === "") {
       errors.description = "Description is required";
+    }
+    
+    // Validate language
+    if (!formValues.language) {
+      errors.language = "Language is required";
+    } else if (!["English", "Hebrew"].includes(formValues.language)) {
+      errors.language = "Please select a valid language";
     }
     
     // Update error state
@@ -152,7 +162,7 @@ export const BasicsTab = memo(function BasicsTab({
                 handleInputChange(e);
               }}
               aria-describedby="name-hint name-error"
-              autoComplete="organization"
+              autoComplete="off"
             />
             <div id="name-hint" className="text-[0.8rem] text-muted-foreground">
               Choose a memorable name for your site
@@ -181,7 +191,7 @@ export const BasicsTab = memo(function BasicsTab({
                 required
                 value={formValues.subdirectory}
                 onChange={handleSubdirectoryChange}
-                autoComplete="url"
+                autoComplete="off"
                 spellCheck="false"
                 aria-describedby="subdirectory-hint subdirectory-error"
               />
@@ -214,6 +224,7 @@ export const BasicsTab = memo(function BasicsTab({
               }}
               aria-describedby="description-hint description-error"
               autoComplete="off"
+              spellCheck="false"
             />
             <div id="description-hint" className="text-[0.8rem] text-muted-foreground">
               A brief description of your site (max 150 characters)
@@ -224,9 +235,39 @@ export const BasicsTab = memo(function BasicsTab({
               </div>
             )}
           </div>
+
+          {/* Language Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="site-language" className="text-base">
+              Language
+            </Label>
+            <select
+              id="site-language"
+              name="language"
+              className="flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={formValues.language || "English"}
+              onChange={(e) => {
+                setLocalErrors(prev => ({ ...prev, language: undefined }));
+                handleInputChange(e as unknown as React.ChangeEvent<HTMLInputElement>);
+              }}
+              aria-describedby="language-hint language-error"
+            >
+              <option value="English">English</option>
+              <option value="Hebrew">Hebrew</option>
+            </select>
+            <div id="language-hint" className="text-[0.8rem] text-muted-foreground">
+              Select the primary language for your site
+            </div>
+            {(fields.language?.errors || localErrors.language) && (
+              <div id="language-error" className="text-destructive text-sm">
+                {localErrors.language || fields.language?.errors}
+              </div>
+            )}
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end pb-8 px-6 sm:px-8 pt-2">
+      <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
+        <div></div>
         <Button 
           type="button" 
           onClick={handleContinue}
