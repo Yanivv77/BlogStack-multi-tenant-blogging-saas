@@ -23,22 +23,55 @@ model User {
   customerId   String? @unique
 
   createdAt DateTime @default(now())
+  deletedAt DateTime? 
 
   Site  Site[]
   posts Post[]
+  
+  @@index([email]) // Faster email lookup
+}
+
+// Language options enum
+enum Language {
+  English
+  Hebrew
 }
 
 model Site {
-  id           String   @id @default(uuid())
-  name         String
-  description  String
-  subdirectory String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String   @id @default(uuid())
+  name           String
+  description    String
+  subdirectory   String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  deletedAt      DateTime? 
   siteImageCover String?
-  User     User?   @relation(fields: [userId], references: [id])
-  userId   String?
-  posts    Post[]
+  logoImage      String? // Personal brand logo
+  User           User?    @relation(fields: [userId], references: [id])
+  userId         String?
+  posts          Post[]
+  theme          String?  // Allow theme selection
+  status         SiteStatus @default(ACTIVE)
+  
+  // Contact information
+  email          String?  // Site contact email
+  
+  // Social media links
+  githubUrl      String?
+  linkedinUrl    String?
+  portfolioUrl   String?
+  
+  // Language setting
+  language       Language @default(English)
+  
+  @@index([userId]) // Speeds up user-related queries
+  @@index([subdirectory]) // Faster lookup by subdirectory
+}
+
+enum SiteStatus {
+  ACTIVE
+  ARCHIVED
+  PRIVATE
 }
 
 model Post {
@@ -52,9 +85,17 @@ model Post {
   slug             String @unique
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?
   Site      Site?    @relation(fields: [siteId], references: [id], onDelete: Cascade)
   siteId    String?
+
+  views          Int @default(0)  
+  likes          Int @default(0)
+  
+  @@index([slug]) // Efficient post retrieval
+  @@index([userId]) // Speeds up user-related queries  
+  @@index([siteId]) // Faster site-specific post queries
 }

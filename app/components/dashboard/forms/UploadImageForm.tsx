@@ -79,12 +79,18 @@ export function UploadImageForm({ siteId }: iAppProps) {
         )}
       </CardContent>
       <CardFooter className="flex justify-center">
-        <form ref={formRef} action={UpdateImage}>
+        <form 
+          ref={formRef} 
+          action={async (formData) => {
+            await UpdateImage(formData);
+            // No return value
+          }}
+        >
           <input type="hidden" name="siteId" value={siteId} />
           {imageUrl && (
             <input type="hidden" name="siteImageCover" value={imageUrl} />
           )}
-          
+          <SubmitButton text="Change Image" />
         </form>
       </CardFooter>
     </Card>
