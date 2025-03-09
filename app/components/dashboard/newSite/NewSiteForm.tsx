@@ -161,7 +161,7 @@ export function NewSiteForm() {
     e.preventDefault();
     e.stopPropagation();
     
-    // Only proceed with submission from the social tab using explicit button clicks
+    // Only allow form submission from the social tab
     if (activeTab !== "social") {
       // Navigate to the appropriate tab instead
       if (activeTab === "basics") {
@@ -172,7 +172,7 @@ export function NewSiteForm() {
         setActiveTab("social");
       }
     } else {
-      // When on the social tab, prepare the form for submission
+      // When on the social tab, allow the form to actually submit to the server
       const formElement = e.currentTarget;
       
       // Add hidden fields for images if they exist
@@ -190,6 +190,9 @@ export function NewSiteForm() {
           addHiddenInput(formElement, key, value);
         }
       });
+      
+      // Submit the form to create the site
+      formElement.requestSubmit();
     }
   }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues]);
 
