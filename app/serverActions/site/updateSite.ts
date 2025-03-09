@@ -1,8 +1,8 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
-import prisma from "../../utils/db";
-import { siteSchema } from "../../utils/zodSchemas";
+import prisma from "../../utils/db/prisma";
+import { siteSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
 
 /**
@@ -56,12 +56,12 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
         name,
         description,
         language,
-        email: toNullable(email),
-        githubUrl: toNullable(githubUrl),
-        linkedinUrl: toNullable(linkedinUrl),
-        portfolioUrl: toNullable(portfolioUrl),
-        siteImageCover: toNullable(siteImageCover),
-        logoImage: toNullable(logoImage),
+        email: await toNullable(email),
+        githubUrl: await toNullable(githubUrl),
+        linkedinUrl: await toNullable(linkedinUrl),
+        portfolioUrl: await toNullable(portfolioUrl),
+        siteImageCover: await toNullable(siteImageCover),
+        logoImage: await toNullable(logoImage),
       },
     });
 

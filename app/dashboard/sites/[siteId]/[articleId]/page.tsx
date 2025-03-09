@@ -1,5 +1,5 @@
 import { ArrowLeft } from "lucide-react";
-import prisma from "@/app/utils/db";
+import prisma from "@/app/utils/db/prisma";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { EditArticleForm } from "@/app/components/dashboard/forms/EditArticleForm";

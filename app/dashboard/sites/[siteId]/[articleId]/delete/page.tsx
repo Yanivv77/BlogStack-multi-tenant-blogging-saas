@@ -1,6 +1,6 @@
 import { DeleteFormClient } from "./DeleteFormClient";
-import prisma from "@/app/utils/db";
-import { requireUser } from "@/app/utils/requireUser";
+import prisma from "@/app/utils/db/prisma";
+import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
 
 // Server component to fetch article data

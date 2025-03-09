@@ -1,6 +1,6 @@
 "use client";
 
-import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
 import {
   Card,
   CardContent,

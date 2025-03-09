@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 
-import { SiteCreationSchema } from "@/app/utils/zodSchemas";
+import { SiteCreationSchema } from "@/app/utils/validation/siteSchema";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";

@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { DeleteSiteClient } from "./DeleteSiteClient";
-import prisma from "@/app/utils/db";
-import { requireUser } from "@/app/utils/requireUser";
+import prisma from "@/app/utils/db/prisma";
+import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
 
 export default async function SettingsSiteRoute({

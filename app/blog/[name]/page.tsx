@@ -1,4 +1,4 @@
-import prisma from "@/app/utils/db";
+import prisma from "@/app/utils/db/prisma";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ThemeToggle } from "@/app/components/dashboard/ThemeToggle";
@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 
 
 async function getData(subDir: string) {

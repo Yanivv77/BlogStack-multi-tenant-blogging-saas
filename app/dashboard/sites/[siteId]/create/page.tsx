@@ -1,7 +1,7 @@
 "use client";
 
-import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
-import { PostSchema } from "@/app/utils/zodSchemas";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
+import { PostSchema } from "@/app/utils/validation/postSchema";
 import { Button } from "@/components/ui/button";
 import {
   Card,

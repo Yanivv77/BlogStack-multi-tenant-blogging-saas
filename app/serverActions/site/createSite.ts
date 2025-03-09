@@ -1,8 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import prisma from "../../utils/db";
-import { SiteCreationSchema } from "../../utils/zodSchemas";
+import prisma from "../../utils/db/prisma";
+import { SiteCreationSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable } from "../utils/helpers";
 import { parseWithZod } from "@conform-to/zod";
 
@@ -57,12 +57,12 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
         description,
         subdirectory,
         userId: user.id,
-        siteImageCover: toNullable(siteImageCover),
-        logoImage: toNullable(logoImage),
-        email: toNullable(email),
-        githubUrl: toNullable(githubUrl),
-        linkedinUrl: toNullable(linkedinUrl),
-        portfolioUrl: toNullable(portfolioUrl),
+        siteImageCover: await toNullable(siteImageCover),
+        logoImage: await toNullable(logoImage),
+        email: await toNullable(email),
+        githubUrl: await toNullable(githubUrl),
+        linkedinUrl: await toNullable(linkedinUrl),
+        portfolioUrl: await toNullable(portfolioUrl),
         language: language || "English",
       },
     });

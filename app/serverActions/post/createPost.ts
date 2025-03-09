@@ -1,8 +1,8 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
-import prisma from "../../utils/db";
-import { PostCreationSchema } from "../../utils/zodSchemas";
+import prisma from "../../utils/db/prisma";
+import { PostCreationSchema } from "../../utils/validation/postSchema";
 import { createErrorResponse, getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
 
 /**
@@ -11,7 +11,7 @@ import { createErrorResponse, getAuthenticatedUser, toNullable, verifyUserOwnsSi
 export async function CreatePostAction(_prevState: any, formData: FormData) {
   const user = await getAuthenticatedUser();
   if (!user) {
-    return { error: { _form: ["You must be logged in to create a post"] } };
+    return await createErrorResponse("Authentication required");
   }
 
   try {
@@ -74,7 +74,7 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
         smallDescription,
         articleContent,
         slug,
-        postCoverImage: toNullable(postCoverImage),
+        postCoverImage: await toNullable(postCoverImage),
         contentImages: contentImages,
         siteId,
         views: 0,

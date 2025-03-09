@@ -1,6 +1,6 @@
 import { RenderArticle } from "@/app/components/blog/post/RenderArticle";
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
-import prisma from "@/app/utils/db";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
+import prisma from "@/app/utils/db/prisma";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";

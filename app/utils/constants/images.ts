@@ -1,5 +1,5 @@
 /**
- * Application-wide constants
+ * Default image URLs for the application
  */
 
 // Default image to use when no image is provided

@@ -6,13 +6,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EmptyState } from "../components/dashboard/EmptyState";
-import prisma from "../utils/db";
-import { requireUser } from "../utils/requireUser";
+import prisma from "../utils/db/prisma";
+import { requireUser } from "../utils/auth/user";
 import SitesRoute from "./sites/page";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { DEFAULT_IMAGE_URL } from "../utils/constants";
+import { DEFAULT_IMAGE_URL } from "../utils/constants/images";
 
 async function getData(userId: string) {
   const [sites, articles] = await Promise.all([

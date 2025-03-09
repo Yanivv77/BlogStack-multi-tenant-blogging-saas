@@ -1,7 +1,7 @@
 // This file will remain a server component
 
 import { EmptyState } from "@/app/components/dashboard/EmptyState";
-import prisma from "@/app/utils/db";
+import prisma from "@/app/utils/db/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +39,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import * as React from 'react';
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 import { DraftButtons } from "@/app/components/dashboard/DraftButtons";
 
 // Keep all database fetching and server-side code here

@@ -1,4 +1,4 @@
-import prisma from "@/app/utils/db";
+import prisma from "@/app/utils/db/prisma";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { EmptyState } from "@/app/components/dashboard/EmptyState";
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 
 async function getData(userId: string) {
   const data = await prisma.site.findMany({

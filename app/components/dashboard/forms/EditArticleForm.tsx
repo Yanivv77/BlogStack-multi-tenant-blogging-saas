@@ -1,6 +1,6 @@
 "use client";
 
-import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +20,7 @@ import { useActionState, useState, useEffect } from "react";
 import { JSONContent } from "novel";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { PostSchema } from "@/app/utils/zodSchemas";
+import { PostSchema } from "@/app/utils/validation/postSchema";
 
 import slugify from "react-slugify";
 import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages, SeoRecommendations } from "../contentEditor";

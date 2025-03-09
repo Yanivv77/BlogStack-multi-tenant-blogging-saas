@@ -3,16 +3,23 @@ import {
   generateUploadDropzone,
   generateUploader,
 } from "@uploadthing/react";
-import { OurFileRouter } from "../api/uploadthing/core";
+import { OurFileRouter } from "../../api/uploadthing/core";
 
-// Export the basic components
+/**
+ * Basic upload components from uploadthing
+ */
 export const UploadButton = generateUploadButton<OurFileRouter>();
 export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
 
-// Export the uploader for direct use
+/**
+ * Direct uploader for programmatic uploads
+ */
 export const uploader = generateUploader<OurFileRouter>();
 
-// Helper function to get optimized config for dropzones
+/**
+ * Returns optimized configuration for upload dropzones
+ * @returns Configuration object for UploadDropzone
+ */
 export const getOptimizedDropzoneConfig = () => ({
   config: { mode: "auto" as const },
   appearance: {
@@ -21,4 +28,4 @@ export const getOptimizedDropzoneConfig = () => ({
     allowedContent: "text-xs text-muted-foreground",
     button: "bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
   }
-});
+}); 

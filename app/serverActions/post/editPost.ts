@@ -1,8 +1,8 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
-import prisma from "../../utils/db";
-import { PostEditSchema } from "../../utils/zodSchemas";
+import prisma from "../../utils/db/prisma";
+import { PostEditSchema } from "../../utils/validation/postSchema";
 import { getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
 
 // Define the correct return types
@@ -118,7 +118,7 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
         smallDescription,
         articleContent,
         slug,
-        postCoverImage: toNullable(postCoverImage),
+        postCoverImage: await toNullable(postCoverImage),
         contentImages: contentImages,
         updatedAt: new Date(),
       },

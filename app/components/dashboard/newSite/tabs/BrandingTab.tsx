@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
+import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
 import { toast } from "sonner";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { BrandingTabProps } from "../utils/types";
