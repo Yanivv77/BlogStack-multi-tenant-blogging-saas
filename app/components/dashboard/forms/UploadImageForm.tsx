@@ -13,8 +13,9 @@ import Image from "next/image";
 import { useState, useRef, useCallback } from "react";
 import { SubmitButton } from "../SubmitButtons";
 import { toast } from "sonner";
-import { UpdateImage } from "@/app/actions";
+
 import { Button } from "@/components/ui/button";
+import { UpdateImage } from "@/app/serverActions/image/updateImage";
 
 interface iAppProps {
   siteId: string;

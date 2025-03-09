@@ -1,6 +1,5 @@
 "use client";
 
-import { DeleteSite } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DeleteSite } from "@/app/serverActions/site/deleteSite";
 
 // Define the props type
 type DeleteSiteProps = {

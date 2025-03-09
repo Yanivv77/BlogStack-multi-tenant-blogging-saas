@@ -21,9 +21,10 @@ import { JSONContent } from "novel";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { PostSchema } from "@/app/utils/zodSchemas";
-import { CreatePostAction, EditPostActions } from "@/app/actions";
+
 import slugify from "react-slugify";
 import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages, SeoRecommendations } from "../contentEditor";
+import { EditPostActions } from "@/app/serverActions/post/editPost";
 
 interface iAppProps {
   data: {

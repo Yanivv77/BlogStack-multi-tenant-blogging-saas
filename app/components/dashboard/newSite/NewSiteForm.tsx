@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
-import { CreateSiteAction } from "@/app/actions";
+
 import { SiteCreationSchema } from "@/app/utils/zodSchemas";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -22,6 +22,7 @@ import { StepIndicator } from "./shared/StepIndicator";
 import { BasicsTab } from "./tabs/BasicsTab";
 import { BrandingTab } from "./tabs/BrandingTab";
 import { SocialTab } from "./tabs/SocialTab";
+import { CreateSiteAction } from "@/app/serverActions/site/createSite";
 
 /**
  * NewSiteForm component
@@ -62,9 +63,10 @@ export function NewSiteForm() {
   useEffect(() => {
     if (!lastResult) return;
     
-    if (lastResult.success && lastResult.redirectUrl) {
+    // Check if lastResult is a custom response with success property
+    if ('success' in lastResult && lastResult.success && 'redirectUrl' in lastResult) {
       toast.success("Site created successfully!");
-      router.push(lastResult.redirectUrl);
+      router.push(lastResult.redirectUrl as string);
     } 
   }, [lastResult, router]);
   

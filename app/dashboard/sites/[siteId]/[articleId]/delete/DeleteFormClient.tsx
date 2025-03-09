@@ -1,6 +1,6 @@
 "use client";
 
-import { DeletePost } from "@/app/actions";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { DeletePost } from "@/app/serverActions/post/deletePost";
 
 // Define the props type
 type DeleteFormProps = {
@@ -45,13 +46,17 @@ export function DeleteFormClient({
     try {
       const result = await DeletePost(formData);
       
-      // Check if result is a redirect (original behavior)
-      if (result && typeof result === 'object' && 'status' in result) {
-        if (result.status === "success") {
+      if (result && typeof result === 'object') {
+        if ('success' in result && result.success) {
           toast.success("Article deleted successfully");
           router.push(`/dashboard/sites/${siteId}`);
-        } else if (result.status === "error" && Array.isArray(result.errors)) {
-          result.errors.forEach(error => toast.error(error));
+        } else if ('error' in result && result.error) {
+          toast.error(result.error.toString());
+        } else if ('status' in result) {
+          if (result.status === "success") {
+            toast.success("Article deleted successfully");
+            router.push(`/dashboard/sites/${siteId}`);
+          }
         }
       } else {
         // If it's not a status object, assume success (original redirect behavior)

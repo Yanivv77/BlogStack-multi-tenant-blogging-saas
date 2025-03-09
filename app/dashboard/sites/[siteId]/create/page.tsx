@@ -1,6 +1,5 @@
 "use client";
 
-import { CreatePostAction } from "@/app/actions";
 import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/UploadthingComponents";
 import { PostSchema } from "@/app/utils/zodSchemas";
 import { Button } from "@/components/ui/button";
@@ -36,6 +35,7 @@ import {
   clearEditorStorage 
 } from "@/app/components/dashboard/contentEditor";
 import { SeoRecommendations } from "@/app/components/dashboard/contentEditor/ui/SeoRecommendations";
+import { CreatePostAction } from "@/app/serverActions/post/createPost";
 
 export default function ArticleCreationRoute() {
   const params = useParams();
@@ -165,16 +165,16 @@ export default function ArticleCreationRoute() {
   // Handle form submission success
   useEffect(() => {
     if (lastResult) {
-      if (isCustomActionResult(lastResult) && lastResult.status === "success") {
-        clearAllDrafts();
-        toast.success("Article created successfully");
-        // Redirect to the site page
-        router.push(`/dashboard/sites/${siteId}`);
-      } else if (isCustomActionResult(lastResult) && lastResult.status === "error" && lastResult.errors.length > 0) {
+      if (isCustomActionResult(lastResult) && lastResult.status === "error" && lastResult.errors.length > 0) {
         // Display error messages
         lastResult.errors.forEach((error: string) => toast.error(error));
-      } else if (lastResult.status === "success") {
+      } else if ('status' in lastResult && lastResult.status === "success") {
         // Handle standard submission result success
+        clearAllDrafts();
+        toast.success("Article created successfully");
+        router.push(`/dashboard/sites/${siteId}`);
+      } else if ('success' in lastResult && lastResult.success) {
+        // Handle custom success response with postId
         clearAllDrafts();
         toast.success("Article created successfully");
         router.push(`/dashboard/sites/${siteId}`);
