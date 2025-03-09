@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 import { Button } from "@/components/ui/button";
-import { X, Github, Linkedin, Globe, ArrowRight, CheckCircle2, Image as ImageIcon, Briefcase, Link, Mail } from "lucide-react";
+import { X, Github, Linkedin, Globe, ArrowRight, CheckCircle2, Image as ImageIcon, Briefcase, Link } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
@@ -47,10 +47,6 @@ export default function NewSiteRoute() {
     else if (activeTab === "branding") setActiveTab("basics");
   };
 
-  // Define steps for easier reference
-  const steps = ["basics", "branding", "social"];
-  const activeIndex = steps.indexOf(activeTab);
-
   return (
     <div className="container max-w-3xl py-10 px-4 sm:px-6">
       <div className="mb-10 text-center">
@@ -62,58 +58,48 @@ export default function NewSiteRoute() {
 
       <Card className="border shadow-sm overflow-hidden bg-card">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          {/* New Clean Progress Indicator */}
-          <div className="bg-background border-b px-8 pt-8 pb-6">
-            <div className="max-w-md mx-auto">
-              {/* Step Indicators with Progress Bar */}
-              <div className="flex items-center justify-between">
-                {steps.map((step, index) => {
-                  // Determine status of this step
-                  const isActive = index === activeIndex;
-                  const isCompleted = index < activeIndex;
-                  
-                  return (
-                    <div key={step} className="flex flex-col items-center">
-                      {/* Step Circle */}
-                      <div className="relative">
-                        <button
-                          onClick={() => handleTabChange(step)}
-                          className={cn(
-                            "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300",
-                            isActive && "border-primary bg-primary text-primary-foreground",
-                            isCompleted && "border-primary bg-primary/20 text-primary",
-                            !isActive && !isCompleted && "border-muted-foreground/30 bg-background text-muted-foreground"
-                          )}
-                          aria-label={`Go to ${step} step`}
-                        >
-                          <span className="text-sm font-medium">{index + 1}</span>
-                        </button>
-                      </div>
-                      
-                      {/* Step Label */}
-                      <span 
-                        className={cn(
-                          "mt-2 text-xs font-medium capitalize",
-                          isActive && "text-primary font-semibold",
-                          !isActive && "text-muted-foreground"
-                        )}
-                      >
-                        {step}
-                      </span>
-                    </div>
-                  );
-                })}
+          <div className="bg-muted/10 border-b px-8 pt-8 pb-6">
+            <div className="relative max-w-md mx-auto">
+              <div className="flex justify-between mb-6">
+                {["basics", "branding", "social"].map((step) => (
+                  <div key={`label-${step}`} className="text-center">
+                    <span className={`text-xs font-medium capitalize ${
+                      activeTab === step ? "text-primary font-semibold" : "text-muted-foreground"
+                    }`}>
+                      {step}
+                    </span>
+                  </div>
+                ))}
               </div>
               
-              {/* Progress Bar */}
-              <div className="relative mt-5 h-[3px] bg-muted rounded-full mx-5">
+              <div className="relative flex items-center justify-between">
+                <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-muted-foreground/10 -translate-y-1/2" />
+                
                 <div 
-                  className="absolute left-0 top-0 h-full bg-primary rounded-full transition-all duration-500"
-                  style={{ 
-                    width: activeIndex === 0 ? '0%' : 
-                           activeIndex === 1 ? '50%' : '100%' 
-                  }}
+                  className={`absolute top-1/2 left-0 h-[2px] bg-primary -translate-y-1/2 transition-all duration-500 ${
+                    activeTab === "basics" ? "w-[0%]" : 
+                    activeTab === "branding" ? "w-[50%]" : 
+                    "w-[100%]"
+                  }`} 
                 />
+                
+                {["basics", "branding", "social"].map((step, index) => (
+                  <div key={`indicator-${step}`} className="relative z-10">
+                    <button 
+                      onClick={() => handleTabChange(step)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${
+                        activeTab === step 
+                          ? "bg-primary text-primary-foreground shadow-md" 
+                          : index < ["basics", "branding", "social"].indexOf(activeTab)
+                            ? "bg-primary/20 text-primary border border-primary/30"
+                            : "bg-background text-muted-foreground border border-muted"
+                      }`}
+                      aria-label={`Go to ${step} step`}
+                    >
+                      <span className="text-sm font-medium">{index + 1}</span>
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -283,7 +269,7 @@ export default function NewSiteRoute() {
 
                   {/* Logo Image */}
                   <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
-                    <Label className="text-base">Logo Image</Label>
+                    <Label className="text-base">Profile / Logo Image</Label>
                     <div className="flex flex-col items-center gap-4">
                       {logoImage ? (
                         <div className="relative w-full max-w-[200px]">
@@ -309,7 +295,7 @@ export default function NewSiteRoute() {
                             onClientUploadComplete={(res: any) => {
                               const imageUrl = res[0].ufsUrl;
                               setLogoImage(imageUrl);
-                              toast.success("Logo uploaded successfully!");
+                              toast.success("Image uploaded successfully!");
                             }}
                             onUploadError={(error: Error) => {
                               toast.error(`ERROR! ${error.message}`);
@@ -318,7 +304,7 @@ export default function NewSiteRoute() {
                             appearance={{
                               button: "hidden",
                               allowedContent: "hidden",
-                              container: "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[200px] h-[200px] flex flex-col items-center justify-center"
+                              container: "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center"
                             }}
                           />
                         </div>
@@ -334,7 +320,7 @@ export default function NewSiteRoute() {
                       />
                     )}
                     <div className="text-[0.8rem] text-muted-foreground">
-                      Upload a logo for your brand (optional)
+                      Upload your profile image or logo (optional)
                     </div>
                   </div>
                 </div>
@@ -355,39 +341,14 @@ export default function NewSiteRoute() {
                   <div>
                     <h2 className="text-xl font-semibold flex items-center gap-2">
                       <Link className="h-5 w-5" />
-                      Contact & Social Links
+                      Social Media Links
                     </h2>
                     <p className="text-sm text-muted-foreground">
-                      Add contact information and social profiles to connect with your audience
+                      Connect your social profiles to grow your audience (all fields optional)
                     </p>
                   </div>
 
                   <div className="grid gap-6 md:grid-cols-1">
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <Label htmlFor={fields.email.id} className="text-base">
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-5 w-5" />
-                          Contact Email
-                        </div>
-                      </Label>
-                      <Input
-                        id={fields.email.id}
-                        name={fields.email.name}
-                        type="email"
-                        placeholder="contact@yourdomain.com"
-                        className="h-11"
-                      />
-                      {fields.email.errors && (
-                        <div className="text-destructive text-sm">
-                          {fields.email.errors}
-                        </div>
-                      )}
-                      <div className="text-[0.8rem] text-muted-foreground">
-                        This email will be displayed as a contact option on your site (optional)
-                      </div>
-                    </div>
-
                     {/* GitHub URL */}
                     <div className="space-y-2">
                       <Label htmlFor={fields.githubUrl.id} className="text-base">
