@@ -46,109 +46,135 @@ export const SocialTab = memo(function SocialTab({
           </div>
 
           <div className="grid gap-6 md:grid-cols-1">
-            {/* Email */}
+            {/* Contact Email */}
             <div className="space-y-2">
-              <Label htmlFor={fields.email.id} className="text-base">
+              <Label htmlFor="contact-email" className="text-base">
                 <div className="flex items-center gap-2">
                   <SimpleIcon name="mail" size={20} color="currentColor" />
                   Contact Email
                 </div>
               </Label>
               <Input
-                id={fields.email.id}
+                id="contact-email"
                 name="email"
                 type="email"
                 placeholder="contact@yourdomain.com"
                 className="h-11"
                 value={formValues.email}
                 onChange={handleInputChange}
+                autoComplete="email"
+                aria-describedby="email-hint email-error"
               />
               {fields.email.errors && (
-                <div className="text-destructive text-sm">
+                <div id="email-error" className="text-destructive text-sm">
                   {fields.email.errors}
                 </div>
               )}
-              <div className="text-[0.8rem] text-muted-foreground">
+              <div id="email-hint" className="text-[0.8rem] text-muted-foreground">
                 This email will be displayed as a contact option on your site
               </div>
             </div>
 
             {/* GitHub URL */}
             <div className="space-y-2">
-              <Label htmlFor={fields.githubUrl.id} className="text-base">
+              <Label htmlFor="github-url" className="text-base">
                 <div className="flex items-center gap-2">
                   <SimpleIcon name="github" size={20} />
                   GitHub URL
                 </div>
               </Label>
               <Input
-                id={fields.githubUrl.id}
+                id="github-url"
                 name="githubUrl"
                 placeholder="https://github.com/yourusername"
                 className="h-11"
                 value={formValues.githubUrl}
                 onChange={handleInputChange}
+                autoComplete="url"
+                aria-describedby="github-hint github-error"
               />
               {fields.githubUrl.errors && (
-                <div className="text-destructive text-sm">
+                <div id="github-error" className="text-destructive text-sm">
                   {fields.githubUrl.errors}
                 </div>
               )}
+              <div id="github-hint" className="text-[0.8rem] text-muted-foreground">
+                Your GitHub profile URL (optional)
+              </div>
             </div>
 
             {/* LinkedIn URL */}
             <div className="space-y-2">
-              <Label htmlFor={fields.linkedinUrl.id} className="text-base">
+              <Label htmlFor="linkedin-url" className="text-base">
                 <div className="flex items-center gap-2">
                   <SimpleIcon name="linkedin" size={20} />
                   LinkedIn URL
                 </div>
               </Label>
               <Input
-                id={fields.linkedinUrl.id}
+                id="linkedin-url"
                 name="linkedinUrl"
                 placeholder="https://linkedin.com/in/yourprofile"
                 className="h-11"
                 value={formValues.linkedinUrl}
                 onChange={handleInputChange}
+                autoComplete="url"
+                aria-describedby="linkedin-hint linkedin-error"
               />
               {fields.linkedinUrl.errors && (
-                <div className="text-destructive text-sm">
+                <div id="linkedin-error" className="text-destructive text-sm">
                   {fields.linkedinUrl.errors}
                 </div>
               )}
+              <div id="linkedin-hint" className="text-[0.8rem] text-muted-foreground">
+                Your LinkedIn profile URL (optional)
+              </div>
             </div>
 
             {/* Portfolio URL */}
             <div className="space-y-2">
-              <Label htmlFor={fields.portfolioUrl.id} className="text-base">
+              <Label htmlFor="portfolio-url" className="text-base">
                 <div className="flex items-center gap-2">
                   <SimpleIcon name="globe" size={20} color="currentColor" />
                   Portfolio URL
                 </div>
               </Label>
               <Input
-                id={fields.portfolioUrl.id}
+                id="portfolio-url"
                 name="portfolioUrl"
                 placeholder="https://yourportfolio.com"
                 className="h-11"
                 value={formValues.portfolioUrl}
                 onChange={handleInputChange}
+                autoComplete="url"
+                aria-describedby="portfolio-hint portfolio-error"
               />
               {fields.portfolioUrl.errors && (
-                <div className="text-destructive text-sm">
+                <div id="portfolio-error" className="text-destructive text-sm">
                   {fields.portfolioUrl.errors}
                 </div>
               )}
+              <div id="portfolio-hint" className="text-[0.8rem] text-muted-foreground">
+                Your personal website or portfolio URL (optional)
+              </div>
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
-        <Button type="button" variant="outline" onClick={goToPrevTab}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={goToPrevTab}
+          id="social-back-button"
+          aria-label="Go back to branding tab"
+        >
           Back
         </Button>
-        <SubmitButton text="Create Site" />
+        <SubmitButton 
+          text="Create Site" 
+          className="px-6"
+        />
       </CardFooter>
     </>
   );

@@ -56,7 +56,7 @@ export const BrandingTab = memo(function BrandingTab({
 
           {/* Cover Image */}
           <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
-            <Label className="text-base">Site Cover Image</Label>
+            <Label htmlFor="site-cover-image" className="text-base">Site Cover Image</Label>
             <div className="flex flex-col items-center gap-4">
               {siteImageCover ? (
                 <div className="relative w-full max-w-[500px]">
@@ -71,6 +71,7 @@ export const BrandingTab = memo(function BrandingTab({
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={() => setSiteImageCover("")}
+                    aria-label="Remove cover image"
                   >
                     <SimpleIcon name="x" size={16} color="currentColor"/>
                   </Button>
@@ -101,18 +102,20 @@ export const BrandingTab = memo(function BrandingTab({
             {siteImageCover && (
               <input
                 type="hidden"
-                name={fields.siteImageCover.name}
+                id="site-cover-image"
+                name="siteImageCover"
                 value={siteImageCover}
+                aria-label="Site cover image URL"
               />
             )}
-            <div className="text-[0.8rem] text-muted-foreground">
+            <div id="cover-image-hint" className="text-[0.8rem] text-muted-foreground">
               This image will appear at the top of your site and in shared links
             </div>
           </div>
 
           {/* Logo Image */}
           <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
-            <Label className="text-base">Profile / Logo Image</Label>
+            <Label htmlFor="site-logo-image" className="text-base">Profile / Logo Image</Label>
             <div className="flex flex-col items-center gap-4">
               {logoImage ? (
                 <div className="relative w-full max-w-[200px]">
@@ -127,6 +130,7 @@ export const BrandingTab = memo(function BrandingTab({
                     size="sm"
                     className="absolute top-2 right-2"
                     onClick={() => setLogoImage("")}
+                    aria-label="Remove logo image"
                   >
                     <SimpleIcon name="x" size={16} color="currentColor"/>
                   </Button>
@@ -157,21 +161,35 @@ export const BrandingTab = memo(function BrandingTab({
             {logoImage && (
               <input
                 type="hidden"
+                id="site-logo-image"
                 name="logoImage"
                 value={logoImage}
+                aria-label="Site logo image URL"
               />
             )}
-            <div className="text-[0.8rem] text-muted-foreground">
+            <div id="logo-image-hint" className="text-[0.8rem] text-muted-foreground">
               Upload your profile image or logo (optional)
             </div>
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
-        <Button type="button" variant="outline" onClick={goToPrevTab}>
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={goToPrevTab}
+          id="branding-back-button"
+          aria-label="Go back to basics tab"
+        >
           Back
         </Button>
-        <Button type="button" onClick={goToNextTab} className="gap-2 px-6">
+        <Button 
+          type="button" 
+          onClick={goToNextTab} 
+          className="gap-2 px-6"
+          id="branding-next-button"
+          aria-label="Continue to social tab"
+        >
           Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/>
         </Button>
       </CardFooter>

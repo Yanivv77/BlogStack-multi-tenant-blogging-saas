@@ -99,22 +99,31 @@ export function NewSiteForm() {
   };
 
   const validateBasicsTab = () => {
+    let isValid = true;
+    
     if (!formValues.name || formValues.name.trim() === "") {
-      toast.error("Please enter a site name");
-      return false;
+      isValid = false;
     }
     
     if (!formValues.subdirectory || formValues.subdirectory.trim() === "") {
-      toast.error("Please enter a subdirectory");
-      return false;
+      isValid = false;
+    }
+    
+    // Check for spaces in subdirectory
+    if (formValues.subdirectory.includes(" ")) {
+      isValid = false;
+    }
+    
+    // Check for valid characters in subdirectory
+    if (!/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
+      isValid = false;
     }
     
     if (!formValues.description || formValues.description.trim() === "") {
-      toast.error("Please enter a description");
-      return false;
+      isValid = false;
     }
     
-    return true;
+    return isValid;
   };
 
   const goToNextTab = () => {
@@ -132,6 +141,24 @@ export function NewSiteForm() {
     else if (activeTab === "branding") setActiveTab("basics");
   };
 
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    // Only allow form submission from the social tab
+    if (activeTab !== "social") {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Navigate to the appropriate tab instead
+      if (activeTab === "basics") {
+        if (validateBasicsTab()) {
+          setActiveTab("branding");
+        }
+      } else if (activeTab === "branding") {
+        setActiveTab("social");
+      }
+    }
+  };
+
   const steps = ["basics", "branding", "social"];
   const activeIndex = steps.findIndex(step => step === activeTab);
 
@@ -144,7 +171,12 @@ export function NewSiteForm() {
           handleTabChange={handleTabChange} 
         />
         
-        <form action={action} id={form.id} className="space-y-6">
+        <form 
+          action={action} 
+          id={form.id} 
+          className="space-y-6"
+          onSubmit={handleSubmit}
+        >
           <TabsContent value="basics">
             <BasicsTab 
               fields={fields} 
