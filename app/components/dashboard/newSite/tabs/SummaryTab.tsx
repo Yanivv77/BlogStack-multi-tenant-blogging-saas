@@ -124,15 +124,15 @@ export function SummaryTab({
                   </div>
                 )}
                 <div className="flex-grow min-w-0 text-center sm:text-left">
-                  <h3 className="text-2xl font-bold truncate">{formValues.name}</h3>
+                  <h3 className="text-2xl font-bold truncate max-w-full">{formValues.name}</h3>
                   <div className="flex items-center mt-3 gap-2 flex-wrap justify-center sm:justify-start">
-                    <Badge variant="outline" className="font-mono text-sm px-3 py-1.5 flex items-center gap-2 border-primary/20">
-                      <SimpleIcon name="globe" size={16} className="text-primary" />
-                      <span className="font-medium">blogstack.io/{formValues.subdirectory}</span>
+                    <Badge variant="outline" className="font-mono text-sm px-3 py-1.5 flex items-center gap-2 border-primary/20 max-w-full">
+                      <SimpleIcon name="globe" size={16} className="text-primary flex-shrink-0" />
+                      <span className="font-medium truncate overflow-hidden">{`blogstack.io/${formValues.subdirectory}`}</span>
                     </Badge>
                     <Badge variant="secondary" className="text-sm px-3 py-1.5 flex items-center gap-2">
-                      <SimpleIcon name="languages" size={16} />
-                      {formValues.language}
+                      <SimpleIcon name="languages" size={16} className="flex-shrink-0" />
+                      <span className="truncate">{formValues.language}</span>
                     </Badge>
                   </div>
                 </div>
@@ -141,7 +141,7 @@ export function SummaryTab({
               <Separator className="my-6" />
               
               <div className="prose prose-sm dark:prose-invert max-w-none">
-                <p className="leading-relaxed">{formValues.description}</p>
+                <p className="leading-relaxed break-words whitespace-normal overflow-hidden">{formValues.description}</p>
               </div>
             </div>
             
@@ -156,26 +156,26 @@ export function SummaryTab({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {formValues.email && (
                     <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
-                      <SimpleIcon name="mail" size={18} className="text-primary/70" />
-                      <span className="truncate">{formValues.email}</span>
+                      <SimpleIcon name="mail" size={18} className="text-primary/70 flex-shrink-0" />
+                      <span className="truncate overflow-hidden">{formValues.email}</span>
                     </div>
                   )}
                   {formValues.githubUrl && (
                     <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
-                      <SimpleIcon name="github" size={18} className="text-primary/70" />
-                      <span className="truncate">{formValues.githubUrl}</span>
+                      <SimpleIcon name="github" size={18} className="text-primary/70 flex-shrink-0" />
+                      <span className="truncate overflow-hidden">{formValues.githubUrl}</span>
                     </div>
                   )}
                   {formValues.linkedinUrl && (
                     <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
-                      <SimpleIcon name="linkedin" size={18} className="text-primary/70" />
-                      <span className="truncate">{formValues.linkedinUrl}</span>
+                      <SimpleIcon name="linkedin" size={18} className="text-primary/70 flex-shrink-0" />
+                      <span className="truncate overflow-hidden">{formValues.linkedinUrl}</span>
                     </div>
                   )}
                   {formValues.portfolioUrl && (
                     <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
-                      <SimpleIcon name="link" size={18} className="text-primary/70" />
-                      <span className="truncate">{formValues.portfolioUrl}</span>
+                      <SimpleIcon name="link" size={18} className="text-primary/70 flex-shrink-0" />
+                      <span className="truncate overflow-hidden">{formValues.portfolioUrl}</span>
                     </div>
                   )}
                 </div>
@@ -197,9 +197,9 @@ export function SummaryTab({
               <SimpleIcon name="info" size={24} className="text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold mb-2 text-base">Ready to create your blog?</p>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed break-words">
                   Once created, you can start adding blog posts and customizing your site further from the dashboard.
-                  Your site will be immediately available at <span className="font-mono text-primary font-medium">blogstack.io/{formValues.subdirectory}</span>.
+                  Your site will be immediately available at <span className="font-mono text-primary font-medium break-all">{`blogstack.io/${formValues.subdirectory}`}</span>.
                 </p>
               </div>
             </div>

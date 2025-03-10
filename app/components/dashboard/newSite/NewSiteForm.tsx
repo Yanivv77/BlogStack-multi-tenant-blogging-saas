@@ -37,6 +37,7 @@ import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 // Import types and utilities
 import { SiteFormValues, StepName } from "./utils/types";
 import { addHiddenInput } from "./utils/hooks";
+import { validateForm, validateTabFields } from "./utils/zodValidation";
 
 // Import components
 import { StepIndicator } from "./shared/StepIndicator";
@@ -53,6 +54,7 @@ export function NewSiteForm() {
   const [siteImageCover, setSiteImageCover] = useState<string>("");
   const [logoImage, setLogoImage] = useState<string>("");
   const [activeTab, setActiveTab] = useState<StepName>("basics");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   // Define steps for the form - memoize to prevent recreation
   const steps: StepName[] = useMemo(() => ["basics", "branding", "social", "summary"], []);
@@ -106,51 +108,28 @@ export function NewSiteForm() {
   }, []);
   
   /**
-   * Set the active tab
+   * Set the active tab with validation
    */
   const setTabExplicitly = useCallback((tabName: StepName) => {
+    // Validate current tab before allowing navigation
+    const currentTabIndex = steps.findIndex(step => step === activeTab);
+    const targetTabIndex = steps.findIndex(step => step === tabName);
+    
+    // Only validate when moving forward
+    if (targetTabIndex > currentTabIndex) {
+      const errors = validateTabFields(formValues, activeTab);
+      
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return; // Don't allow navigation if there are errors
+      }
+    }
+    
     setActiveTab(tabName);
-  }, []);
+  }, [activeTab, formValues, steps]);
   
   /**
-   * Validate basics tab fields
-   */
-  const validateBasicsTab = useCallback(() => {
-    let isValid = true;
-    const errors: string[] = [];
-    
-    if (!formValues.name?.trim()) {
-      isValid = false;
-      errors.push("Site name is required");
-    }
-    
-    if (!formValues.subdirectory?.trim()) {
-      isValid = false;
-      errors.push("Subdirectory is required");
-    }
-    
-    // Check for spaces in subdirectory
-    if (formValues.subdirectory?.includes(" ")) {
-      isValid = false;
-      errors.push("Subdirectory cannot contain spaces");
-    }
-    
-    // Check for valid characters in subdirectory
-    if (formValues.subdirectory && !/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
-      isValid = false;
-      errors.push("Subdirectory can only contain letters, numbers, and hyphens");
-    }
-    
-    if (!formValues.description?.trim()) {
-      isValid = false;
-      errors.push("Description is required");
-    }
-    
-    return isValid;
-  }, [formValues.name, formValues.subdirectory, formValues.description]);
-  
-  /**
-   * Navigate to next tab
+   * Navigate to next tab with validation
    */
   const goToNextTab = useCallback((e?: React.MouseEvent) => {
     if (e && typeof e.preventDefault === 'function' && typeof e.stopPropagation === 'function') {
@@ -158,16 +137,19 @@ export function NewSiteForm() {
       e.stopPropagation();
     }
 
-    if (activeTab === "basics") {
-      if (validateBasicsTab()) {
-        setActiveTab("branding");
+    const currentIndex = steps.findIndex(step => step === activeTab);
+    if (currentIndex < steps.length - 1) {
+      // Validate current tab before proceeding
+      const errors = validateTabFields(formValues, activeTab);
+      
+      if (Object.keys(errors).length > 0) {
+        setFormErrors(errors);
+        return; // Don't proceed if there are errors
       }
-    } else if (activeTab === "branding") {
-      setActiveTab("social");
-    } else if (activeTab === "social") {
-      setActiveTab("summary");
+      
+      setActiveTab(steps[currentIndex + 1]);
     }
-  }, [activeTab, validateBasicsTab]);
+  }, [activeTab, formValues, steps]);
   
   /**
    * Navigate to previous tab
@@ -178,10 +160,11 @@ export function NewSiteForm() {
       e.preventDefault();
     }
     
-    if (activeTab === "summary") setActiveTab("social");
-    else if (activeTab === "social") setActiveTab("branding");
-    else if (activeTab === "branding") setActiveTab("basics");
-  }, [activeTab]);
+    const currentIndex = steps.findIndex(step => step === activeTab);
+    if (currentIndex > 0) {
+      setActiveTab(steps[currentIndex - 1]);
+    }
+  }, [activeTab, steps]);
   
   /**
    * Handle form submission
@@ -192,17 +175,15 @@ export function NewSiteForm() {
     
     // Only allow form submission from the summary tab
     if (activeTab !== "summary") {
-      // Navigate to the appropriate tab instead
-      if (activeTab === "basics") {
-        if (validateBasicsTab()) {
-          setActiveTab("branding");
-        }
-      } else if (activeTab === "branding") {
-        setActiveTab("social");
-      } else if (activeTab === "social") {
-        setActiveTab("summary");
-      }
+      goToNextTab();
       return;
+    }
+    
+    // Validate all form fields before submission
+    const errors = validateForm(formValues);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return; // Don't submit if there are errors
     }
     
     // When on the summary tab, prepare the form data and submit
@@ -242,7 +223,7 @@ export function NewSiteForm() {
     startTransition(() => {
       formAction(formData);
     });
-  }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues, formAction, startTransition]);
+  }, [activeTab, formValues, goToNextTab, siteImageCover, logoImage, formAction, startTransition]);
 
   // Memoize the active index calculation
   const activeIndex = useMemo(() => 

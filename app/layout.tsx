@@ -24,8 +24,11 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "BlogStack - Multi-tenant Blogging Platform",
-  description: "A modern, elegant blogging platform for creators and businesses",
+  title: {
+    default: "BlogStack",
+    template: "%s | BlogStack",
+  },
+  description: "A modern platform for creating and managing multiple blogs",
   keywords: ["blog", "blogging", "multi-tenant", "content management", "writing platform"],
   authors: [{ name: "BlogStack Team" }],
   creator: "BlogStack",
@@ -55,6 +58,10 @@ export const metadata: Metadata = {
     { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
   ],
   manifest: "/manifest.json",
+  icons: {
+    icon: "/globe.svg",
+    apple: "/globe.svg"
+  },
 };
 
 export default function RootLayout({
@@ -65,8 +72,8 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="custom-scrollbar">
       <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" href="/globe.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/globe.svg" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <ThemeProvider

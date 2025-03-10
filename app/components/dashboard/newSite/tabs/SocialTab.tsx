@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/app/components/dashboard/SubmitButtons";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { SocialTabProps } from "../utils/types";
+import { validateField, ValidationErrors } from "../utils/zodValidation";
 
 /**
  * SocialTab component for collecting social media links
@@ -18,6 +20,73 @@ export function SocialTab({
   formValues, 
   handleInputChange 
 }: SocialTabProps) {
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+
+  /**
+   * Handle input change
+   */
+  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Pass to parent handler
+    handleInputChange(e);
+  };
+
+  /**
+   * Handle field blur to validate after user interaction
+   */
+  const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field using Zod schema
+    const fieldError = validateField(name as keyof typeof formValues, value);
+    setErrors(prev => ({ ...prev, [name]: fieldError }));
+  };
+
+  /**
+   * Validate all fields before proceeding
+   */
+  const validateAllFields = () => {
+    // Mark all fields as touched
+    setTouchedFields({
+      email: true,
+      githubUrl: true,
+      linkedinUrl: true,
+      portfolioUrl: true
+    });
+    
+    // Set attempted submit to true to show all errors
+    setAttemptedSubmit(true);
+    
+    const newErrors: ValidationErrors = {};
+    
+    // Validate each field using Zod schema
+    const emailError = validateField('email', formValues.email);
+    if (emailError) newErrors.email = emailError;
+    
+    const githubUrlError = validateField('githubUrl', formValues.githubUrl);
+    if (githubUrlError) newErrors.githubUrl = githubUrlError;
+    
+    const linkedinUrlError = validateField('linkedinUrl', formValues.linkedinUrl);
+    if (linkedinUrlError) newErrors.linkedinUrl = linkedinUrlError;
+    
+    const portfolioUrlError = validateField('portfolioUrl', formValues.portfolioUrl);
+    if (portfolioUrlError) newErrors.portfolioUrl = portfolioUrlError;
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Helper function to determine if an error should be shown
+  const shouldShowError = (fieldName: keyof typeof formValues) => {
+    return Boolean((touchedFields[fieldName as string] || attemptedSubmit) && errors[fieldName]);
+  };
+
   return (
     <>
       <CardContent className="space-y-6 pt-6 px-6 sm:px-8">
@@ -46,20 +115,21 @@ export function SocialTab({
                 name="email"
                 type="email"
                 placeholder="contact@yourdomain.com"
-                className="h-11"
+                className={`h-11 ${shouldShowError('email') ? 'border-destructive' : ''}`}
                 value={formValues.email}
-                onChange={handleInputChange}
+                onChange={handleFieldChange}
+                onBlur={handleFieldBlur}
                 autoComplete="email"
                 aria-describedby="email-hint email-error"
               />
-              {fields.email?.errors && (
-                <div id="email-error" className="text-destructive text-sm">
-                  {fields.email.errors}
-                </div>
-              )}
               <div id="email-hint" className="text-[0.8rem] text-muted-foreground">
                 This email will be displayed as a contact option on your site
               </div>
+              {shouldShowError('email') && (
+                <div id="email-error" className="text-destructive text-sm">
+                  {errors.email}
+                </div>
+              )}
             </div>
 
             {/* GitHub URL */}
@@ -74,20 +144,21 @@ export function SocialTab({
                 id="github-url"
                 name="githubUrl"
                 placeholder="https://github.com/yourusername"
-                className="h-11"
+                className={`h-11 ${shouldShowError('githubUrl') ? 'border-destructive' : ''}`}
                 value={formValues.githubUrl}
-                onChange={handleInputChange}
+                onChange={handleFieldChange}
+                onBlur={handleFieldBlur}
                 autoComplete="url"
                 aria-describedby="github-hint github-error"
               />
-              {fields.githubUrl?.errors && (
-                <div id="github-error" className="text-destructive text-sm">
-                  {fields.githubUrl.errors}
-                </div>
-              )}
               <div id="github-hint" className="text-[0.8rem] text-muted-foreground">
                 Your GitHub profile URL (optional)
               </div>
+              {shouldShowError('githubUrl') && (
+                <div id="github-error" className="text-destructive text-sm">
+                  {errors.githubUrl}
+                </div>
+              )}
             </div>
 
             {/* LinkedIn URL */}
@@ -102,20 +173,21 @@ export function SocialTab({
                 id="linkedin-url"
                 name="linkedinUrl"
                 placeholder="https://linkedin.com/in/yourprofile"
-                className="h-11"
+                className={`h-11 ${shouldShowError('linkedinUrl') ? 'border-destructive' : ''}`}
                 value={formValues.linkedinUrl}
-                onChange={handleInputChange}
+                onChange={handleFieldChange}
+                onBlur={handleFieldBlur}
                 autoComplete="url"
                 aria-describedby="linkedin-hint linkedin-error"
               />
-              {fields.linkedinUrl?.errors && (
-                <div id="linkedin-error" className="text-destructive text-sm">
-                  {fields.linkedinUrl.errors}
-                </div>
-              )}
               <div id="linkedin-hint" className="text-[0.8rem] text-muted-foreground">
                 Your LinkedIn profile URL (optional)
               </div>
+              {shouldShowError('linkedinUrl') && (
+                <div id="linkedin-error" className="text-destructive text-sm">
+                  {errors.linkedinUrl}
+                </div>
+              )}
             </div>
 
             {/* Portfolio URL */}
@@ -130,20 +202,21 @@ export function SocialTab({
                 id="portfolio-url"
                 name="portfolioUrl"
                 placeholder="https://yourportfolio.com"
-                className="h-11"
+                className={`h-11 ${shouldShowError('portfolioUrl') ? 'border-destructive' : ''}`}
                 value={formValues.portfolioUrl}
-                onChange={handleInputChange}
+                onChange={handleFieldChange}
+                onBlur={handleFieldBlur}
                 autoComplete="url"
                 aria-describedby="portfolio-hint portfolio-error"
               />
-              {fields.portfolioUrl?.errors && (
-                <div id="portfolio-error" className="text-destructive text-sm">
-                  {fields.portfolioUrl.errors}
-                </div>
-              )}
               <div id="portfolio-hint" className="text-[0.8rem] text-muted-foreground">
                 Your personal website or portfolio URL (optional)
               </div>
+              {shouldShowError('portfolioUrl') && (
+                <div id="portfolio-error" className="text-destructive text-sm">
+                  {errors.portfolioUrl}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -161,12 +234,15 @@ export function SocialTab({
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
-        <SubmitButton 
-          text="Show Summary" 
+        <Button 
+          type="submit"
+          disabled={false} // Never disable since all fields are optional
           className="px-6"
-          variant="default"
           data-testid="create-site-button"
-        />
+        >
+          Show Summary
+          <SimpleIcon name="arrow-right" className="ml-2" size={16} />
+        </Button>
       </CardFooter>
     </>
   );

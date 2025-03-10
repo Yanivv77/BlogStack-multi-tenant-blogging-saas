@@ -62,23 +62,7 @@ export function StepIndicator({
                     type="button" // Explicitly set type to button to prevent form submission
                     data-testid={`step-button-${step}`}
                   >
-                    {isCompleted ? (
-                      <svg 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        width="16" 
-                        height="16" 
-                        viewBox="0 0 24 24" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        strokeWidth="3" 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    ) : (
-                      <span className="text-sm font-medium">{index + 1}</span>
-                    )}
+                    <span className="text-sm font-medium">{index + 1}</span>
                   </button>
                   
                   {/* Step Label */}

@@ -9,15 +9,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { BasicsTabProps, SiteFormValues, SubdirectoryStatus } from "../utils/types";
 import { useDebounce } from "../utils/hooks";
+import { validateField, checkSubdirectoryAvailability, ValidationErrors } from "../utils/zodValidation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /**
  * BasicsTab component for collecting basic site information
  * First step in the site creation process
  */
 export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }: BasicsTabProps) {
-  const [localErrors, setLocalErrors] = useState<Partial<Record<keyof SiteFormValues, string>>>({});
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [isCheckingSubdirectory, setIsCheckingSubdirectory] = useState(false);
   const [subdirectoryStatus, setSubdirectoryStatus] = useState<SubdirectoryStatus>(null);
+  const [attemptedNext, setAttemptedNext] = useState(false);
   
   // Track if we've already validated the subdirectory to prevent unnecessary API calls
   const validatedSubdirectories = useRef<Set<string>>(new Set());
@@ -26,14 +30,18 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
    * Check if a subdirectory is available
    */
   const checkSubdirectoryUniqueness = async (subdirectory: string) => {
-    if (!subdirectory || !/^[a-zA-Z0-9-]+$/.test(subdirectory)) {
+    // First validate the subdirectory format
+    const formatError = validateField('subdirectory', subdirectory);
+    if (formatError) {
       setSubdirectoryStatus("invalid");
+      setErrors(prev => ({ ...prev, subdirectory: formatError }));
       return;
     }
     
     // If we've already validated this subdirectory as available, don't check again
     if (validatedSubdirectories.current.has(subdirectory)) {
       setSubdirectoryStatus("available");
+      setErrors(prev => ({ ...prev, subdirectory: undefined }));
       return;
     }
     
@@ -41,16 +49,15 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
     setSubdirectoryStatus("checking");
     
     try {
-      const response = await fetch(`/api/check-subdirectory?subdirectory=${encodeURIComponent(subdirectory)}`);
-      const data = await response.json();
+      const isAvailable = await checkSubdirectoryAvailability(subdirectory);
       
-      if (data.isUnique) {
+      if (isAvailable) {
         setSubdirectoryStatus("available");
         validatedSubdirectories.current.add(subdirectory); // Remember this subdirectory is valid
-        setLocalErrors(prev => ({ ...prev, subdirectory: undefined }));
+        setErrors(prev => ({ ...prev, subdirectory: undefined }));
       } else {
         setSubdirectoryStatus("unavailable");
-        setLocalErrors(prev => ({ ...prev, subdirectory: "This subdirectory is already taken" }));
+        setErrors(prev => ({ ...prev, subdirectory: "This subdirectory is already taken" }));
       }
     } catch (error) {
       console.error("Error checking subdirectory:", error);
@@ -66,20 +73,23 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
   useEffect(() => {
     if (!formValues.subdirectory) {
       setSubdirectoryStatus(null);
+      setErrors(prev => ({ ...prev, subdirectory: undefined }));
       return;
     }
     
-    if (!/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
-      setSubdirectoryStatus("invalid");
-      setLocalErrors(prev => ({ 
-        ...prev, 
-        subdirectory: "Only letters, numbers, and hyphens are allowed" 
-      }));
-      return;
+    // Only validate if the user has interacted with the field or attempted to proceed
+    if (touchedFields.subdirectory || attemptedNext) {
+      // Validate subdirectory format first
+      const formatError = validateField('subdirectory', formValues.subdirectory);
+      if (formatError) {
+        setSubdirectoryStatus("invalid");
+        setErrors(prev => ({ ...prev, subdirectory: formatError }));
+        return;
+      }
+      
+      debouncedCheckSubdirectory(formValues.subdirectory);
     }
-    
-    debouncedCheckSubdirectory(formValues.subdirectory);
-  }, [formValues.subdirectory]);
+  }, [formValues.subdirectory, touchedFields.subdirectory, attemptedNext]);
 
   /**
    * Handle input change with validation
@@ -91,9 +101,21 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
     if (name === 'subdirectory') {
       // Remove spaces automatically
       if (value.includes(" ")) {
-        const newValue = value.replace(/\s+/g, "");
+        const newValue = value.replace(/\s+/g, "").toLowerCase();
         
         // Create a simpler synthetic event without trying to clone the original event
+        const syntheticEvent = {
+          target: { name, value: newValue }
+        } as React.ChangeEvent<HTMLInputElement>;
+        
+        handleInputChange(syntheticEvent);
+        return;
+      }
+      
+      // Convert to lowercase
+      if (value !== value.toLowerCase()) {
+        const newValue = value.toLowerCase();
+        
         const syntheticEvent = {
           target: { name, value: newValue }
         } as React.ChangeEvent<HTMLInputElement>;
@@ -106,9 +128,6 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
       if (value !== formValues.subdirectory) {
         setSubdirectoryStatus("checking");
       }
-    } else {
-      // Clear error for other fields
-      setLocalErrors(prev => ({ ...prev, [name]: undefined }));
     }
     
     // Pass to parent handler
@@ -116,33 +135,77 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
   };
 
   /**
+   * Handle field blur to validate after user interaction
+   */
+  const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field
+    const fieldError = validateField(name as keyof SiteFormValues, value);
+    setErrors(prev => ({ ...prev, [name]: fieldError }));
+    
+    // For subdirectory, check availability
+    if (name === 'subdirectory' && value && !fieldError) {
+      debouncedCheckSubdirectory(value);
+    }
+  };
+
+  /**
+   * Handle language selection
+   */
+  const handleLanguageChange = (value: string) => {
+    const syntheticEvent = {
+      target: { name: 'language', value }
+    } as React.ChangeEvent<HTMLSelectElement>;
+    
+    handleFieldChange(syntheticEvent);
+    
+    // Mark as touched and validate
+    setTouchedFields(prev => ({ ...prev, language: true }));
+    const fieldError = validateField('language', value);
+    setErrors(prev => ({ ...prev, language: fieldError }));
+  };
+
+  /**
    * Validate form fields and proceed if valid
    */
   const validateAndProceed = () => {
-    const errors: Partial<Record<keyof SiteFormValues, string>> = {};
-
-    if (!formValues.name?.trim()) {
-      errors.name = "Site name is required";
-    }
+    // Mark all fields as touched
+    setTouchedFields({
+      name: true,
+      subdirectory: true,
+      description: true,
+      language: true
+    });
     
-    if (!formValues.subdirectory?.trim()) {
-      errors.subdirectory = "Subdirectory is required";
-    } else if (!/^[a-zA-Z0-9-]+$/.test(formValues.subdirectory)) {
-      errors.subdirectory = "Only letters, numbers, and hyphens are allowed";
+    // Set attempted next to true to show all errors
+    setAttemptedNext(true);
+    
+    // Validate all fields
+    const newErrors: ValidationErrors = {};
+    
+    // Validate each field
+    const nameError = validateField('name', formValues.name);
+    if (nameError) newErrors.name = nameError;
+    
+    const subdirectoryError = validateField('subdirectory', formValues.subdirectory);
+    if (subdirectoryError) {
+      newErrors.subdirectory = subdirectoryError;
     } else if (subdirectoryStatus !== "available") {
-      errors.subdirectory = "Please ensure subdirectory is available";
+      newErrors.subdirectory = "Please ensure subdirectory is available";
     }
     
-    if (!formValues.description?.trim()) {
-      errors.description = "Description is required";
-    }
+    const descriptionError = validateField('description', formValues.description);
+    if (descriptionError) newErrors.description = descriptionError;
     
-    if (!["English", "Hebrew"].includes(formValues.language)) {
-      errors.language = "Please select a valid language";
-    }
+    const languageError = validateField('language', formValues.language);
+    if (languageError) newErrors.language = languageError;
 
-    setLocalErrors(errors);
-    return Object.keys(errors).length === 0;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   /**
@@ -163,7 +226,12 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
     !formValues.name || 
     !formValues.subdirectory || 
     !formValues.description || 
-    subdirectoryStatus !== "available";
+    (formValues.subdirectory && subdirectoryStatus !== "available" && subdirectoryStatus !== null);
+
+  // Helper function to determine if an error should be shown
+  const shouldShowError = (fieldName: keyof SiteFormValues) => {
+    return Boolean((touchedFields[fieldName as string] || attemptedNext) && errors[fieldName]);
+  };
 
   return (
     <>
@@ -188,19 +256,20 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
               id="site-name"
               name="name"
               placeholder="My Awesome Blog"
-              className={`h-11 ${localErrors.name ? 'border-destructive' : ''}`}
+              className={`h-11 ${shouldShowError('name') ? 'border-destructive' : ''}`}
               required
               value={formValues.name}
               onChange={handleFieldChange}
+              onBlur={handleFieldBlur}
               aria-describedby="name-hint name-error"
               autoComplete="off"
             />
             <div id="name-hint" className="text-[0.8rem] text-muted-foreground">
               Choose a memorable name for your site
             </div>
-            {(fields.name?.errors || localErrors.name) && (
+            {shouldShowError('name') && (
               <div id="name-error" className="text-destructive text-sm">
-                {localErrors.name || fields.name?.errors}
+                {errors.name}
               </div>
             )}
           </div>
@@ -222,13 +291,14 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
                   className={`h-11 rounded-l-none pr-8 ${
                     subdirectoryStatus === "available" 
                       ? 'border-green-500 focus-visible:ring-green-500' 
-                      : localErrors.subdirectory
+                      : shouldShowError('subdirectory')
                         ? 'border-destructive' 
                         : ''
                   }`}
                   required
                   value={formValues.subdirectory}
                   onChange={handleFieldChange}
+                  onBlur={handleFieldBlur}
                   autoComplete="off"
                   spellCheck="false"
                   aria-describedby="subdirectory-hint subdirectory-error subdirectory-success"
@@ -246,17 +316,16 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
               </div>
             </div>
             <div id="subdirectory-hint" className="text-[0.8rem] text-muted-foreground">
-              This will be your site's URL (only letters, numbers, and hyphens)
+              This will be your site's URL (only lowercase letters, numbers, and hyphens)
             </div>
-            {localErrors.subdirectory && (
+            {shouldShowError('subdirectory') && (
               <div id="subdirectory-error" className="text-destructive text-sm">
-                {localErrors.subdirectory}
+                {errors.subdirectory}
               </div>
             )}
-            {subdirectoryStatus === "available" && formValues.subdirectory && (
-              <div id="subdirectory-success" className="text-green-500 text-sm flex items-center gap-1">
-                <SimpleIcon name="check" size={14} />
-                Subdirectory is available
+            {subdirectoryStatus === "available" && (
+              <div id="subdirectory-success" className="text-green-500 text-sm">
+                This subdirectory is available
               </div>
             )}
           </div>
@@ -269,73 +338,65 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
             <Textarea
               id="site-description"
               name="description"
-              placeholder="Tell readers what your site is about..."
-              className={`min-h-[120px] resize-none ${localErrors.description ? 'border-destructive' : ''}`}
+              placeholder="Write a brief description of your site..."
+              className={`min-h-[100px] ${shouldShowError('description') ? 'border-destructive' : ''}`}
               required
               value={formValues.description}
               onChange={handleFieldChange}
+              onBlur={handleFieldBlur}
               aria-describedby="description-hint description-error"
-              autoComplete="off"
-              spellCheck="false"
             />
             <div id="description-hint" className="text-[0.8rem] text-muted-foreground">
-              A brief description of your site (max 150 characters)
+              Describe what your site is about (10-500 characters)
             </div>
-            {(fields.description?.errors || localErrors.description) && (
+            {shouldShowError('description') && (
               <div id="description-error" className="text-destructive text-sm">
-                {localErrors.description || fields.description?.errors}
+                {errors.description}
               </div>
             )}
           </div>
 
-          {/* Language Selection */}
+          {/* Language */}
           <div className="space-y-2">
             <Label htmlFor="site-language" className="text-base">
               Language
             </Label>
-            <select
-              id="site-language"
-              name="language"
-              className={`flex h-11 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${localErrors.language ? 'border-destructive' : ''}`}
-              value={formValues.language || "English"}
-              onChange={handleFieldChange}
-              aria-describedby="language-hint language-error"
+            <Select 
+              value={formValues.language} 
+              onValueChange={handleLanguageChange}
             >
-              <option value="English">English</option>
-              <option value="Hebrew">Hebrew</option>
-            </select>
+              <SelectTrigger 
+                id="site-language"
+                className={`h-11 ${shouldShowError('language') ? 'border-destructive' : ''}`}
+              >
+                <SelectValue placeholder="Select a language" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="English">English</SelectItem>
+                <SelectItem value="Hebrew">Hebrew</SelectItem>
+              </SelectContent>
+            </Select>
             <div id="language-hint" className="text-[0.8rem] text-muted-foreground">
               Select the primary language for your site
             </div>
-            {(fields.language?.errors || localErrors.language) && (
+            {shouldShowError('language') && (
               <div id="language-error" className="text-destructive text-sm">
-                {localErrors.language || fields.language?.errors}
+                {errors.language}
               </div>
             )}
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
-        <div></div>
+
+      <CardFooter className="flex justify-between px-6 sm:px-8 pb-6">
+        <div></div> {/* Empty div for spacing */}
         <Button 
-          type="button" 
           onClick={handleContinue}
-          id="basics-continue-button"
-          className="gap-2 px-6 min-w-[120px]"
-          aria-label="Continue to branding tab after validation"
-          disabled={isContinueDisabled}
-          data-testid="continue-button"
+          disabled={!!isContinueDisabled}
+          className="w-full sm:w-auto"
         >
-          {isCheckingSubdirectory ? (
-            <>
-              <SimpleIcon name="loader" size={16} className="animate-spin mr-2" />
-              Checking...
-            </>
-          ) : (
-            <>
-              Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/>
-            </>
-          )}
+          Continue
+          <SimpleIcon name="arrow-right" className="ml-2" size={16} />
         </Button>
       </CardFooter>
     </>
