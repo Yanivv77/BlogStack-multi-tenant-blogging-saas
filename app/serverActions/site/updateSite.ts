@@ -4,15 +4,17 @@ import { parseWithZod } from "@conform-to/zod";
 import prisma from "../../utils/db/prisma";
 import { siteSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
+import { serverLogger } from "../../utils/logger";
 
 /**
  * Updates an existing site
  */
 export async function UpdateSiteAction(_prevState: any, formData: FormData) {
-  console.log("🚀 UpdateSiteAction started");
+  const logger = serverLogger("UpdateSiteAction");
+  logger.start();
   
   // Log form data for debugging
-  console.log("📝 Form data received:", {
+  logger.debug("Form data received", {
     name: formData.get("name"),
     description: formData.get("description")?.toString().substring(0, 20) + "...",
     language: formData.get("language"),
@@ -26,30 +28,30 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
   
   const user = await getAuthenticatedUser();
   if (!user) {
-    console.error("❌ Authentication error: User not logged in");
+    logger.error("Authentication error: User not logged in");
     return { error: { _form: ["You must be logged in to update a site"] } };
   }
   
-  console.log("👤 User authenticated:", { id: user.id, email: user.email });
+  logger.info("User authenticated", { id: user.id, email: user.email });
 
   try {
     // Get siteId from formData
     const siteId = formData.get("siteId") as string;
     if (!siteId) {
-      console.error("❌ Validation error: Site ID is required");
+      logger.error("Validation error: Site ID is required");
       return { error: { _form: ["Site ID is required"] } };
     }
 
     // Verify the user owns the site
-    console.log(`🔍 Verifying user owns site with ID: ${siteId}`);
+    logger.debug(`Verifying user owns site with ID: ${siteId}`);
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
-      console.error("❌ Authorization error: Site not found or user doesn't have permission");
+      logger.error("Authorization error: Site not found or user doesn't have permission", null, { siteId, userId: user.id });
       return { error: { _form: ["Site not found or you don't have permission"] } };
     }
     
-    console.log("✅ User verified as site owner");
-    console.log("🔍 Validating form data with Zod schema");
+    logger.debug("User verified as site owner");
+    logger.debug("Validating form data with Zod schema");
 
     // Validate form data
     const submission = await parseWithZod(formData, {
@@ -58,11 +60,11 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
     });
 
     if (submission.status !== "success") {
-      console.error("❌ Validation failed:", submission.error);
+      logger.warn("Validation failed", { errors: submission.error });
       return submission.reply();
     }
 
-    console.log("✅ Validation successful");
+    logger.info("Validation successful");
     
     const {
       name,
@@ -76,7 +78,7 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
       logoImage,
     } = submission.value;
 
-    console.log("💾 Updating site in database:", {
+    logger.info("Updating site in database", {
       id: siteId,
       name,
       userId: user.id,
@@ -98,21 +100,21 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
       },
     });
     
-    console.log("✅ Site updated successfully:", {
+    logger.success("Site updated successfully", {
       id: updatedSite.id,
       name: updatedSite.name,
       updatedAt: updatedSite.updatedAt,
     });
 
     // Return success with redirect URL
-    console.log("🔀 Redirecting to site dashboard");
+    logger.info("Redirecting to site dashboard");
     return { success: true, redirectUrl: `/dashboard/sites/${siteId}` };
   } catch (error: unknown) {
-    console.error("❌ Error updating site:", error);
+    logger.error("Error updating site", error);
     
     // Log detailed error information
     if (error instanceof Error) {
-      console.error("Error details:", {
+      logger.error("Error details", {
         message: error.message,
         stack: error.stack,
         name: error.name,
@@ -121,12 +123,13 @@ export async function UpdateSiteAction(_prevState: any, formData: FormData) {
     
     // Check for Prisma-specific errors
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      console.error("Database error code:", (error as { code: string }).code);
+      logger.error("Database error code", { code: (error as { code: string }).code });
       
       // Handle common Prisma error codes
       if ((error as { code: string }).code === 'P2002') {
-        console.error("Unique constraint violation:", 
-          (error as { meta?: { target?: string[] } }).meta?.target);
+        logger.error("Unique constraint violation", { 
+          target: (error as { meta?: { target?: string[] } }).meta?.target 
+        });
         return { error: { _form: ["A unique constraint was violated. Please check your inputs."] } };
       }
     }

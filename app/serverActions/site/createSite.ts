@@ -4,12 +4,14 @@ import prisma from "../../utils/db/prisma";
 import { SiteCreationSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable } from "../utils/helpers";
 import { parseWithZod } from "@conform-to/zod";
+import { serverLogger } from "../../utils/logger";
 
 export async function CreateSiteAction(_prevState: any, formData: FormData) {
-  console.log("🚀 CreateSiteAction started");
+  const logger = serverLogger("CreateSiteAction");
+  logger.start();
   
   // Log form data for debugging
-  console.log("📝 Form data received:", {
+  logger.debug("Form data received", {
     name: formData.get("name"),
     description: formData.get("description")?.toString().substring(0, 20) + "...",
     subdirectory: formData.get("subdirectory"),
@@ -24,14 +26,14 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
   
   const user = await getAuthenticatedUser();
   if (!user) {
-    console.error("❌ Authentication error: User not logged in");
+    logger.error("Authentication error: User not logged in");
     return { error: { _form: ["You must be logged in to create a site"] } };
   }
   
-  console.log("👤 User authenticated:", { id: user.id, email: user.email });
+  logger.info("User authenticated", { id: user.id, email: user.email });
 
   try {
-    console.log("🔍 Validating form data with Zod schema");
+    logger.debug("Validating form data with Zod schema");
     
     // Validate form data using zod schema
     const submission = await parseWithZod(formData, {
@@ -39,17 +41,17 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
         async isSubdirectoryUnique() {
           const subdirectory = formData.get("subdirectory") as string;
           if (!subdirectory) {
-            console.log("❌ Subdirectory validation failed: No subdirectory provided");
+            logger.error("Subdirectory validation failed: No subdirectory provided");
             return false;
           }
           
-          console.log(`🔍 Checking if subdirectory '${subdirectory}' is unique`);
+          logger.debug(`Checking if subdirectory '${subdirectory}' is unique`);
           const existingSite = await prisma.site.findFirst({
             where: { subdirectory },
           });
           
           const isUnique = !existingSite;
-          console.log(`🔍 Subdirectory '${subdirectory}' is ${isUnique ? 'unique' : 'already taken'}`);
+          logger.debug(`Subdirectory '${subdirectory}' is ${isUnique ? 'unique' : 'already taken'}`);
           return isUnique;
         },
       }),
@@ -57,11 +59,11 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     });
 
     if (submission.status !== "success") {
-      console.error("❌ Validation failed:", submission.error);
+      logger.error("Validation failed:", submission.error);
       return submission.reply();
     }
 
-    console.log("✅ Validation successful");
+    logger.info("Validation successful");
     
     const {
       name,
@@ -76,7 +78,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
       logoImage,
     } = submission.value;
 
-    console.log("💾 Creating site in database:", {
+    logger.info("Creating site in database:", {
       name,
       subdirectory,
       userId: user.id,
@@ -99,7 +101,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
       },
     });
     
-    console.log("✅ Site created successfully:", {
+    logger.info("Site created successfully:", {
       id: newSite.id,
       name: newSite.name,
       subdirectory: newSite.subdirectory,
@@ -107,14 +109,14 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     });
 
     // Return success with redirect URL
-    console.log("🔀 Redirecting to dashboard");
+    logger.info("Redirecting to dashboard");
     return { success: true, redirectUrl: "/dashboard/sites" };
   } catch (error: unknown) {
-    console.error("❌ Error creating site:", error);
+    logger.error("Error creating site:", error);
     
     // Log detailed error information
     if (error instanceof Error) {
-      console.error("Error details:", {
+      logger.error("Error details:", {
         message: error.message,
         stack: error.stack,
         name: error.name,
@@ -123,11 +125,11 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     
     // Check for Prisma-specific errors
     if (typeof error === 'object' && error !== null && 'code' in error) {
-      console.error("Database error code:", (error as { code: string }).code);
+      logger.error("Database error code:", (error as { code: string }).code);
       
       // Handle common Prisma error codes
       if ((error as { code: string }).code === 'P2002') {
-        console.error("Unique constraint violation:", 
+        logger.error("Unique constraint violation:", 
           (error as { meta?: { target?: string[] } }).meta?.target);
         return { error: { _form: ["This subdirectory is already taken. Please choose another one."] } };
       }
