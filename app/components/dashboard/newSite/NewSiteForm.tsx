@@ -31,8 +31,6 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 // Import types and utilities
 import { SiteFormValues, StepName } from "./utils/types";
