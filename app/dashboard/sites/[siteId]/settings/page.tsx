@@ -1,11 +1,11 @@
-import { UploadImageForm } from "@/app/components/dashboard/forms/UploadImageForm";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { DeleteSiteClient } from "./DeleteSiteClient";
 import prisma from "@/app/utils/db/prisma";
 import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
+import { SettingsTabs } from "./components/SettingsTabs";
 
 export default async function SettingsSiteRoute({
   params,
@@ -23,7 +23,7 @@ export default async function SettingsSiteRoute({
     redirect("/api/auth/login");
   }
 
-  // Fetch the site to get its name
+  // Fetch the site with all fields needed for the form
   const site = await prisma.site.findFirst({
     where: {
       id: siteId,
@@ -32,6 +32,15 @@ export default async function SettingsSiteRoute({
     select: {
       id: true,
       name: true,
+      description: true,
+      subdirectory: true,
+      language: true,
+      email: true,
+      githubUrl: true,
+      linkedinUrl: true,
+      portfolioUrl: true,
+      siteImageCover: true,
+      logoImage: true,
     },
   });
 
@@ -41,19 +50,28 @@ export default async function SettingsSiteRoute({
   }
 
   return (
-    <>
-      <div className="flex items-center gap-x-2">
-        <Button variant="outline" size="icon">
-          <Link href={`/dashboard/sites/${siteId}`}>
-            <ChevronLeft className="size-4" />
-          </Link>
-        </Button>
-        <h3 className="text-xl font-semibold">Go back</h3>
+    <div className="container mx-auto py-6 max-w-5xl">
+      {/* Header with breadcrumb navigation */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-x-2">
+          <Button variant="outline" size="icon" asChild>
+            <Link href={`/dashboard/sites/${siteId}`}>
+              <ChevronLeft className="size-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+            <p className="text-sm text-muted-foreground">
+              Manage your site "{site.name}" settings and preferences
+            </p>
+          </div>
+        </div>
       </div>
 
-      <UploadImageForm siteId={siteId} />
+      <Separator className="my-6" />
 
-      <DeleteSiteClient siteId={siteId} siteName={site.name} />
-    </>
+      {/* Settings tabs */}
+      <SettingsTabs site={site} />
+    </div>
   );
-}
+} 
