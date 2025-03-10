@@ -212,7 +212,7 @@ export function SummaryTab({
           type="button"
           variant="outline"
           onClick={goToPrevTab}
-          className="flex items-center gap-2 px-5 py-2.5 h-auto"
+          className="flex items-center gap-2 px-5 py-2.5 h-auto text-foreground"
           // Disable back button during form submission
           disabled={useFormStatus().pending || isPending}
         >

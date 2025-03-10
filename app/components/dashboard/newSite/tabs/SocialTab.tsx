@@ -227,7 +227,7 @@ export function SocialTab({
           variant="outline" 
           onClick={goToPrevTab}
           id="social-back-button"
-          className="px-4"
+          className="px-4 text-foreground"
           aria-label="Go back to branding tab"
           data-testid="social-back-button"
         >

@@ -367,9 +367,9 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
             >
               <SelectTrigger 
                 id="site-language"
-                className={`h-11 ${shouldShowError('language') ? 'border-destructive' : ''}`}
+                className={`h-11 text-foreground ${shouldShowError('language') ? 'border-destructive' : ''}`}
               >
-                <SelectValue placeholder="Select a language" />
+                <SelectValue placeholder="Select a language" className="text-muted-foreground" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="English">English</SelectItem>

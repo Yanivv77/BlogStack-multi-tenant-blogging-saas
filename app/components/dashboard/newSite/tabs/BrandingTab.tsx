@@ -210,7 +210,7 @@ export function BrandingTab({
           variant="outline" 
           onClick={goToPrevTab}
           id="branding-back-button"
-          className="px-4"
+          className="px-4 text-foreground"
           aria-label="Go back to basics tab"
           data-testid="branding-back-button"
           disabled={isUploadingCover || isUploadingLogo}
