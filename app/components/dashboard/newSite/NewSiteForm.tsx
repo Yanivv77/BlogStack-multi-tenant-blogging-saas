@@ -1,5 +1,25 @@
 "use client";
 
+/**
+ * New Site Form Component
+ * -----------------------
+ * A multi-step form for creating a new blog site in the BlogStack platform.
+ * 
+ * Features:
+ * - Multi-step form with tabs for different sections (Basics, Branding, Social)
+ * - Form validation using Zod schemas
+ * - Real-time subdirectory availability checking
+ * - Image upload for site logo and cover image
+ * - Form state management with useForm hook
+ * - Success/error toast notifications
+ * - Automatic redirection after successful submission
+ * 
+ * The form is divided into three main sections:
+ * 1. Basics - Site name, description, subdirectory, language
+ * 2. Branding - Logo and cover image uploads
+ * 3. Social - Email and social media links
+ */
+
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
@@ -24,10 +44,6 @@ import { BrandingTab } from "./tabs/BrandingTab";
 import { SocialTab } from "./tabs/SocialTab";
 import { CreateSiteAction } from "@/app/serverActions/site/createSite";
 
-/**
- * NewSiteForm component
- * Multi-step form for creating a new site
- */
 export function NewSiteForm() {
   const router = useRouter();
   const [lastResult, formAction] = useActionState(CreateSiteAction, undefined);
@@ -38,12 +54,12 @@ export function NewSiteForm() {
   // Define steps for the form - memoize to prevent recreation
   const steps: StepName[] = useMemo(() => ["basics", "branding", "social"], []);
   
-  // State to track form values
+  // State for form values and active tab
   const [formValues, setFormValues] = useState<SiteFormValues>({
     name: "",
-    subdirectory: "",
     description: "",
-    language: "English", // Default to English
+    subdirectory: "",
+    language: "English",
     email: "",
     githubUrl: "",
     linkedinUrl: "",
@@ -74,11 +90,16 @@ export function NewSiteForm() {
    * Update form values when input changes
    */
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Prevent any default behaviors
-    e.stopPropagation();
+    // Only call stopPropagation if e is a valid event object
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
     
-    const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
+    // Make sure e.target exists and has name/value properties
+    if (e && e.target && 'name' in e.target && 'value' in e.target) {
+      const { name, value } = e.target;
+      setFormValues(prev => ({ ...prev, [name]: value }));
+    }
   }, []);
   
   /**
@@ -129,7 +150,7 @@ export function NewSiteForm() {
    * Navigate to next tab
    */
   const goToNextTab = useCallback((e?: React.MouseEvent) => {
-    if (e) {
+    if (e && typeof e.preventDefault === 'function' && typeof e.stopPropagation === 'function') {
       e.preventDefault();
       e.stopPropagation();
     }
@@ -147,7 +168,7 @@ export function NewSiteForm() {
    * Navigate to previous tab
    */
   const goToPrevTab = useCallback((e?: React.MouseEvent) => {
-    if (e) {
+    if (e && typeof e.stopPropagation === 'function' && typeof e.preventDefault === 'function') {
       e.stopPropagation();
       e.preventDefault();
     }
@@ -160,8 +181,10 @@ export function NewSiteForm() {
    * Handle form submission
    */
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+    if (e && typeof e.preventDefault === 'function' && typeof e.stopPropagation === 'function') {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     // Only allow form submission from the social tab
     if (activeTab !== "social") {
@@ -175,26 +198,28 @@ export function NewSiteForm() {
       }
     } else {
       // When on the social tab, allow the form to actually submit to the server
-      const formElement = e.currentTarget;
-      
-      // Add hidden fields for images if they exist
-      if (siteImageCover) {
-        addHiddenInput(formElement, 'siteImageCover', siteImageCover);
-      }
-      
-      if (logoImage) {
-        addHiddenInput(formElement, 'logoImage', logoImage);
-      }
-      
-      // Add all form values as hidden fields to ensure they're included
-      Object.entries(formValues).forEach(([key, value]) => {
-        if (value !== undefined) {
-          addHiddenInput(formElement, key, value);
+      if (e && e.currentTarget) {
+        const formElement = e.currentTarget;
+        
+        // Add hidden fields for images if they exist
+        if (siteImageCover) {
+          addHiddenInput(formElement, 'siteImageCover', siteImageCover);
         }
-      });
-      
-      // Submit the form to create the site
-      formElement.requestSubmit();
+        
+        if (logoImage) {
+          addHiddenInput(formElement, 'logoImage', logoImage);
+        }
+        
+        // Add all form values as hidden fields to ensure they're included
+        Object.entries(formValues).forEach(([key, value]) => {
+          if (value !== undefined) {
+            addHiddenInput(formElement, key, String(value));
+          }
+        });
+        
+        // Submit the form to create the site
+        formElement.requestSubmit();
+      }
     }
   }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues]);
 

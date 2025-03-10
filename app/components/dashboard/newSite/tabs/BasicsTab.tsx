@@ -92,10 +92,12 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
       // Remove spaces automatically
       if (value.includes(" ")) {
         const newValue = value.replace(/\s+/g, "");
+        
+        // Create a simpler synthetic event without trying to clone the original event
         const syntheticEvent = {
-          ...e,
-          target: { ...e.target, value: newValue }
+          target: { name, value: newValue }
         } as React.ChangeEvent<HTMLInputElement>;
+        
         handleInputChange(syntheticEvent);
         return;
       }

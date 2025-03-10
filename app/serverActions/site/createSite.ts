@@ -1,14 +1,10 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import prisma from "../../utils/db/prisma";
 import { SiteCreationSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable } from "../utils/helpers";
 import { parseWithZod } from "@conform-to/zod";
 
-/**
- * Creates a new site for the authenticated user
- */
 export async function CreateSiteAction(_prevState: any, formData: FormData) {
   const user = await getAuthenticatedUser();
   if (!user) {
