@@ -43,7 +43,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="flex flex-col h-full">
               <div className="flex h-14 items-center px-4">
                 <Link href="/" className="flex items-center gap-2 font-semibold">
-                  <Image src={globe} alt="Logo" className="size-6" />
+                  <Image src={globe} alt="Logo" className="size-6" priority />
                   <h3 className="text-xl">
                     Blog<span className="text-primary">Stack</span>
                   </h3>
@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </Sheet>
         
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Image src={globe} alt="Logo" className="size-6" />
+          <Image src={globe} alt="Logo" className="size-6" priority />
           <h3 className="text-xl">
             Blog<span className="text-primary">Stack</span>
           </h3>
@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="fixed inset-y-0 left-0 w-[200px] lg:w-[220px] flex flex-col h-screen border-r bg-muted/40">
             <div className="flex h-16 items-center border-b px-4">
               <Link href="/" className="flex items-center gap-2 font-semibold">
-                <Image src={globe} alt="Logo" className="size-6" />
+                <Image src={globe} alt="Logo" className="size-6" priority />
                 <h3 className="text-lg">
                   Blog<span className="text-primary">Stack</span>
                 </h3>

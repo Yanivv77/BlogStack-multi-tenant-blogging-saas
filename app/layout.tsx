@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "@uploadthing/react/styles.css";
 import "./globals.css";
@@ -22,6 +22,16 @@ const geistMono = localFont({
   preload: true,
   fallback: ["monospace"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
+  ],
+};
 
 export const metadata: Metadata = {
   title: {
@@ -48,15 +58,6 @@ export const metadata: Metadata = {
     description: "A modern, elegant blogging platform for creators and businesses",
     creator: "@blogstack",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-  },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
-  ],
   manifest: "/manifest.json",
   icons: {
     icon: "/globe.svg",
