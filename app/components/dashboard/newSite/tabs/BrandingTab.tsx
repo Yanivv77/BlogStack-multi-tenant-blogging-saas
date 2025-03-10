@@ -213,6 +213,7 @@ export function BrandingTab({
           className="px-4"
           aria-label="Go back to basics tab"
           data-testid="branding-back-button"
+          disabled={isUploadingCover || isUploadingLogo}
         >
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
@@ -224,8 +225,16 @@ export function BrandingTab({
           id="branding-next-button"
           aria-label="Continue to social tab"
           data-testid="branding-continue-button"
+          disabled={isUploadingCover || isUploadingLogo}
         >
-          Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/>
+          {isUploadingCover || isUploadingLogo ? (
+            <>
+              <span className="animate-pulse">Processing</span>
+              <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+            </>
+          ) : (
+            <>Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/></>
+          )}
         </Button>
       </CardFooter>
     </>
