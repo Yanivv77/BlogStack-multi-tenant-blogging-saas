@@ -162,7 +162,7 @@ export function SocialTab({
           Back
         </Button>
         <SubmitButton 
-          text="Create Site" 
+          text="Show Summary" 
           className="px-6"
           variant="default"
           data-testid="create-site-button"

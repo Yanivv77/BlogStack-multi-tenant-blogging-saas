@@ -24,6 +24,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useActionState } from "react";
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
+import { useTransition } from "react";
 
 import { SiteCreationSchema } from "@/app/utils/validation/siteSchema";
 import { Card } from "@/components/ui/card";
@@ -47,6 +48,7 @@ import { SummaryTab } from "./tabs/SummaryTab";
 
 export function NewSiteForm() {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [lastResult, formAction] = useActionState(CreateSiteAction, undefined);
   const [siteImageCover, setSiteImageCover] = useState<string>("");
   const [logoImage, setLogoImage] = useState<string>("");
@@ -185,10 +187,8 @@ export function NewSiteForm() {
    * Handle form submission
    */
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    if (e && typeof e.preventDefault === 'function' && typeof e.stopPropagation === 'function') {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    // Always prevent default to handle submission ourselves
+    e.preventDefault();
     
     // Only allow form submission from the summary tab
     if (activeTab !== "summary") {
@@ -202,32 +202,47 @@ export function NewSiteForm() {
       } else if (activeTab === "social") {
         setActiveTab("summary");
       }
-    } else {
-      // When on the summary tab, allow the form to actually submit to the server
-      if (e && e.currentTarget) {
-        const formElement = e.currentTarget;
-        
-        // Add hidden fields for images if they exist
-        if (siteImageCover) {
-          addHiddenInput(formElement, 'siteImageCover', siteImageCover);
-        }
-        
-        if (logoImage) {
-          addHiddenInput(formElement, 'logoImage', logoImage);
-        }
-        
-        // Add all form values as hidden fields to ensure they're included
-        Object.entries(formValues).forEach(([key, value]) => {
-          if (value !== undefined) {
-            addHiddenInput(formElement, key, String(value));
-          }
-        });
-        
-        // Submit the form to create the site
-        formElement.requestSubmit();
-      }
+      return;
     }
-  }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues]);
+    
+    // When on the summary tab, prepare the form data and submit
+    const formElement = e.currentTarget;
+    
+    // Clear any existing hidden inputs to prevent duplicates
+    const hiddenInputs = formElement.querySelectorAll('input[type="hidden"]');
+    hiddenInputs.forEach((input) => {
+      // Safe type assertion since we're only selecting input elements
+      const inputEl = input as HTMLInputElement;
+      // Skip CSRF and framework-specific inputs
+      if (inputEl.name !== 'csrf' && !inputEl.name.startsWith('_')) {
+        inputEl.parentNode?.removeChild(inputEl);
+      }
+    });
+    
+    // Add hidden fields for images if they exist
+    if (siteImageCover) {
+      addHiddenInput(formElement, 'siteImageCover', siteImageCover);
+    }
+    
+    if (logoImage) {
+      addHiddenInput(formElement, 'logoImage', logoImage);
+    }
+    
+    // Add all form values as hidden fields to ensure they're included
+    Object.entries(formValues).forEach(([key, value]) => {
+      if (value !== undefined) {
+        addHiddenInput(formElement, key, String(value));
+      }
+    });
+    
+    // Create a FormData object
+    const formData = new FormData(formElement);
+    
+    // Use startTransition to properly dispatch the server action
+    startTransition(() => {
+      formAction(formData);
+    });
+  }, [activeTab, validateBasicsTab, siteImageCover, logoImage, formValues, formAction, startTransition]);
 
   // Memoize the active index calculation
   const activeIndex = useMemo(() => 
@@ -245,7 +260,6 @@ export function NewSiteForm() {
         />
         
         <form 
-          action={formAction}
           id={form.id} 
           className="space-y-6"
           onSubmit={handleSubmit}
@@ -286,6 +300,7 @@ export function NewSiteForm() {
               siteImageCover={siteImageCover}
               logoImage={logoImage}
               goToPrevTab={goToPrevTab}
+              isPending={isPending}
             />
           </TabsContent>
         </form>

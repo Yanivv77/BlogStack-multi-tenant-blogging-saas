@@ -7,12 +7,42 @@ import { SiteFormValues } from "../utils/types";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { useFormStatus } from "react-dom";
+import { useEffect } from "react";
+
+// Create a submit button component that shows loading state
+function SubmitButton({ isPending }: { isPending?: boolean }) {
+  const { pending } = useFormStatus();
+  const isLoading = pending || isPending;
+  
+  return (
+    <Button 
+      type="submit" 
+      className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 py-2.5 h-auto shadow-md hover:shadow-lg transition-all"
+      disabled={isLoading}
+      aria-disabled={isLoading}
+    >
+      {isLoading ? (
+        <>
+          <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+          <span>Creating...</span>
+        </>
+      ) : (
+        <>
+          <SimpleIcon name="check" size={18} />
+          <span>Create Your Blog</span>
+        </>
+      )}
+    </Button>
+  );
+}
 
 interface SummaryTabProps {
   formValues: SiteFormValues;
   siteImageCover: string | null;
   logoImage: string | null;
   goToPrevTab: (e?: React.MouseEvent) => void;
+  isPending?: boolean;
 }
 
 /**
@@ -23,7 +53,8 @@ export function SummaryTab({
   formValues, 
   siteImageCover, 
   logoImage, 
-  goToPrevTab 
+  goToPrevTab,
+  isPending
 }: SummaryTabProps) {
   // Check if any social links are provided
   const hasSocialLinks = Boolean(
@@ -34,7 +65,7 @@ export function SummaryTab({
   );
 
   return (
-    <>
+    <div className="summary-tab-content">
       <CardContent className="space-y-8 pt-8 px-6 sm:px-8">
         <div className="space-y-8">
           <div className="text-center max-w-2xl mx-auto">
@@ -165,7 +196,7 @@ export function SummaryTab({
             <div className="flex gap-4">
               <SimpleIcon name="info" size={24} className="text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold mb-2 text-base">Ready to create your site?</p>
+                <p className="font-semibold mb-2 text-base">Ready to create your blog?</p>
                 <p className="text-muted-foreground leading-relaxed">
                   Once created, you can start adding blog posts and customizing your site further from the dashboard.
                   Your site will be immediately available at <span className="font-mono text-primary font-medium">blogstack.io/{formValues.subdirectory}</span>.
@@ -182,19 +213,15 @@ export function SummaryTab({
           variant="outline"
           onClick={goToPrevTab}
           className="flex items-center gap-2 px-5 py-2.5 h-auto"
+          // Disable back button during form submission
+          disabled={useFormStatus().pending || isPending}
         >
           <SimpleIcon name="arrowleft" size={16} />
           Back
         </Button>
         
-        <Button 
-          type="submit" 
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-6 py-2.5 h-auto shadow-md hover:shadow-lg transition-all"
-        >
-          <SimpleIcon name="check" size={18} />
-          Create Your Site
-        </Button>
+        <SubmitButton isPending={isPending} />
       </CardFooter>
-    </>
+    </div>
   );
 } 
