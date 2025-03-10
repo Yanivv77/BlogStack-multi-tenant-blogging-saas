@@ -58,31 +58,59 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
     } = submission.value;
 
     // Process content images
-    let contentImages: string[] = [];
+    let contentImages;
     if (rawContentImages) {
       try {
-        contentImages = JSON.parse(rawContentImages as string);
-      } catch {
+        // If it's already a string, parse it; otherwise keep it as is
+        contentImages = typeof rawContentImages === 'string' 
+          ? JSON.parse(rawContentImages) 
+          : rawContentImages;
+      } catch (e) {
+        console.error("Error parsing content images:", e);
         contentImages = [];
       }
+    } else {
+      contentImages = [];
     }
 
-    // Create the post
-    const post = await prisma.post.create({
-      data: {
-        title,
-        smallDescription,
-        articleContent,
-        slug,
-        postCoverImage: await toNullable(postCoverImage),
-        contentImages: contentImages,
-        siteId,
-        views: 0,
-        likes: 0,
-      },
-    });
+    // Convert articleContent to proper JSON if it's a string
+    let processedArticleContent;
+    try {
+      processedArticleContent = typeof articleContent === 'string' 
+        ? JSON.parse(articleContent) 
+        : articleContent;
+    } catch (e) {
+      console.error("Error parsing article content:", e);
+      return { error: { _form: ["Invalid article content format"] } };
+    }
 
-    return { success: true, postId: post.id };
+    // Create the post with proper JSON fields
+    try {
+      const post = await prisma.post.create({
+        data: {
+          title,
+          smallDescription,
+          articleContent: processedArticleContent,
+          slug,
+          postCoverImage: await toNullable(postCoverImage),
+          contentImages: contentImages,
+          siteId,
+          userId: user.id, // Add the userId from authenticated user
+          views: 0,
+          likes: 0,
+        },
+      });
+
+      console.log("Post created successfully:", post.id);
+      return { success: true, postId: post.id };
+    } catch (dbError) {
+      console.error("Database error creating post:", dbError);
+      return { 
+        error: { 
+          _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] 
+        } 
+      };
+    }
   } catch (error) {
     console.error("Error creating post:", error);
     

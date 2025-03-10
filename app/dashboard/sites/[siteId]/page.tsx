@@ -165,7 +165,7 @@ export default async function SiteIdRoute(props: {
               title="No articles yet"
               description="Start creating content for your blog by adding your first article."
               buttonText="Create New Article"
-              href={`/dashboard/sites/${siteId}/new`}
+              href={`/dashboard/sites/${siteId}/create`}
               icon={<FileIcon className="size-10 text-muted-foreground" />}
             />
           ) : (
@@ -179,7 +179,7 @@ export default async function SiteIdRoute(props: {
                     </CardDescription>
                   </div>
                   <Button asChild size="sm">
-                    <Link href={`/dashboard/sites/${siteId}/new`} className="flex items-center">
+                    <Link href={`/dashboard/sites/${siteId}/create`} className="flex items-center">
                       <PlusCircle className="mr-1.5 size-4" />
                       <span>New Article</span>
                     </Link>
@@ -239,7 +239,7 @@ export default async function SiteIdRoute(props: {
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem asChild>
                                   <Link
-                                    href={`/dashboard/sites/${siteId}/${post.id}`}
+                                    href={`/dashboard/sites/${siteId}/editor/${post.id}`}
                                     className="flex items-center cursor-pointer"
                                   >
                                     <Edit className="mr-2 size-4" />
@@ -260,7 +260,7 @@ export default async function SiteIdRoute(props: {
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem asChild>
                                   <Link
-                                    href={`/dashboard/sites/${siteId}/${post.id}/delete`}
+                                    href={`/dashboard/sites/${siteId}/editor/${post.id}/delete`}
                                     className="flex items-center cursor-pointer text-destructive"
                                   >
                                     <Trash2 className="mr-2 size-4" />

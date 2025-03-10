@@ -166,16 +166,7 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
   return (
     <div className="relative w-full">
       {/* Status indicators */}
-      <div className="flex absolute right-5 top-5 z-10 mb-5 gap-2">
-        <div className="rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground">
-          {saveStatus}
-        </div>
-        {wordCount && (
-          <div className="rounded-lg bg-accent px-2 py-1 text-sm text-muted-foreground">
-            {wordCount} Words
-          </div>
-        )}
-      </div>
+
       
       {/* Editor header with commands help */}
       <div className="flex items-center border border-muted rounded-t-lg bg-background p-6 gap-2 mb-0">
@@ -186,6 +177,13 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
           <span className="bg-muted px-2 py-1 rounded">Select text</span>
           <span>to show formatting options</span>
         </div>
+        <div className="flex absolute right-5 top-5 z-10  gap-2">
+        {wordCount && (
+          <div className="rounded-lg px-2 py-1 text-sm text-muted-foreground">
+            {wordCount} Words - {saveStatus}
+          </div>
+        )}
+      </div>
       </div>
       
       {/* Editor root */}

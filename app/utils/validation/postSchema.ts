@@ -8,10 +8,10 @@ import { ValidationMessages } from "./messages";
 export const PostSchema = z.object({
   title: z.string().min(3, ValidationMessages.TOO_SHORT(3)),
   smallDescription: z.string().min(10, ValidationMessages.TOO_SHORT(10)),
-  articleContent: z.any(),
+  articleContent: z.union([z.string(), z.object({}).passthrough()]),
   slug: z.string().min(3, ValidationMessages.TOO_SHORT(3)),
-  postCoverImage: z.string().optional(),
-  contentImages: z.any().optional(),
+  postCoverImage: z.string().nullable().optional(),
+  contentImages: z.union([z.string(), z.array(z.any()), z.object({}).passthrough()]).optional(),
 });
 
 /**
@@ -23,7 +23,7 @@ export function PostCreationSchema(options?: {
   return z.object({
     title: z.string().min(3, ValidationMessages.TOO_SHORT(3)),
     smallDescription: z.string().min(10, ValidationMessages.TOO_SHORT(10)),
-    articleContent: z.any(),
+    articleContent: z.union([z.string(), z.object({}).passthrough()]),
     slug: z
       .string()
       .min(3, ValidationMessages.TOO_SHORT(3))
@@ -50,8 +50,8 @@ export function PostCreationSchema(options?: {
           });
         }
       }),
-    postCoverImage: z.string().optional(),
-    contentImages: z.any().optional(),
+    postCoverImage: z.string().nullable().optional(),
+    contentImages: z.union([z.string(), z.array(z.any()), z.object({}).passthrough()]).optional(),
   });
 }
 
@@ -65,7 +65,7 @@ export function PostEditSchema(options?: {
   return z.object({
     title: z.string().min(3, ValidationMessages.TOO_SHORT(3)),
     smallDescription: z.string().min(10, ValidationMessages.TOO_SHORT(10)),
-    articleContent: z.any(),
+    articleContent: z.union([z.string(), z.object({}).passthrough()]),
     slug: z
       .string()
       .min(3, ValidationMessages.TOO_SHORT(3))
@@ -92,7 +92,7 @@ export function PostEditSchema(options?: {
           });
         }
       }),
-    postCoverImage: z.string().optional(),
-    contentImages: z.any().optional(),
+    postCoverImage: z.string().nullable().optional(),
+    contentImages: z.union([z.string(), z.array(z.any()), z.object({}).passthrough()]).optional(),
   });
 } 
