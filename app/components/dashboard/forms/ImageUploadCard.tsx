@@ -1,44 +1,50 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import { ImageIcon, Loader2, RefreshCw, AlertTriangle } from "lucide-react";
-import { useState, useRef, useCallback } from "react";
-import { toast } from "sonner";
 import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import Image from "next/image";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { UpdateImage } from "@/app/serverActions/image/updateImage";
+import { Loader2, AlertTriangle, RefreshCw, ImageIcon } from "lucide-react";
 
-type AppearanceTabProps = {
+interface ImageUploadCardProps {
   siteId: string;
-  site?: {
-    siteImageCover: string | null;
-    logoImage: string | null;
-  }
-};
+  title: string;
+  description: string;
+  imageType: "site" | "logo";
+  existingImageUrl: string | null;
+  aspectRatio?: "landscape" | "square";
+}
 
-// A full-featured image card with upload functionality
-function ImageCard({ 
+export function ImageUploadCard({ 
+  siteId, 
   title, 
   description, 
-  imageUrl: initialImageUrl, 
-  imageType,
-  siteId,
-  aspectRatio = "landscape"
-}: { 
-  title: string; 
-  description: string; 
-  imageUrl: string | null;
-  imageType: "site" | "logo";
-  siteId: string;
-  aspectRatio?: "landscape" | "square";
-}) {
-  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
+  imageType, 
+  existingImageUrl, 
+  aspectRatio = "landscape" 
+}: ImageUploadCardProps) {
+  const [imageUrl, setImageUrl] = useState<string | null>(existingImageUrl);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isChanging, setIsChanging] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  // Update imageUrl when existingImageUrl changes
+  useEffect(() => {
+    if (existingImageUrl !== imageUrl) {
+      setImageUrl(existingImageUrl);
+    }
+  }, [existingImageUrl]);
   
   // Get optimized config
   const optimizedConfig = getOptimizedDropzoneConfig();
@@ -51,21 +57,16 @@ function ImageCard({
     }
   }, [imageUrl]);
   
-  // Reset error state
+  // Reset states and try again
   const handleRetry = () => {
     setUploadError(null);
     setIsUploading(false);
-  };
-  
-  // Toggle the changing state
-  const toggleChange = () => {
-    setIsChanging(!isChanging);
-    setUploadError(null);
   };
 
   // Handle form action
   const handleFormAction = async (formData: FormData) => {
     try {
+      // Ensure we have an image URL
       if (!imageUrl) {
         toast.error("No image URL available");
         return;
@@ -76,11 +77,12 @@ function ImageCard({
       formData.set("imageUrl", imageUrl);
       formData.set("siteId", siteId);
       
+      console.log(`Submitting ${imageType} update with URL:`, imageUrl);
+      
       const result = await UpdateImage(formData);
       
       if (result && 'success' in result && result.success) {
         toast.success("Image updated successfully!");
-        setIsChanging(false);
       } else {
         const errorMessage = result && 'error' in result ? result.error : "Failed to update image";
         toast.error(errorMessage);
@@ -100,13 +102,13 @@ function ImageCard({
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="pb-3">
-        <CardTitle className="text-foreground">{title}</CardTitle>
-        <CardDescription className="text-muted-foreground">{description}</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center">
-          {imageUrl && !isChanging ? (
-            <div className="relative w-full">
+        <div className="flex-1 flex flex-col items-center">
+          {imageUrl ? (
+            <div className="w-full flex-1 flex flex-col items-center">
               <div className={imageContainerClass}>
                 <Image
                   src={imageUrl}
@@ -122,14 +124,14 @@ function ImageCard({
               <div className="border-dashed border-2 border-destructive/30 bg-destructive/5 rounded-md p-4 flex flex-col items-center justify-center space-y-3 mx-auto">
                 <AlertTriangle className="text-destructive size-6" />
                 <div className="text-center">
-                  <h3 className="font-semibold text-sm mb-1 text-foreground">Upload Error</h3>
+                  <h3 className="font-semibold text-sm mb-1">Upload Error</h3>
                   <p className="text-xs text-muted-foreground mb-1">{uploadError}</p>
                 </div>
               </div>
             </div>
           ) : isUploading ? (
             <div className="w-full flex-1 flex items-center justify-center">
-              <div className="border-dashed border-2 border-muted-foreground/40 rounded-md p-6 flex flex-col items-center justify-center mx-auto">
+              <div className="border-dashed border-2 border-muted-foreground rounded-md p-6 flex flex-col items-center justify-center mx-auto">
                 <div className="flex flex-col items-center gap-2">
                   <Loader2 className="h-7 w-7 animate-spin text-primary" />
                   <p className="text-sm text-muted-foreground">Uploading image...</p>
@@ -143,7 +145,7 @@ function ImageCard({
                   <ImageIcon className="size-10 text-muted-foreground/40" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 mb-4 text-center">
-                  {isChanging && imageUrl ? "Select a new image" : "No image uploaded"}
+                  No image uploaded
                 </p>
                 <UploadDropzone
                   endpoint="imageUploader"
@@ -159,10 +161,12 @@ function ImageCard({
                       setImageUrl(url);
                       toast.success("Image uploaded successfully!");
                       
-                      // Auto-submit if the user is changing an existing image
-                      if (isChanging) {
-                        setTimeout(submitForm, 500);
-                      }
+                      // Auto-submit the form after successful upload
+                      setTimeout(() => {
+                        if (formRef.current && url) {
+                          formRef.current.requestSubmit();
+                        }
+                      }, 500);
                     } else {
                       console.error("Invalid upload response:", res);
                       setUploadError("Received invalid response from upload service");
@@ -191,48 +195,33 @@ function ImageCard({
           action={handleFormAction}
           className="w-full flex justify-center"
         >
-          {uploadError && (
+          {imageUrl ? (
             <Button 
               type="button"
               size="sm"
               variant="outline"
-              onClick={handleRetry}
-              className="flex items-center gap-1 mr-2 text-foreground"
-            >
-              <RefreshCw className="size-3" /> Try Again
-            </Button>
-          )}
-          
-          {imageUrl && !isChanging && (
-            <Button 
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={toggleChange}
-              className="text-foreground mr-2"
+              onClick={() => setImageUrl(null)}
+              className="mr-2"
             >
               Change
             </Button>
-          )}
-          
-          {isChanging && (
+          ) : uploadError ? (
             <Button 
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={toggleChange}
-              className="text-foreground mr-2"
+              variant="outline" 
+              size="sm" 
+              onClick={handleRetry}
+              className="flex items-center gap-1"
             >
-              Cancel
+              <RefreshCw className="size-3" /> Try Again
             </Button>
-          )}
+          ) : null}
           
-          {imageUrl && !isChanging && (
+          {imageUrl && (
             <Button 
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 text-primary-foreground"
+              className="flex items-center gap-1.5"
             >
               {isSubmitting ? (
                 <>
@@ -247,42 +236,5 @@ function ImageCard({
         </form>
       </CardFooter>
     </Card>
-  );
-}
-
-export function AppearanceTab({ siteId, site }: AppearanceTabProps) {
-  return (
-    <div className="space-y-8">
-      <div>
-        <h3 className="text-lg font-medium text-foreground">Site Appearance</h3>
-        <p className="text-sm text-muted-foreground">
-          Customize how your site looks to visitors
-        </p>
-      </div>
-      
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div className="h-full">
-          <ImageCard 
-            title="Cover Image"
-            description="This image appears at the top of your site's homepage"
-            imageUrl={site?.siteImageCover || null}
-            imageType="site"
-            siteId={siteId}
-            aspectRatio="landscape"
-          />
-        </div>
-        
-        <div className="h-full">
-          <ImageCard 
-            title="Site Logo"
-            description="Your site's logo appears in the header and navigation"
-            imageUrl={site?.logoImage || null}
-            imageType="logo"
-            siteId={siteId}
-            aspectRatio="square"
-          />
-        </div>
-      </div>
-    </div>
   );
 } 

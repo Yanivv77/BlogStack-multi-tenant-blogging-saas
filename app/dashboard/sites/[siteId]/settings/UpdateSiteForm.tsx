@@ -51,6 +51,9 @@ type UpdateSiteFormProps = {
     githubUrl: string | null;
     linkedinUrl: string | null;
     portfolioUrl: string | null;
+    subdirectory: string;
+    siteImageCover: string | null;
+    logoImage: string | null;
   };
 };
 
@@ -65,7 +68,7 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
     defaultValues: {
       name: site.name,
       description: site.description || "",
-      subdirectory: "", // This is not editable but required by the schema
+      subdirectory: site.subdirectory, // Use the existing subdirectory value
       language: site.language === "English" || site.language === "Hebrew" 
         ? site.language 
         : "English",
@@ -73,17 +76,30 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
       githubUrl: site.githubUrl || "",
       linkedinUrl: site.linkedinUrl || "",
       portfolioUrl: site.portfolioUrl || "",
-      siteImageCover: "",
-      logoImage: "",
+      siteImageCover: site.siteImageCover || "",
+      logoImage: site.logoImage || "",
     },
   });
 
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
+    
     try {
       // Add the siteId to the form data
       formData.append("siteId", site.id);
+      
+      // Explicitly add the subdirectory value from the site
+      // Make sure we're not adding it if it already exists
+      if (!formData.has("subdirectory")) {
+        formData.append("subdirectory", site.subdirectory);
+      }
+      
+      // Ensure language is included in form data
+      const language = form.getValues("language");
+      if (!formData.get("language") && language) {
+        formData.append("language", language);
+      }
       
       const result = await UpdateSiteAction(null, formData);
       
@@ -93,10 +109,10 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
         // Refresh the page data
         router.refresh();
         
-        // Redirect if a URL is provided
-        if ('redirectUrl' in result && result.redirectUrl) {
-          router.push(result.redirectUrl);
-        }
+        // Don't redirect, even if a URL is provided
+        // if ('redirectUrl' in result && result.redirectUrl) {
+        //   router.push(result.redirectUrl);
+        // }
       } else if (result && 'error' in result) {
         // Handle form errors
         const formError = result.error?._form?.[0];
@@ -159,7 +175,7 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.values(z.enum(["English", "Hebrew"]).enum).map((lang) => (
+                          {Object.values(LanguageEnum.enum).map((lang) => (
                             <SelectItem key={lang} value={lang}>
                               {lang}
                             </SelectItem>
@@ -173,6 +189,26 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     </FormItem>
                   )}
                 />
+              </div>
+              
+              {/* Read-only subdirectory field (for display only, not part of the form) */}
+              <div className="mt-6">
+                <FormItem>
+                  <FormLabel>Site URL</FormLabel>
+                  <div className="flex items-center">
+                    <div className="bg-muted px-3 py-2 text-sm rounded-l-md border border-r-0 border-input text-muted-foreground">
+                      blogstack.io/
+                    </div>
+                    <Input 
+                      value={site.subdirectory}
+                      disabled
+                      className="rounded-l-none font-medium text-muted-foreground bg-muted/50"
+                    />
+                  </div>
+                  <FormDescription>
+                    Your site's URL cannot be changed after creation
+                  </FormDescription>
+                </FormItem>
               </div>
               
               <div className="mt-6">

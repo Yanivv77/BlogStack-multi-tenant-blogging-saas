@@ -57,7 +57,15 @@ export function SettingsTabs({ site }: SettingsTabsProps) {
       id: "appearance",
       label: "Appearance",
       icon: <Image className="size-4" />,
-      content: <AppearanceTab siteId={site.id} />,
+      content: (
+        <AppearanceTab 
+          siteId={site.id} 
+          site={{
+            siteImageCover: site.siteImageCover,
+            logoImage: site.logoImage
+          }}
+        />
+      ),
       variant: "default"
     },
     {
