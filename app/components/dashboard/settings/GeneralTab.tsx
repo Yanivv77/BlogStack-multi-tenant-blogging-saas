@@ -1,6 +1,7 @@
 "use client";
 
-import { UpdateSiteForm } from "../UpdateSiteForm";
+import { UpdateSiteForm } from "./UpdateSiteForm";
+
 
 type GeneralTabProps = {
   site: {

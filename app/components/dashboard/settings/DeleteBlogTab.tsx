@@ -1,6 +1,6 @@
 "use client";
 
-import { DeleteSiteClient } from "../DeleteSiteClient";
+import { DeleteSiteClient } from "./DeleteSiteClient";
 import { AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 

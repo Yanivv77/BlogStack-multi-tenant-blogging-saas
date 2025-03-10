@@ -5,7 +5,7 @@ import prisma from "@/app/utils/db/prisma";
 import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { SettingsTabs } from "./components/SettingsTabs";
+import { SettingsTabs } from "../../../../components/dashboard/settings/SettingsTabs";
 
 export default async function SettingsSiteRoute({
   params,
