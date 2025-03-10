@@ -385,6 +385,19 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
               </div>
             )}
           </div>
+          
+          {/* Information box at the bottom of the form */}
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md text-sm">
+            <div className="flex gap-3">
+              <SimpleIcon name="info" size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Getting Started</p>
+                <p className="text-blue-700 dark:text-blue-400">
+                  All fields on this page are required. After completing this step, you'll be able to upload branding images and add optional social links for your blog.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </CardContent>
 

@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUploader } from "./ImageUploader";
-import { Atom } from "lucide-react";
+import { Atom, Info } from "lucide-react";
 import slugify from "react-slugify";
 import { toast } from "sonner";
 
@@ -104,8 +104,16 @@ export function ArticleBasicForm({
       </div>
       
       {!isValid && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md text-sm text-amber-800 dark:text-amber-300">
-          Please complete all required fields before proceeding to the next step.
+        <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md text-sm">
+          <div className="flex gap-3">
+            <Info size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-blue-800 dark:text-blue-300">Required Fields</p>
+              <p className="text-blue-700 dark:text-blue-400">
+                Please complete all required fields before proceeding to the next step.
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
