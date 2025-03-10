@@ -31,7 +31,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Mobile Header - Sticky */}
-      <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <header className="fixed top-0 left-0 right-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden">
@@ -69,6 +69,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         </div>
       </header>
       
+      {/* Empty space to compensate for fixed header on mobile */}
+      <div className="h-16 md:hidden"></div>
+      
       <div className="flex flex-1">
         {/* Sidebar (desktop) */}
         <aside className="hidden md:block">
@@ -100,13 +103,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
         {/* Main content */}
         <main className="flex flex-col flex-1 md:ml-[200px] lg:ml-[220px]">
-          {/* Desktop Header - Sticky */}
-          <header className="sticky top-0 z-30 hidden h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:flex">
-            <div className="ml-auto flex items-center gap-x-4">
+          {/* Desktop Header - Fixed */}
+          <header className="fixed top-0 right-0 z-30 hidden h-16 items-center gap-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:flex md:left-[200px] lg:left-[220px]">
+            <div className="ml-auto flex items-center gap-x-4 px-6">
               <ThemeToggle />
               <UserButton variant="secondary" />
             </div>
           </header>
+          
+          {/* Empty space to compensate for fixed header on desktop */}
+          <div className="h-16 hidden md:block"></div>
           
           {/* Page Content */}
           <div className="flex-1 p-4 md:p-6 lg:p-8">
