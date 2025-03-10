@@ -1,0 +1,17 @@
+{
+  "name": "BlogStack - Multi-tenant Blogging SaaS",
+  "short_name": "BlogStack",
+  "description": "A modern platform for creating and managing multiple blogs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+} 

@@ -5,6 +5,8 @@ const CACHE_NAME = 'blogstack-cache-v1';
 const urlsToCache = [
   '/',
   '/dashboard',
+  '/manifest.json',
+  '/globe.svg',
 ];
 
 // Install event - cache assets
