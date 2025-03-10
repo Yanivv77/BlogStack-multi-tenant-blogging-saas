@@ -90,7 +90,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             
             <div className="border-t p-3">
               <UserButton 
-                variant="outline" 
+                variant="secondary" 
                 className="w-full justify-start px-2 text-sm" 
                 showName
               />
@@ -104,7 +104,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-30 hidden h-16 items-center gap-4 border-b bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:flex">
             <div className="ml-auto flex items-center gap-x-4">
               <ThemeToggle />
-              <UserButton />
+              <UserButton variant="secondary" />
             </div>
           </header>
           

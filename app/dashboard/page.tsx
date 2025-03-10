@@ -1,18 +1,12 @@
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { EmptyState } from "../components/dashboard/EmptyState";
+import { FileIcon, Edit, PlusCircle } from "lucide-react";
 import prisma from "../utils/db/prisma";
 import { requireUser } from "../utils/auth/user";
-import SitesRoute from "./sites/page";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { DEFAULT_IMAGE_URL } from "../utils/constants/images";
+import { DashboardCard } from "../components/dashboard/DashboardCard";
+import { DashboardGrid } from "../components/dashboard/DashboardGrid";
+import { SectionHeader } from "../components/dashboard/SectionHeader";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 async function getData(userId: string) {
   const [sites, articles] = await Promise.all([
@@ -33,97 +27,99 @@ async function getData(userId: string) {
         createdAt: "desc",
       },
       take: 3,
+      include: {
+        Site: {
+          select: {
+            id: true,
+          },
+        },
+      },
     }),
   ]);
 
   return { sites, articles };
 }
 
-
 export default async function DashboardIndexPage() {
   const user = await requireUser();
   const { articles, sites } = await getData(user.id);
+  
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-5">Your Sites</h1>
-      {sites.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-          {sites.map((item) => (
-            <Card key={item.id}>
-              <div className="relative w-full h-[200px]">
-                <Image
-                  src={item.siteImageCover || DEFAULT_IMAGE_URL}
-                  alt={item.name}
-                  className="rounded-t-lg object-cover"
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <CardHeader>
-                <CardTitle className="truncate">{item.name}</CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {item.description}
-                </CardDescription>
-              </CardHeader>
-
-              <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/sites/${item.id}`}>
-                    View Articles
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="You dont have any sites created"
-          description="You currently dont have any Sites. Please create some so that you can see them right here."
-          href="/dashboard/sites/new"
-          buttonText="Create Site"
+    <div className="space-y-10">
+      <section>
+        <SectionHeader
+          title="Your Sites"
+          action={{
+            href: "/dashboard/sites/new",
+            text: "Create Site",
+            icon: <PlusCircle className="size-4" />
+          }}
         />
-      )}
-
-      <h1 className="text-2xl mt-10 font-semibold mb-5">Recent Articles</h1>
-      {articles.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-7">
-          {articles.map((item) => (
-            <Card key={item.id}>
-              <div className="relative w-full h-[200px]">
-                <Image
-                  src={item.postCoverImage || DEFAULT_IMAGE_URL}
-                  alt={item.title}
-                  className="rounded-t-lg object-cover"
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <CardHeader>
-                <CardTitle className="truncate">{item.title}</CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {item.smallDescription}
-                </CardDescription>
-              </CardHeader>
-
-              <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={`/dashboard/sites/${item.siteId}/${item.id}`}>
-                    Edit Article
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
+        
+        <DashboardGrid
+          isEmpty={sites.length === 0}
+          emptyState={{
+            title: "You don't have any sites created",
+            description: "You currently don't have any Sites. Please create some so that you can see them right here.",
+            href: "/dashboard/sites/new",
+            buttonText: "Create Site"
+          }}
+        >
+          {sites.map((site, index) => (
+            <DashboardCard
+              key={site.id}
+              id={site.id}
+              title={site.name}
+              description={site.description || ""}
+              imageUrl={site.siteImageCover || DEFAULT_IMAGE_URL}
+              href={`/dashboard/sites/${site.id}`}
+              buttonText="View Articles"
+              buttonIcon={<FileIcon className="size-4" />}
+              priority={index === 0}
+              subdirectory={site.subdirectory}
+            />
           ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="You dont have any articles created"
-          description="Your currently dont have any articles created. Please create some so that you can see them right here"
-          buttonText="Create Article"
-          href="/dashboard/sites"
+        </DashboardGrid>
+        
+        {sites.length > 0 && (
+          <div className="px-4 md:px-8 lg:px-12 max-w-[1600px] mx-auto mt-4 text-right">
+            <Button variant="outline" asChild size="sm">
+              <Link href="/dashboard/sites">View All Sites</Link>
+            </Button>
+          </div>
+        )}
+      </section>
+
+      <section>
+        <SectionHeader
+          title="Recent Articles"
         />
-      )}
+        
+        <DashboardGrid
+          isEmpty={articles.length === 0}
+          emptyState={{
+            title: "You don't have any articles created",
+            description: "You currently don't have any articles created. Please create some so that you can see them right here.",
+            buttonText: "Create Article",
+            href: "/dashboard/sites"
+          }}
+        >
+          {articles.map((article, index) => (
+            <DashboardCard
+              key={article.id}
+              id={article.id}
+              title={article.title}
+              description={article.smallDescription || ""}
+              imageUrl={article.postCoverImage || DEFAULT_IMAGE_URL}
+              href={`/dashboard/sites/${article.siteId}/${article.id}`}
+              buttonText="Edit Article"
+              buttonIcon={<Edit className="size-4" />}
+              priority={index === 0}
+              createdAt={article.createdAt}
+            />
+          ))}
+        </DashboardGrid>
+      </section>
     </div>
   );
 }
