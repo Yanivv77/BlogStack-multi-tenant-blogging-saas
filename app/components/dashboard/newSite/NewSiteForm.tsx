@@ -43,6 +43,7 @@ import { BasicsTab } from "./tabs/BasicsTab";
 import { BrandingTab } from "./tabs/BrandingTab";
 import { SocialTab } from "./tabs/SocialTab";
 import { CreateSiteAction } from "@/app/serverActions/site/createSite";
+import { SummaryTab } from "./tabs/SummaryTab";
 
 export function NewSiteForm() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export function NewSiteForm() {
   const [activeTab, setActiveTab] = useState<StepName>("basics");
   
   // Define steps for the form - memoize to prevent recreation
-  const steps: StepName[] = useMemo(() => ["basics", "branding", "social"], []);
+  const steps: StepName[] = useMemo(() => ["basics", "branding", "social", "summary"], []);
   
   // State for form values and active tab
   const [formValues, setFormValues] = useState<SiteFormValues>({
@@ -161,6 +162,8 @@ export function NewSiteForm() {
       }
     } else if (activeTab === "branding") {
       setActiveTab("social");
+    } else if (activeTab === "social") {
+      setActiveTab("summary");
     }
   }, [activeTab, validateBasicsTab]);
   
@@ -173,7 +176,8 @@ export function NewSiteForm() {
       e.preventDefault();
     }
     
-    if (activeTab === "social") setActiveTab("branding");
+    if (activeTab === "summary") setActiveTab("social");
+    else if (activeTab === "social") setActiveTab("branding");
     else if (activeTab === "branding") setActiveTab("basics");
   }, [activeTab]);
   
@@ -186,8 +190,8 @@ export function NewSiteForm() {
       e.stopPropagation();
     }
     
-    // Only allow form submission from the social tab
-    if (activeTab !== "social") {
+    // Only allow form submission from the summary tab
+    if (activeTab !== "summary") {
       // Navigate to the appropriate tab instead
       if (activeTab === "basics") {
         if (validateBasicsTab()) {
@@ -195,9 +199,11 @@ export function NewSiteForm() {
         }
       } else if (activeTab === "branding") {
         setActiveTab("social");
+      } else if (activeTab === "social") {
+        setActiveTab("summary");
       }
     } else {
-      // When on the social tab, allow the form to actually submit to the server
+      // When on the summary tab, allow the form to actually submit to the server
       if (e && e.currentTarget) {
         const formElement = e.currentTarget;
         
@@ -271,6 +277,15 @@ export function NewSiteForm() {
               goToPrevTab={goToPrevTab}
               formValues={formValues}
               handleInputChange={handleInputChange}
+            />
+          </TabsContent>
+          
+          <TabsContent value="summary">
+            <SummaryTab 
+              formValues={formValues}
+              siteImageCover={siteImageCover}
+              logoImage={logoImage}
+              goToPrevTab={goToPrevTab}
             />
           </TabsContent>
         </form>

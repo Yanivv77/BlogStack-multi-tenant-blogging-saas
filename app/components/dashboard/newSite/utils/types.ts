@@ -26,7 +26,7 @@ export type SubdirectoryStatus = "checking" | "available" | "unavailable" | "inv
 /**
  * Step names for the multi-step form
  */
-export type StepName = "basics" | "branding" | "social";
+export type StepName = "basics" | "branding" | "social" | "summary";
 
 /**
  * Props shared across tab components

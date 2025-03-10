@@ -9,6 +9,7 @@ export { NewSiteForm } from './NewSiteForm';
 export { BasicsTab } from './tabs/BasicsTab';
 export { BrandingTab } from './tabs/BrandingTab';
 export { SocialTab } from './tabs/SocialTab';
+export { SummaryTab } from './tabs/SummaryTab';
 
 // Shared components
 export { StepIndicator } from './shared/StepIndicator';
