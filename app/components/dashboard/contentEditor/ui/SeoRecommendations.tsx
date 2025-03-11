@@ -135,7 +135,7 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
         title: 'Meta Description',
         description: `Your meta description is ${smallDescription.length} characters`,
         status: 'pass',
-        recommendation: 'Ideal meta description length is 120-155 characters'
+        recommendation: 'Ideal meta description length is 120-160 characters'
       };
       
       if (smallDescription.length < 80) {
@@ -156,7 +156,7 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
         title: 'Missing Meta Description',
         description: 'Your article has no meta description',
         status: 'fail',
-        recommendation: 'Add a meta description to your article (120-155 characters)'
+        recommendation: 'Add a meta description to your article (120-160 characters)'
       });
       failCountTemp++;
     }

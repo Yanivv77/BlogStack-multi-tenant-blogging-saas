@@ -237,24 +237,24 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label>Small Description</Label>
+            <Label>Meta Description</Label>
             <Textarea
               key={fields.smallDescription.key}
               name={fields.smallDescription.name}
               value={smallDescription}
               onChange={(e) => setSmallDescription(e.target.value)}
-              placeholder="Small Description for your blog article..."
+              placeholder="Meta description for search engine results..."
               className="h-32"
-              maxLength={155}
+              maxLength={160}
               aria-describedby="edit-description-hint edit-description-error"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span id="edit-description-hint">Optimum length for SEO (10-155 characters)</span>
+              <span id="edit-description-hint">Optimum length for SEO (120-160 characters)</span>
               <span 
-                className={`${smallDescription.length < 10 || smallDescription.length > 155 ? 'text-destructive' : smallDescription.length > 140 ? 'text-amber-500' : 'text-green-500'}`} 
+                className={`${smallDescription.length < 10 || smallDescription.length > 160 ? 'text-destructive' : (smallDescription.length >= 120 && smallDescription.length <= 160) ? 'text-green-500' : 'text-amber-500'}`} 
                 aria-live="polite"
               >
-                {smallDescription.length}/155
+                {smallDescription.length}/160
               </span>
             </div>
             {fields.smallDescription.errors && (

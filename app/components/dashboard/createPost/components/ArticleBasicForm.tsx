@@ -64,7 +64,7 @@ export function ArticleBasicForm({
           aria-describedby="title-hint title-error"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span id="title-hint">Optimum length for SEO (3-60 characters)</span>
+          <span id="title-hint">Optimum length for SEO (55-60 characters)</span>
           <span className={`${title.length < 3 || title.length > 60 ? 'text-destructive' : title.length > 50 ? 'text-amber-500' : 'text-green-500'}`} aria-live="polite">
             {title.length}/60
           </span>
@@ -100,28 +100,28 @@ export function ArticleBasicForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="smallDescription">Small Description</Label>
+        <Label htmlFor="smallDescription">Meta Description</Label>
         <Textarea
           id="smallDescription"
           name="smallDescription"
-          placeholder="Small Description for your blog article..."
+          placeholder="Meta description for search engine results..."
           onChange={(e) => updateFormData("smallDescription", e.target.value)}
           value={smallDescription}
           className="h-32"
-          maxLength={155}
+          maxLength={160}
           aria-describedby="description-hint description-error"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
-          <span id="description-hint">Optimum length for SEO (10-155 characters)</span>
-          <span className={`${smallDescription.length < 10 || smallDescription.length > 155 ? 'text-destructive' : smallDescription.length > 140 ? 'text-amber-500' : 'text-green-500'}`} aria-live="polite">
-            {smallDescription.length}/155
+          <span id="description-hint">Optimum length for SEO (120-160 characters)</span>
+          <span className={`${smallDescription.length < 10 || smallDescription.length > 160 ? 'text-destructive' : (smallDescription.length >= 120 && smallDescription.length <= 160) ? 'text-green-500' : 'text-amber-500'}`} aria-live="polite">
+            {smallDescription.length}/160
           </span>
         </div>
         {smallDescription.length > 0 && smallDescription.length < 10 && (
-          <p id="description-error" className="text-red-500 text-sm">Description must be at least 10 characters</p>
+          <p id="description-error" className="text-red-500 text-sm">Meta description must be at least 10 characters</p>
         )}
-        {smallDescription.length > 155 && (
-          <p id="description-error" className="text-red-500 text-sm">Description must be at most 155 characters</p>
+        {smallDescription.length > 160 && (
+          <p id="description-error" className="text-red-500 text-sm">Meta description must be at most 160 characters</p>
         )}
       </div>
       

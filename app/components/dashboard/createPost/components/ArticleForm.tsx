@@ -160,25 +160,25 @@ export function ArticleForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor={fields.smallDescription.id}>Small Description</Label>
+            <Label htmlFor={fields.smallDescription.id}>Meta Description</Label>
             <Textarea
               id={fields.smallDescription.id}
               key={fields.smallDescription.key}
               name={fields.smallDescription.name}
-              placeholder="Small Description for your blog article..."
+              placeholder="Meta description for search engine results..."
               onChange={(e) => updateFormData("smallDescription", e.target.value)}
               value={smallDescription}
               className="h-32"
-              maxLength={155}
+              maxLength={160}
               aria-describedby="article-description-hint article-description-error"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span id="article-description-hint">Optimum length for SEO (10-155 characters)</span>
+              <span id="article-description-hint">Optimum length for SEO (120-160 characters)</span>
               <span 
-                className={`${smallDescription.length < 10 || smallDescription.length > 155 ? 'text-destructive' : smallDescription.length > 140 ? 'text-amber-500' : 'text-green-500'}`} 
+                className={`${smallDescription.length < 10 || smallDescription.length > 160 ? 'text-destructive' : (smallDescription.length >= 120 && smallDescription.length <= 160) ? 'text-green-500' : 'text-amber-500'}`} 
                 aria-live="polite"
               >
-                {smallDescription.length}/155
+                {smallDescription.length}/160
               </span>
             </div>
             {fields.smallDescription.errors && (

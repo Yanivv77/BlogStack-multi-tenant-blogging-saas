@@ -12,7 +12,7 @@ export const PostSchema = z.object({
     .max(60, ValidationMessages.TOO_LONG(60)),
   smallDescription: z.string()
     .min(10, ValidationMessages.TOO_SHORT(10))
-    .max(155, ValidationMessages.TOO_LONG(155)),
+    .max(160, ValidationMessages.TOO_LONG(160)),
   articleContent: z.union([
     z.string().min(1, ValidationMessages.EMPTY_CONTENT),
     z.object({}).passthrough()
@@ -69,7 +69,7 @@ export function PostCreationSchema(options?: {
       .max(60, ValidationMessages.TOO_LONG(60)),
     smallDescription: z.string()
       .min(10, ValidationMessages.TOO_SHORT(10))
-      .max(155, ValidationMessages.TOO_LONG(155)),
+      .max(160, ValidationMessages.TOO_LONG(160)),
     articleContent: z.union([
       z.string().min(1, ValidationMessages.EMPTY_CONTENT),
       z.object({}).passthrough()
@@ -98,7 +98,7 @@ export function PostEditSchema(options?: {
       .max(60, ValidationMessages.TOO_LONG(60)),
     smallDescription: z.string()
       .min(10, ValidationMessages.TOO_SHORT(10))
-      .max(155, ValidationMessages.TOO_LONG(155)),
+      .max(160, ValidationMessages.TOO_LONG(160)),
     articleContent: z.union([
       z.string().min(1, ValidationMessages.EMPTY_CONTENT),
       z.object({}).passthrough()
