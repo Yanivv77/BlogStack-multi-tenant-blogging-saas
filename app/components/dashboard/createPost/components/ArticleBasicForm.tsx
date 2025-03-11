@@ -57,12 +57,23 @@ export function ArticleBasicForm({
         <Input
           id="title"
           name="title"
-          placeholder="Nextjs blogging application"
+          placeholder="Article Title"
           onChange={(e) => updateFormData("title", e.target.value)}
           value={title}
+          maxLength={60}
+          aria-describedby="title-hint title-error"
         />
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span id="title-hint">Optimum length for SEO (3-60 characters)</span>
+          <span className={`${title.length < 3 || title.length > 60 ? 'text-destructive' : title.length > 50 ? 'text-amber-500' : 'text-green-500'}`} aria-live="polite">
+            {title.length}/60
+          </span>
+        </div>
         {title.length > 0 && title.length < 3 && (
-          <p className="text-red-500 text-sm">Title must be at least 3 characters</p>
+          <p id="title-error" className="text-red-500 text-sm">Title must be at least 3 characters</p>
+        )}
+        {title.length > 60 && (
+          <p id="title-error" className="text-red-500 text-sm">Title must be at most 60 characters</p>
         )}
       </div>
 
@@ -97,9 +108,20 @@ export function ArticleBasicForm({
           onChange={(e) => updateFormData("smallDescription", e.target.value)}
           value={smallDescription}
           className="h-32"
+          maxLength={155}
+          aria-describedby="description-hint description-error"
         />
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span id="description-hint">Optimum length for SEO (10-155 characters)</span>
+          <span className={`${smallDescription.length < 10 || smallDescription.length > 155 ? 'text-destructive' : smallDescription.length > 140 ? 'text-amber-500' : 'text-green-500'}`} aria-live="polite">
+            {smallDescription.length}/155
+          </span>
+        </div>
         {smallDescription.length > 0 && smallDescription.length < 10 && (
-          <p className="text-red-500 text-sm">Description must be at least 10 characters</p>
+          <p id="description-error" className="text-red-500 text-sm">Description must be at least 10 characters</p>
+        )}
+        {smallDescription.length > 155 && (
+          <p id="description-error" className="text-red-500 text-sm">Description must be at most 155 characters</p>
         )}
       </div>
       

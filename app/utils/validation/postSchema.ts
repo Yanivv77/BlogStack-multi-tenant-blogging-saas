@@ -8,9 +8,11 @@ import { CommonFields } from "./common";
  */
 export const PostSchema = z.object({
   title: z.string()
-    .min(3, ValidationMessages.TOO_SHORT(3)),
+    .min(3, ValidationMessages.TOO_SHORT(3))
+    .max(60, ValidationMessages.TOO_LONG(60)),
   smallDescription: z.string()
-    .min(10, ValidationMessages.TOO_SHORT(10)),
+    .min(10, ValidationMessages.TOO_SHORT(10))
+    .max(155, ValidationMessages.TOO_LONG(155)),
   articleContent: z.union([
     z.string().min(1, ValidationMessages.EMPTY_CONTENT),
     z.object({}).passthrough()
@@ -63,9 +65,11 @@ export function PostCreationSchema(options?: {
 }) {
   return z.object({
     title: z.string()
-      .min(3, ValidationMessages.TOO_SHORT(3)),
+      .min(3, ValidationMessages.TOO_SHORT(3))
+      .max(60, ValidationMessages.TOO_LONG(60)),
     smallDescription: z.string()
-      .min(10, ValidationMessages.TOO_SHORT(10)),
+      .min(10, ValidationMessages.TOO_SHORT(10))
+      .max(155, ValidationMessages.TOO_LONG(155)),
     articleContent: z.union([
       z.string().min(1, ValidationMessages.EMPTY_CONTENT),
       z.object({}).passthrough()
@@ -90,9 +94,11 @@ export function PostEditSchema(options?: {
 }) {
   return z.object({
     title: z.string()
-      .min(3, ValidationMessages.TOO_SHORT(3)),
+      .min(3, ValidationMessages.TOO_SHORT(3))
+      .max(60, ValidationMessages.TOO_LONG(60)),
     smallDescription: z.string()
-      .min(10, ValidationMessages.TOO_SHORT(10)),
+      .min(10, ValidationMessages.TOO_SHORT(10))
+      .max(155, ValidationMessages.TOO_LONG(155)),
     articleContent: z.union([
       z.string().min(1, ValidationMessages.EMPTY_CONTENT),
       z.object({}).passthrough()

@@ -196,11 +196,24 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <Input
               key={fields.title.key}
               name={fields.title.name}
-              placeholder="Nextjs blogging application"
+              placeholder="Article Title"
               onChange={(e) => setTitle(e.target.value)}
               value={title}
+              maxLength={60}
+              aria-describedby="edit-title-hint edit-title-error"
             />
-            <p className="text-red-500 text-sm">{fields.title.errors}</p>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span id="edit-title-hint">Optimum length for SEO (3-60 characters)</span>
+              <span 
+                className={`${title.length < 3 || title.length > 60 ? 'text-destructive' : title.length > 50 ? 'text-amber-500' : 'text-green-500'}`} 
+                aria-live="polite"
+              >
+                {title.length}/60
+              </span>
+            </div>
+            {fields.title.errors && (
+              <p id="edit-title-error" className="text-red-500 text-sm">{fields.title.errors}</p>
+            )}
           </div>
 
           <div className="grid gap-2">
@@ -232,10 +245,23 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               onChange={(e) => setSmallDescription(e.target.value)}
               placeholder="Small Description for your blog article..."
               className="h-32"
+              maxLength={155}
+              aria-describedby="edit-description-hint edit-description-error"
             />
-            <p className="text-red-500 text-sm">
-              {fields.smallDescription.errors}
-            </p>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span id="edit-description-hint">Optimum length for SEO (10-155 characters)</span>
+              <span 
+                className={`${smallDescription.length < 10 || smallDescription.length > 155 ? 'text-destructive' : smallDescription.length > 140 ? 'text-amber-500' : 'text-green-500'}`} 
+                aria-live="polite"
+              >
+                {smallDescription.length}/155
+              </span>
+            </div>
+            {fields.smallDescription.errors && (
+              <p id="edit-description-error" className="text-red-500 text-sm">
+                {fields.smallDescription.errors}
+              </p>
+            )}
           </div>
 
           <div className="grid gap-2">
