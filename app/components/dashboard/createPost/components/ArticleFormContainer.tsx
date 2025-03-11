@@ -176,33 +176,13 @@ export function ArticleFormContainer({
   return (
     <div className="space-y-6">
       {/* Header with navigation */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <Button asChild size="icon" variant="outline" className="mr-3">
-            <Link href={`/dashboard/sites/${siteId}`}>
-              <ArrowLeft className="size-4" />
-            </Link>
-          </Button>
-          <h1 className="text-xl font-semibold">Create Article</h1>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={resetForm}
-            className="text-foreground border-border hover:bg-accent hover:text-accent-foreground"
-          >
-            New Article
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={handleSaveDraft}
-            className="bg-gray-600 hover:bg-gray-700 text-white dark:bg-gray-700 dark:hover:bg-gray-800 dark:text-white"
-          >
-            Save Draft
-          </Button>
-        </div>
+      <div className="flex items-center">
+        <Button asChild size="icon" variant="outline" className="mr-3">
+          <Link href={`/dashboard/sites/${siteId}`}>
+            <ArrowLeft className="size-4" />
+          </Link>
+        </Button>
+        <h1 className="text-xl font-semibold">Create Article</h1>
       </div>
       
       {/* Step indicator */}
