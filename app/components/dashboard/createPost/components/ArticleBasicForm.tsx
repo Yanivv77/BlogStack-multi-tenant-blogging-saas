@@ -65,7 +65,11 @@ export function ArticleBasicForm({
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span id="title-hint">Optimum length for SEO (55-60 characters)</span>
-          <span className={`${title.length < 3 || title.length > 60 ? 'text-destructive' : title.length > 50 ? 'text-amber-500' : 'text-green-500'}`} aria-live="polite">
+          <span className={`${
+            title.length < 3 ? 'text-destructive' : 
+            title.length >= 55 && title.length <= 60 ? 'text-green-500' : 
+            'text-amber-500'
+          }`} aria-live="polite">
             {title.length}/60
           </span>
         </div>

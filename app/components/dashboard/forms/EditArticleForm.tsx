@@ -203,9 +203,13 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               aria-describedby="edit-title-hint edit-title-error"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span id="edit-title-hint">Optimum length for SEO (3-60 characters)</span>
+              <span id="edit-title-hint">Optimum length for SEO (55-60 characters)</span>
               <span 
-                className={`${title.length < 3 || title.length > 60 ? 'text-destructive' : title.length > 50 ? 'text-amber-500' : 'text-green-500'}`} 
+                className={`${
+                  title.length < 3 ? 'text-destructive' : 
+                  title.length >= 55 && title.length <= 60 ? 'text-green-500' : 
+                  'text-amber-500'
+                }`} 
                 aria-live="polite"
               >
                 {title.length}/60
