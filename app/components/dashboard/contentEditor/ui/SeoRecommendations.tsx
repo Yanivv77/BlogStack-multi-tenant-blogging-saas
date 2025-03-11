@@ -473,35 +473,6 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
           });
           warningCountTemp++;
         }
-        
-        // Check keywords in content
-        const fullText = getFullText(content).toLowerCase();
-        const keywordOccurrences = keywordsList.map(keyword => ({
-          keyword,
-          count: (fullText.match(new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'g')) || []).length
-        }));
-        
-        const keywordsInContent = keywordOccurrences.filter(k => k.count > 0);
-        
-        if (keywordsInContent.length > 0) {
-          results.push({
-            id: 'keywords-in-content',
-            title: 'Keywords in Content',
-            description: `Your content contains ${keywordsInContent.length} of your ${keywordsList.length} specified keywords`,
-            status: 'pass',
-            recommendation: 'Good job including keywords throughout your content!'
-          });
-          passCountTemp++;
-        } else {
-          results.push({
-            id: 'missing-keywords-in-content',
-            title: 'Keywords in Content',
-            description: 'Your content doesn\'t contain any of your specified keywords',
-            status: 'warning',
-            recommendation: 'Include your keywords naturally throughout your content'
-          });
-          warningCountTemp++;
-        }
       } else {
         results.push({
           id: 'empty-keywords',
@@ -530,69 +501,123 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
       if (keywordsList.length > 0 && wordCount > 0) {
         // Calculate density for all keywords combined
         let totalKeywordOccurrences = 0;
-        const keywordDensities: { keyword: string; count: number; density: number }[] = [];
+        const keywordDensities: { keyword: string; count: number; density: number; status: 'optimal' | 'low' | 'high' | 'none' }[] = [];
         
         // Calculate individual keyword densities
         keywordsList.forEach(keyword => {
           const keywordCount = countKeywordOccurrences(content, keyword);
           totalKeywordOccurrences += keywordCount;
           
-          if (keywordCount > 0) {
-            const density = (keywordCount / wordCount) * 100;
-            keywordDensities.push({ 
-              keyword, 
-              count: keywordCount, 
-              density
-            });
+          // Determine status based on density
+          let status: 'optimal' | 'low' | 'high' | 'none' = 'none';
+          const density = keywordCount > 0 ? (keywordCount / wordCount) * 100 : 0;
+          
+          if (keywordCount === 0) {
+            status = 'none';
+          } else if (density < 0.5) {
+            status = 'low';
+          } else if (density > 3) {
+            status = 'high';
+          } else if (density >= 1 && density <= 2) {
+            status = 'optimal';
+          } else {
+            status = 'low'; // Between 0.5 and 1 or between 2 and 3
           }
+          
+          keywordDensities.push({ 
+            keyword, 
+            count: keywordCount, 
+            density,
+            status
+          });
         });
         
         // Calculate overall density
-        const overallDensity = (totalKeywordOccurrences / wordCount) * 100;
+        const overallDensity = wordCount > 0 ? (totalKeywordOccurrences / wordCount) * 100 : 0;
         
-        if (keywordDensities.length === 0) {
+        // Group keywords by status for better reporting
+        const missingKeywords = keywordDensities.filter(k => k.status === 'none').map(k => k.keyword);
+        const lowDensityKeywords = keywordDensities.filter(k => k.status === 'low').map(k => k.keyword);
+        const highDensityKeywords = keywordDensities.filter(k => k.status === 'high').map(k => k.keyword);
+        const optimalKeywords = keywordDensities.filter(k => k.status === 'optimal').map(k => k.keyword);
+        
+        if (keywordDensities.filter(k => k.count > 0).length === 0) {
           results.push({
             id: 'keyword-density',
             title: 'Keyword Usage',
-            description: 'None of your keywords were found in the content',
+            description: `None of your keywords were found in the content: ${keywordsList.map(k => `"${k}"`).join(', ')}`,
             status: 'warning',
-            recommendation: 'Include your keywords naturally throughout your content'
+            recommendation: 'Include your keywords naturally throughout your content to improve SEO'
           });
           warningCountTemp++;
         } else {
           // Find the highest density keyword for reporting
           keywordDensities.sort((a, b) => b.density - a.density);
-          const highestDensityKeyword = keywordDensities[0];
+          const highestDensityKeyword = keywordDensities.filter(k => k.count > 0)[0];
+          
+          // Determine overall status
+          let overallStatus: CheckStatus = 'pass';
+          if (missingKeywords.length > keywordsList.length / 2) {
+            overallStatus = 'warning';
+          } else if (highDensityKeywords.length > 0) {
+            overallStatus = 'warning';
+          } else if (missingKeywords.length === keywordsList.length) {
+            overallStatus = 'fail';
+          }
+          
+          // Create description with detailed breakdown
+          let description = `Overall keyword density is approximately ${overallDensity.toFixed(1)}%`;
+          
+          if (highestDensityKeyword) {
+            description += ` (highest: "${highestDensityKeyword.keyword}" at ${highestDensityKeyword.density.toFixed(1)}%)`;
+          }
+          
+          // Add status summaries
+          const statusSummaries = [];
+          if (missingKeywords.length > 0) {
+            statusSummaries.push(`${missingKeywords.length} missing`);
+          }
+          if (lowDensityKeywords.length > 0) {
+            statusSummaries.push(`${lowDensityKeywords.length} low density`);
+          }
+          if (optimalKeywords.length > 0) {
+            statusSummaries.push(`${optimalKeywords.length} optimal`);
+          }
+          if (highDensityKeywords.length > 0) {
+            statusSummaries.push(`${highDensityKeywords.length} too high`);
+          }
+          
+          if (statusSummaries.length > 0) {
+            description += `\n\nKeyword status: ${statusSummaries.join(', ')}`;
+          }
+          
+          // Add specific missing keywords
+          if (missingKeywords.length > 0) {
+            description += `\n\nMissing keywords: ${missingKeywords.map(k => `"${k}"`).join(', ')}`;
+          }
+          
+          // Create recommendations based on analysis
+          let recommendation = getKeywordDensityRecommendations(keywordDensities);
           
           const keywordCheck: SeoCheckResult = {
             id: 'keyword-density',
             title: 'Keyword Density',
-            description: `Overall keyword density is approximately ${overallDensity.toFixed(1)}% (highest: "${highestDensityKeyword.keyword}" at ${highestDensityKeyword.density.toFixed(1)}%)`,
-            status: 'pass',
-            recommendation: getKeywordDensityRecommendations(keywordDensities)
+            description,
+            status: overallStatus,
+            recommendation
           };
           
-          if (overallDensity < 0.5) {
-            keywordCheck.status = 'warning';
-          } else if (overallDensity > 5) {
-            keywordCheck.status = 'warning';
-          } 
-          // Check for individual keyword stuffing
-          else if (highestDensityKeyword.density > 3) {
-            keywordCheck.status = 'warning';
-            keywordCheck.description = `Keyword "${highestDensityKeyword.keyword}" has a high density of ${highestDensityKeyword.density.toFixed(1)}%`;
-          }
-          
           // Add detailed keyword density breakdown
-          if (keywordDensities.length > 0) {
+          if (keywordDensities.filter(k => k.count > 0).length > 0) {
             let densityDetails = 'Keyword density breakdown:\n';
             keywordDensities.forEach(kw => {
               const densityClass = 
+                kw.count === 0 ? 'missing' :
                 kw.density > 3 ? 'too high' :
                 kw.density >= 1 && kw.density <= 2 ? 'optimal' :
                 kw.density < 0.5 ? 'low' : 'acceptable';
               
-              densityDetails += `• "${kw.keyword}": ${kw.density.toFixed(1)}% (${kw.count} occurrences) - ${densityClass}\n`;
+              densityDetails += `• "${kw.keyword}": ${kw.count === 0 ? 'not found' : `${kw.density.toFixed(1)}% (${kw.count} occurrences) - ${densityClass}`}\n`;
             });
             
             keywordCheck.description += `\n\n${densityDetails}`;
@@ -774,6 +799,7 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
                                   densityClass === 'optimal' ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' :
                                   densityClass === 'too high' ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' :
                                   densityClass === 'low' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
+                                  densityClass === 'missing' ? 'bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300' :
                                   'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
                                 }
                               >
@@ -793,7 +819,27 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
                         <li><span className="text-blue-600 dark:text-blue-400 font-medium">Acceptable:</span> 0.5-3% range</li>
                         <li><span className="text-amber-600 dark:text-amber-400 font-medium">Low:</span> Below 0.5% (may need more emphasis)</li>
                         <li><span className="text-red-600 dark:text-red-400 font-medium">Too High:</span> Above 3% (risk of keyword stuffing)</li>
+                        <li><span className="text-gray-600 dark:text-gray-400 font-medium">Missing:</span> Not found in content</li>
                       </ul>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Special handling for missing keywords */}
+                {result.id === 'keyword-density' && 
+                 result.description.includes('Missing keywords:') && (
+                  <div className="mt-3 border border-amber-200 rounded-md p-2 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
+                    <div className="flex items-start">
+                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-amber-800 dark:text-amber-300 mb-1">Missing Keywords</h4>
+                        <p >
+                          {result.description.split('Missing keywords: ')[1].split('\n')[0]}
+                        </p>
+                        <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                          Try to naturally incorporate these keywords into your content to improve SEO.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1013,12 +1059,19 @@ function countKeywordOccurrences(content: JSONContent, keyword: string): number 
 /**
  * Get keyword density optimization recommendations
  */
-function getKeywordDensityRecommendations(keywordDensities: { keyword: string; count: number; density: number }[]): string {
-  const highDensityKeywords = keywordDensities.filter(kw => kw.density > 3);
-  const lowDensityKeywords = keywordDensities.filter(kw => kw.density < 0.5 && kw.count > 0);
-  const optimalKeywords = keywordDensities.filter(kw => kw.density >= 1 && kw.density <= 2);
+function getKeywordDensityRecommendations(keywordDensities: { keyword: string; count: number; density: number; status: string }[]): string {
+  const highDensityKeywords = keywordDensities.filter(kw => kw.status === 'high');
+  const lowDensityKeywords = keywordDensities.filter(kw => kw.status === 'low' && kw.count > 0);
+  const missingKeywords = keywordDensities.filter(kw => kw.status === 'none');
+  const optimalKeywords = keywordDensities.filter(kw => kw.status === 'optimal');
   
   let recommendations = [];
+  
+  // Recommendations for missing keywords
+  if (missingKeywords.length > 0) {
+    const keywordsList = missingKeywords.map(kw => `"${kw.keyword}"`).join(', ');
+    recommendations.push(`Add these missing keywords to your content: ${keywordsList}.`);
+  }
   
   // Recommendations for high density keywords
   if (highDensityKeywords.length > 0) {

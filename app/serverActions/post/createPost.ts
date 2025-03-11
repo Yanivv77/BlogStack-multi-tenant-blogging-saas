@@ -27,6 +27,17 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
       return { error: { _form: ["Site ID is required"] } };
     }
 
+    // Log form data for debugging
+    logger.debug("Form data received", {
+      title: formData.get("title"),
+      smallDescription: formData.get("smallDescription")?.toString().substring(0, 20) + "...",
+      slug: formData.get("slug"),
+      postCoverImage: formData.get("postCoverImage") ? "Present" : "Not provided",
+      keywords: formData.get("keywords") ? "Present" : "Not provided",
+      articleContent: formData.get("articleContent") ? "Present" : "Not provided",
+      contentImages: formData.get("contentImages") ? "Present" : "Not provided",
+    });
+
     // Verify the user owns the site
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
@@ -43,19 +54,24 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
           const slug = formData.get("slug") as string;
           if (!slug) return false;
           
+          logger.debug(`Checking if slug '${slug}' is unique for site ${siteId}`);
+          
           const existingPost = await prisma.post.findFirst({
             where: { slug, siteId },
           });
           
-          return !existingPost;
+          const isUnique = !existingPost;
+          logger.debug(`Slug '${slug}' is ${isUnique ? 'unique' : 'already taken'}`);
+          return isUnique;
         }
-      })
+      }),
+      async: true,
     });
 
     // If validation fails, return the error
     if (submission.status !== "success") {
       logger.error("Validation failed", null, { errors: submission.error });
-      return submission;
+      return submission.reply();
     }
 
     logger.debug("Form validation successful");
@@ -67,22 +83,22 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
       slug,
       postCoverImage,
       contentImages: rawContentImages,
+      keywords,
     } = submission.value;
 
     // Process content images
-    let contentImages;
+    let contentImages = [];
     if (rawContentImages) {
       try {
         // If it's already a string, parse it; otherwise keep it as is
         contentImages = typeof rawContentImages === 'string' 
           ? JSON.parse(rawContentImages) 
           : rawContentImages;
+        logger.debug("Processed content images", { count: Array.isArray(contentImages) ? contentImages.length : 0 });
       } catch (e) {
         logger.error("Error parsing content images", e);
         contentImages = [];
       }
-    } else {
-      contentImages = [];
     }
 
     // Convert articleContent to proper JSON if it's a string
@@ -98,6 +114,8 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
 
     // Create the post with proper JSON fields
     try {
+      logger.info("Creating post in database", { title, slug, siteId });
+      
       const post = await prisma.post.create({
         data: {
           title,
@@ -106,9 +124,9 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
           slug,
           postCoverImage: await toNullable(postCoverImage),
           contentImages: contentImages,
-          keywords: formData.get("keywords") as string || null,
+          keywords: keywords || null,
           siteId,
-          userId: user.id, // Add the userId from authenticated user
+          userId: user.id,
           views: 0,
           likes: 0,
         },
@@ -118,6 +136,19 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
       return { success: true, postId: post.id };
     } catch (dbError) {
       logger.error("Database error creating post", dbError);
+      
+      // Check for Prisma-specific errors
+      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
+        logger.error("Database error code:", (dbError as { code: string }).code);
+        
+        // Handle common Prisma error codes
+        if ((dbError as { code: string }).code === 'P2002') {
+          logger.error("Unique constraint violation:", 
+            (dbError as { meta?: { target?: string[] } }).meta?.target);
+          return { error: { _form: ["This slug is already taken. Please choose another one."] } };
+        }
+      }
+      
       return { 
         error: { 
           _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] 
@@ -126,6 +157,15 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
     }
   } catch (error) {
     logger.error("Error creating post", error);
+    
+    // Log detailed error information
+    if (error instanceof Error) {
+      logger.error("Error details", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+      });
+    }
     
     const errorObj: Record<string, string[]> = {};
     errorObj._form = [`Failed to create post: ${error instanceof Error ? error.message : 'Unknown error'}`];

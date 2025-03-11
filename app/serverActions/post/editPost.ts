@@ -6,15 +6,10 @@ import { PostEditSchema } from "../../utils/validation/postSchema";
 import { getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
 import { serverLogger } from "../../utils/logger";
 
-// Define the correct return types
-type ErrorResult = { status: "error"; error: Record<string, string[]> };
-type SuccessResult = { status: "success"; error: Record<string, never> };
-type ActionResult = ErrorResult | SuccessResult;
-
 /**
  * Edits an existing post
  */
-export async function EditPostActions(_prevState: any, formData: FormData): Promise<ActionResult | any> {
+export async function EditPostActions(_prevState: any, formData: FormData) {
   const logger = serverLogger("EditPostActions");
   logger.start();
 
@@ -22,7 +17,6 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
   if (!user) {
     logger.error("Authentication required", null, { userId: null });
     return { 
-      status: "error" as const, 
       error: { _form: ["You must be logged in to edit a post"] } 
     };
   }
@@ -35,7 +29,6 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     if (!postId) {
       logger.error("Post ID is missing", null, { userId: user.id });
       return { 
-        status: "error" as const, 
         error: { _form: ["Post ID is required"] } 
       };
     }
@@ -43,10 +36,21 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     if (!siteId) {
       logger.error("Site ID is missing", null, { userId: user.id, postId });
       return { 
-        status: "error" as const, 
         error: { _form: ["Site ID is required"] } 
       };
     }
+
+    // Log form data for debugging
+    logger.debug("Form data received", {
+      postId,
+      siteId,
+      title: formData.get("title"),
+      smallDescription: formData.get("smallDescription")?.toString().substring(0, 20) + "...",
+      slug: formData.get("slug"),
+      postCoverImage: formData.get("postCoverImage") ? "Present" : "Not provided",
+      articleContent: formData.get("articleContent") ? "Present" : "Not provided",
+      contentImages: formData.get("contentImages") ? "Present" : "Not provided",
+    });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
     
@@ -55,7 +59,6 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     if (!site) {
       logger.error("Site ownership verification failed", null, { siteId, userId: user.id });
       return { 
-        status: "error" as const, 
         error: { _form: ["Site not found or you don't have permission"] } 
       };
     }
@@ -72,7 +75,6 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     if (!existingPost) {
       logger.error("Post not found or doesn't belong to site", null, { postId, siteId });
       return { 
-        status: "error" as const, 
         error: { _form: ["Post not found or doesn't belong to this site"] } 
       };
     }
@@ -107,7 +109,7 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
 
     if (submission.status !== "success") {
       logger.warn("Form validation failed", { errors: submission.error });
-      return submission.reply();
+      return { error: submission.error };
     }
 
     logger.debug("Form validation successful");
@@ -125,7 +127,9 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     let contentImages: string[] = [];
     if (rawContentImages) {
       try {
-        contentImages = JSON.parse(rawContentImages as string);
+        contentImages = typeof rawContentImages === 'string'
+          ? JSON.parse(rawContentImages)
+          : rawContentImages;
         logger.debug("Processed content images", { count: contentImages.length });
       } catch (e) {
         logger.error("Error parsing content images", e);
@@ -133,29 +137,59 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
       }
     }
 
+    // Convert articleContent to proper JSON if it's a string
+    let processedArticleContent;
+    try {
+      processedArticleContent = typeof articleContent === 'string' 
+        ? JSON.parse(articleContent) 
+        : articleContent;
+    } catch (e) {
+      logger.error("Error parsing article content", e);
+      return { error: { _form: ["Invalid article content format"] } };
+    }
+
     logger.info("Updating post", { postId, title, slug });
     
     // Update the post
-    await prisma.post.update({
-      where: { id: postId },
-      data: {
-        title,
-        smallDescription,
-        articleContent,
-        slug,
-        postCoverImage: await toNullable(postCoverImage),
-        contentImages: contentImages,
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      await prisma.post.update({
+        where: { id: postId },
+        data: {
+          title,
+          smallDescription,
+          articleContent: processedArticleContent,
+          slug,
+          postCoverImage: await toNullable(postCoverImage),
+          contentImages: contentImages,
+          updatedAt: new Date(),
+        },
+      });
 
-    logger.success("Post updated successfully", { postId });
-    
-    // Return a proper submission result
-    return { 
-      status: "success" as const, 
-      error: {} 
-    };
+      logger.success("Post updated successfully", { postId });
+      
+      // Return success
+      return { success: true, postId };
+    } catch (dbError) {
+      logger.error("Database error updating post", dbError);
+      
+      // Check for Prisma-specific errors
+      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
+        logger.error("Database error code:", (dbError as { code: string }).code);
+        
+        // Handle common Prisma error codes
+        if ((dbError as { code: string }).code === 'P2002') {
+          logger.error("Unique constraint violation:", 
+            (dbError as { meta?: { target?: string[] } }).meta?.target);
+          return { error: { _form: ["This slug is already taken. Please choose another one."] } };
+        }
+      }
+      
+      return { 
+        error: { 
+          _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] 
+        } 
+      };
+    }
   } catch (error) {
     logger.error("Error editing post", error);
     
@@ -169,7 +203,6 @@ export async function EditPostActions(_prevState: any, formData: FormData): Prom
     }
     
     return { 
-      status: "error" as const, 
       error: { 
         _form: [`Failed to edit post: ${error instanceof Error ? error.message : 'Unknown error'}`] 
       } 

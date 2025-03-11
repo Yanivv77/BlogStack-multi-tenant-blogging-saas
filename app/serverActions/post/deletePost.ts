@@ -7,14 +7,14 @@ import { serverLogger } from "../../utils/logger";
 /**
  * Soft deletes a post by setting the deletedAt timestamp
  */
-export async function DeletePost(formData: FormData) {
+export async function DeletePost(_prevState: any, formData: FormData) {
   const logger = serverLogger("DeletePost");
   logger.start();
 
   const user = await getAuthenticatedUser();
   if (!user) {
     logger.error("Authentication required", null, { userId: null });
-    return { error: "You must be logged in to delete a post" };
+    return { error: { _form: ["You must be logged in to delete a post"] } };
   }
 
   try {
@@ -24,13 +24,19 @@ export async function DeletePost(formData: FormData) {
     
     if (!postId) {
       logger.error("Post ID is missing", null, { userId: user.id });
-      return { error: "Post ID is required" };
+      return { error: { _form: ["Post ID is required"] } };
     }
     
     if (!siteId) {
       logger.error("Site ID is missing", null, { userId: user.id, postId });
-      return { error: "Site ID is required" };
+      return { error: { _form: ["Site ID is required"] } };
     }
+
+    logger.debug("Form data received", {
+      postId,
+      siteId,
+      userId: user.id
+    });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
     
@@ -38,7 +44,7 @@ export async function DeletePost(formData: FormData) {
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
       logger.error("Site ownership verification failed", null, { siteId, userId: user.id });
-      return { error: "Site not found or you don't have permission" };
+      return { error: { _form: ["Site not found or you don't have permission"] } };
     }
 
     // Verify the post exists and belongs to the site
@@ -52,19 +58,34 @@ export async function DeletePost(formData: FormData) {
 
     if (!post) {
       logger.error("Post not found or doesn't belong to site", null, { postId, siteId });
-      return { error: "Post not found or doesn't belong to this site" };
+      return { error: { _form: ["Post not found or doesn't belong to this site"] } };
     }
 
     logger.info("Soft deleting post", { postId, title: post.title });
     
-    // Soft delete the post by setting deletedAt
-    await prisma.post.update({
-      where: { id: postId },
-      data: { deletedAt: new Date() },
-    });
+    try {
+      // Soft delete the post by setting deletedAt
+      await prisma.post.update({
+        where: { id: postId },
+        data: { deletedAt: new Date() },
+      });
 
-    logger.success("Post deleted successfully", { postId });
-    return { success: true };
+      logger.success("Post deleted successfully", { postId });
+      return { success: true };
+    } catch (dbError) {
+      logger.error("Database error deleting post", dbError);
+      
+      // Add detailed error logging for database errors
+      if (dbError instanceof Error) {
+        logger.error("Database error details", {
+          message: dbError.message,
+          stack: dbError.stack,
+          name: dbError.name,
+        });
+      }
+      
+      return { error: { _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] } };
+    }
   } catch (error) {
     logger.error("Error deleting post", error);
     
@@ -77,6 +98,6 @@ export async function DeletePost(formData: FormData) {
       });
     }
     
-    return { error: `Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    return { error: { _form: [`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`] } };
   }
 } 
