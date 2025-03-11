@@ -6,13 +6,15 @@ import {
   loadFormDraft, 
   clearFormDraft, 
   clearEditorStorage, 
-  clearUploadedImages 
+  clearUploadedImages,
+  type FormDraft
 } from "@/app/components/dashboard/contentEditor";
 
 interface FormData {
   title: string;
   slug: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 interface UseArticleDraftProps {
@@ -42,12 +44,21 @@ export function useArticleDraft({
   const loadDraft = () => {
     const draft = loadFormDraft();
     if (draft && draft.siteId === siteId) {
-      if (draft.title) setFormData({
-        ...formData,
-        title: draft.title,
-        slug: draft.slug || "",
-        smallDescription: draft.smallDescription || "",
-      });
+      if (draft.title) {
+        const updatedFormData = {
+          ...formData,
+          title: draft.title,
+          slug: draft.slug || "",
+          smallDescription: draft.smallDescription || "",
+        };
+        
+        // Add keywords if available in the draft
+        if (draft.keywords) {
+          updatedFormData.keywords = draft.keywords;
+        }
+        
+        setFormData(updatedFormData);
+      }
       
       if (draft.coverImage) setImageUrl(draft.coverImage);
       
@@ -77,7 +88,7 @@ export function useArticleDraft({
       return false;
     }
     
-    const draft = {
+    const draft: FormDraft = {
       title: formData.title,
       slug: formData.slug,
       smallDescription: formData.smallDescription,
@@ -86,6 +97,11 @@ export function useArticleDraft({
       articleContent: value,
       lastUpdated: Date.now()
     };
+    
+    // Add keywords if available
+    if (formData.keywords) {
+      draft.keywords = formData.keywords;
+    }
     
     saveFormDraft(draft);
     return true;

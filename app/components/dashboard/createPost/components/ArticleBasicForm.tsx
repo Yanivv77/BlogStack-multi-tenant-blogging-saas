@@ -11,6 +11,7 @@ interface FormData {
   title: string;
   slug: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 interface ArticleBasicFormProps {
@@ -53,6 +54,39 @@ export function ArticleBasicForm({
       />
 
       <div className="grid gap-2">
+        <Label htmlFor="keywords">Keywords</Label>
+        <Input
+          id="keywords"
+          name="keywords"
+          placeholder="Enter keywords separated by commas (e.g., react, nextjs, web development)"
+          onChange={(e) => updateFormData("keywords", e.target.value)}
+          value={formData.keywords || ""}
+          aria-describedby="keywords-hint keywords-count"
+        />
+        <div className="flex justify-between text-xs text-muted-foreground">
+          <span id="keywords-hint">Add 3-5 relevant keywords to improve SEO (separated by commas)</span>
+          <span 
+            id="keywords-count"
+            className={`${
+              !formData.keywords ? 'text-muted-foreground' : 
+              formData.keywords.split(',').filter(k => k.trim()).length >= 3 && 
+              formData.keywords.split(',').filter(k => k.trim()).length <= 5 ? 'text-green-500' : 
+              'text-amber-500'
+            }`}
+            aria-live="polite"
+          >
+            {formData.keywords ? formData.keywords.split(',').filter(k => k.trim()).length : 0} keywords
+          </span>
+        </div>
+        {formData.keywords && formData.keywords.split(',').filter(k => k.trim()).length > 5 && (
+          <p className="text-amber-500 text-sm">For best SEO results, use 3-5 keywords</p>
+        )}
+        {formData.keywords && formData.keywords.split(',').filter(k => k.trim()).length < 3 && formData.keywords.length > 0 && (
+          <p className="text-amber-500 text-sm">For best SEO results, add at least 3 keywords</p>
+        )}
+      </div>
+
+      <div className="grid gap-2">
         <Label htmlFor="title">Title</Label>
         <Input
           id="title"
@@ -61,7 +95,7 @@ export function ArticleBasicForm({
           onChange={(e) => updateFormData("title", e.target.value)}
           value={title}
           maxLength={60}
-          aria-describedby="title-hint title-error"
+          aria-describedby="title-hint title-error title-keywords"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span id="title-hint">Optimum length for SEO (55-60 characters)</span>
@@ -73,6 +107,30 @@ export function ArticleBasicForm({
             {title.length}/60
           </span>
         </div>
+        {formData.keywords && formData.keywords.length > 0 && (
+          <div id="title-keywords" className="text-xs">
+            {(() => {
+              const keywordsList = formData.keywords.split(',').filter(k => k.trim());
+              const keywordsInTitle = keywordsList.filter(keyword => 
+                title.toLowerCase().includes(keyword.toLowerCase().trim())
+              );
+              
+              if (keywordsInTitle.length > 0) {
+                return (
+                  <span className="text-green-600 dark:text-green-400">
+                    ✓ Title contains {keywordsInTitle.length} of your {keywordsList.length} keywords
+                  </span>
+                );
+              } else {
+                return (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    Consider including at least one keyword in your title
+                  </span>
+                );
+              }
+            })()}
+          </div>
+        )}
         {title.length > 0 && title.length < 3 && (
           <p id="title-error" className="text-red-500 text-sm">Title must be at least 3 characters</p>
         )}
@@ -113,14 +171,42 @@ export function ArticleBasicForm({
           value={smallDescription}
           className="h-32"
           maxLength={160}
-          aria-describedby="description-hint description-error"
+          aria-describedby="description-hint description-error description-keywords"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span id="description-hint">Optimum length for SEO (120-160 characters)</span>
-          <span className={`${smallDescription.length < 10 || smallDescription.length > 160 ? 'text-destructive' : (smallDescription.length >= 120 && smallDescription.length <= 160) ? 'text-green-500' : 'text-amber-500'}`} aria-live="polite">
+          <span className={`${
+            smallDescription.length < 10 || smallDescription.length > 160 ? 'text-destructive' : 
+            (smallDescription.length >= 120 && smallDescription.length <= 160) ? 'text-green-500' : 
+            'text-amber-500'
+          }`} aria-live="polite">
             {smallDescription.length}/160
           </span>
         </div>
+        {formData.keywords && formData.keywords.length > 0 && (
+          <div id="description-keywords" className="text-xs">
+            {(() => {
+              const keywordsList = formData.keywords.split(',').filter(k => k.trim());
+              const keywordsInDesc = keywordsList.filter(keyword => 
+                smallDescription.toLowerCase().includes(keyword.toLowerCase().trim())
+              );
+              
+              if (keywordsInDesc.length > 0) {
+                return (
+                  <span className="text-green-600 dark:text-green-400">
+                    ✓ Meta description contains {keywordsInDesc.length} of your {keywordsList.length} keywords
+                  </span>
+                );
+              } else {
+                return (
+                  <span className="text-amber-600 dark:text-amber-400">
+                    Include at least one keyword in your meta description
+                  </span>
+                );
+              }
+            })()}
+          </div>
+        )}
         {smallDescription.length > 0 && smallDescription.length < 10 && (
           <p id="description-error" className="text-red-500 text-sm">Meta description must be at least 10 characters</p>
         )}

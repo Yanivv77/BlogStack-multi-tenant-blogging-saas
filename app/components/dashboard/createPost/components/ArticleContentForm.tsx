@@ -7,6 +7,7 @@ interface FormData {
   title: string;
   slug: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 interface ArticleContentFormProps {
@@ -59,6 +60,7 @@ export function ArticleContentForm({
           content={editorValue} 
           title={title} 
           smallDescription={smallDescription} 
+          keywords={formData.keywords}
         />
       </div>
     </div>

@@ -35,6 +35,7 @@ interface iAppProps {
     contentImages?: string[];
     id: string;
     postCoverImage: string;
+    keywords?: string;
   };
   siteId: string;
 }
@@ -48,6 +49,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
   const [slug, setSlugValue] = useState<string>(data.slug || "");
   const [title, setTitle] = useState<string>(data.title || "");
   const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
+  const [keywords, setKeywords] = useState<string>(data.keywords || "");
   
   // Initialize uploaded images with existing content images
   useEffect(() => {
@@ -120,8 +122,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
           onSubmit={form.onSubmit}
           action={action}
         >
-          <input type="hidden" name="articleId" value={data.id} />
+          <input type="hidden" name="id" value={data.id} />
           <input type="hidden" name="siteId" value={siteId} />
+          <input type="hidden" name="keywords" value={keywords} />
           {/* Hidden input to store the post cover image URL */}
           {imageUrl && (
             <input
@@ -192,6 +195,38 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
           </div>
 
           <div className="grid gap-2">
+            <Label>Keywords</Label>
+            <Input
+              placeholder="Enter keywords separated by commas (e.g., react, nextjs, web development)"
+              onChange={(e) => setKeywords(e.target.value)}
+              value={keywords}
+              name="keywords"
+              aria-describedby="edit-keywords-hint edit-keywords-count"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span id="edit-keywords-hint">Add 3-5 relevant keywords to improve SEO (separated by commas)</span>
+              <span 
+                id="edit-keywords-count"
+                className={`${
+                  !keywords ? 'text-muted-foreground' : 
+                  keywords.split(',').filter(k => k.trim()).length >= 3 && 
+                  keywords.split(',').filter(k => k.trim()).length <= 5 ? 'text-green-500' : 
+                  'text-amber-500'
+                }`}
+                aria-live="polite"
+              >
+                {keywords ? keywords.split(',').filter(k => k.trim()).length : 0} keywords
+              </span>
+            </div>
+            {keywords && keywords.split(',').filter(k => k.trim()).length > 5 && (
+              <p className="text-amber-500 text-sm">For best SEO results, use 3-5 keywords</p>
+            )}
+            {keywords && keywords.split(',').filter(k => k.trim()).length < 3 && keywords.length > 0 && (
+              <p className="text-amber-500 text-sm">For best SEO results, add at least 3 keywords</p>
+            )}
+          </div>
+
+          <div className="grid gap-2">
             <Label>Title</Label>
             <Input
               key={fields.title.key}
@@ -200,7 +235,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               onChange={(e) => setTitle(e.target.value)}
               value={title}
               maxLength={60}
-              aria-describedby="edit-title-hint edit-title-error"
+              aria-describedby="edit-title-hint edit-title-error edit-title-keywords"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span id="edit-title-hint">Optimum length for SEO (55-60 characters)</span>
@@ -215,6 +250,30 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                 {title.length}/60
               </span>
             </div>
+            {keywords && keywords.length > 0 && (
+              <div id="edit-title-keywords" className="text-xs">
+                {(() => {
+                  const keywordsList = keywords.split(',').filter(k => k.trim());
+                  const keywordsInTitle = keywordsList.filter(keyword => 
+                    title.toLowerCase().includes(keyword.toLowerCase().trim())
+                  );
+                  
+                  if (keywordsInTitle.length > 0) {
+                    return (
+                      <span className="text-green-600 dark:text-green-400">
+                        ✓ Title contains {keywordsInTitle.length} of your {keywordsList.length} keywords
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Consider including at least one keyword in your title
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            )}
             {fields.title.errors && (
               <p id="edit-title-error" className="text-red-500 text-sm">{fields.title.errors}</p>
             )}
@@ -250,7 +309,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               placeholder="Meta description for search engine results..."
               className="h-32"
               maxLength={160}
-              aria-describedby="edit-description-hint edit-description-error"
+              aria-describedby="edit-description-hint edit-description-error edit-description-keywords"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span id="edit-description-hint">Optimum length for SEO (120-160 characters)</span>
@@ -261,6 +320,30 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                 {smallDescription.length}/160
               </span>
             </div>
+            {keywords && keywords.length > 0 && (
+              <div id="edit-description-keywords" className="text-xs">
+                {(() => {
+                  const keywordsList = keywords.split(',').filter(k => k.trim());
+                  const keywordsInDesc = keywordsList.filter(keyword => 
+                    smallDescription.toLowerCase().includes(keyword.toLowerCase().trim())
+                  );
+                  
+                  if (keywordsInDesc.length > 0) {
+                    return (
+                      <span className="text-green-600 dark:text-green-400">
+                        ✓ Meta description contains {keywordsInDesc.length} of your {keywordsList.length} keywords
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Include at least one keyword in your meta description
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            )}
             {fields.smallDescription.errors && (
               <p id="edit-description-error" className="text-red-500 text-sm">
                 {fields.smallDescription.errors}
@@ -289,9 +372,10 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             
             {/* SEO Recommendations */}
             <SeoRecommendations 
-              content={value} 
-              title={title} 
-              smallDescription={smallDescription} 
+              content={value}
+              title={title}
+              smallDescription={smallDescription}
+              keywords={keywords}
             />
           </div>
 

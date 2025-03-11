@@ -83,6 +83,7 @@ model Post {
   postCoverImage   String?  
   contentImages    Json?     
   slug             String @unique
+  keywords         String? // Comma-separated list of SEO keywords
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

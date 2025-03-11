@@ -23,6 +23,7 @@ interface FormData {
   title: string;
   slug: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 interface ArticleFormProps {
@@ -113,6 +114,38 @@ export function ArticleForm({
           />
 
           <div className="grid gap-2">
+            <Label htmlFor={`keywords-${fields.title.id}`}>Keywords</Label>
+            <Input
+              id={`keywords-${fields.title.id}`}
+              placeholder="Enter keywords separated by commas (e.g., react, nextjs, web development)"
+              onChange={(e) => updateFormData("keywords", e.target.value)}
+              value={formData.keywords || ""}
+              aria-describedby="article-keywords-hint article-keywords-count"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span id="article-keywords-hint">Add 3-5 relevant keywords to improve SEO (separated by commas)</span>
+              <span 
+                id="article-keywords-count"
+                className={`${
+                  !formData.keywords ? 'text-muted-foreground' : 
+                  formData.keywords.split(',').filter(k => k.trim()).length >= 3 && 
+                  formData.keywords.split(',').filter(k => k.trim()).length <= 5 ? 'text-green-500' : 
+                  'text-amber-500'
+                }`}
+                aria-live="polite"
+              >
+                {formData.keywords ? formData.keywords.split(',').filter(k => k.trim()).length : 0} keywords
+              </span>
+            </div>
+            {formData.keywords && formData.keywords.split(',').filter(k => k.trim()).length > 5 && (
+              <p className="text-amber-500 text-sm">For best SEO results, use 3-5 keywords</p>
+            )}
+            {formData.keywords && formData.keywords.split(',').filter(k => k.trim()).length < 3 && formData.keywords.length > 0 && (
+              <p className="text-amber-500 text-sm">For best SEO results, add at least 3 keywords</p>
+            )}
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor={fields.title.id}>Title</Label>
             <Input
               id={fields.title.id}
@@ -122,7 +155,7 @@ export function ArticleForm({
               onChange={(e) => updateFormData("title", e.target.value)}
               value={title}
               maxLength={60}
-              aria-describedby="article-title-hint article-title-error"
+              aria-describedby="article-title-hint article-title-error article-title-keywords"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span id="article-title-hint">Optimum length for SEO (55-60 characters)</span>
@@ -137,6 +170,30 @@ export function ArticleForm({
                 {title.length}/60
               </span>
             </div>
+            {formData.keywords && formData.keywords.length > 0 && (
+              <div id="article-title-keywords" className="text-xs">
+                {(() => {
+                  const keywordsList = formData.keywords.split(',').filter(k => k.trim());
+                  const keywordsInTitle = keywordsList.filter(keyword => 
+                    title.toLowerCase().includes(keyword.toLowerCase().trim())
+                  );
+                  
+                  if (keywordsInTitle.length > 0) {
+                    return (
+                      <span className="text-green-600 dark:text-green-400">
+                        ✓ Title contains {keywordsInTitle.length} of your {keywordsList.length} keywords
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Consider including at least one keyword in your title
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            )}
             {fields.title.errors && (
               <p id="article-title-error" className="text-red-500 text-sm">{fields.title.errors}</p>
             )}
@@ -174,7 +231,7 @@ export function ArticleForm({
               value={smallDescription}
               className="h-32"
               maxLength={160}
-              aria-describedby="article-description-hint article-description-error"
+              aria-describedby="article-description-hint article-description-error article-description-keywords"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
               <span id="article-description-hint">Optimum length for SEO (120-160 characters)</span>
@@ -185,6 +242,30 @@ export function ArticleForm({
                 {smallDescription.length}/160
               </span>
             </div>
+            {formData.keywords && formData.keywords.length > 0 && (
+              <div id="article-description-keywords" className="text-xs">
+                {(() => {
+                  const keywordsList = formData.keywords.split(',').filter(k => k.trim());
+                  const keywordsInDesc = keywordsList.filter(keyword => 
+                    smallDescription.toLowerCase().includes(keyword.toLowerCase().trim())
+                  );
+                  
+                  if (keywordsInDesc.length > 0) {
+                    return (
+                      <span className="text-green-600 dark:text-green-400">
+                        ✓ Meta description contains {keywordsInDesc.length} of your {keywordsList.length} keywords
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <span className="text-amber-600 dark:text-amber-400">
+                        Include at least one keyword in your meta description
+                      </span>
+                    );
+                  }
+                })()}
+              </div>
+            )}
             {fields.smallDescription.errors && (
               <p id="article-description-error" className="text-red-500 text-sm">
                 {fields.smallDescription.errors}
@@ -218,6 +299,7 @@ export function ArticleForm({
               content={editorValue} 
               title={title} 
               smallDescription={smallDescription} 
+              keywords={formData.keywords}
             />
           </div>
 

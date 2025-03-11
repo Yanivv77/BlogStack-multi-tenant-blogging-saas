@@ -16,6 +16,7 @@ interface FormData {
   title: string;
   slug: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 interface UseCreateArticleProps {
@@ -37,6 +38,11 @@ export function useCreateArticle({ siteId, onSuccess }: UseCreateArticleProps) {
       formDataToSubmit.append("title", formData.title);
       formDataToSubmit.append("slug", formData.slug);
       formDataToSubmit.append("smallDescription", formData.smallDescription);
+      
+      // Add keywords if available
+      if (formData.keywords) {
+        formDataToSubmit.append("keywords", formData.keywords);
+      }
       
       if (imageUrl) {
         formDataToSubmit.append("postCoverImage", imageUrl);

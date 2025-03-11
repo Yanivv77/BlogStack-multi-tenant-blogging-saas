@@ -5,6 +5,20 @@ import { JSONContent } from 'novel';
 import { AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+// Status icon component for SEO checks
+const StatusIcon = ({ status }: { status: CheckStatus }) => {
+  switch (status) {
+    case 'pass':
+      return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
+    case 'fail':
+      return <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+    case 'warning':
+      return <HelpCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+    default:
+      return null;
+  }
+};
+
 // Create simplified Accordion components if the UI components are not available
 const AccordionItem = ({ children, value, className }: { children: React.ReactNode, value: string, className?: string }) => (
   <div className={`mb-2 border rounded-md overflow-hidden ${className || ''}`}>
@@ -42,6 +56,7 @@ interface SeoRecommendationsProps {
   content: JSONContent | undefined;
   title: string;
   smallDescription: string;
+  keywords?: string;
 }
 
 type CheckStatus = 'pass' | 'fail' | 'warning';
@@ -58,7 +73,7 @@ interface SeoCheckResult {
  * SEO Recommendations component for content analysis
  * Provides guidance on improving content for SEO
  */
-export function SeoRecommendations({ content, title, smallDescription }: SeoRecommendationsProps) {
+export function SeoRecommendations({ content, title, smallDescription, keywords }: SeoRecommendationsProps) {
   const [seoResults, setSeoResults] = useState<SeoCheckResult[]>([]);
   const [overallScore, setOverallScore] = useState<CheckStatus>('warning');
   const [passCount, setPassCount] = useState(0);
@@ -90,10 +105,52 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
       return;
     }
 
+    // Debug logging for keywords
+    console.log('SEO Analysis - Keywords value:', keywords);
+    console.log('SEO Analysis - Keywords type:', typeof keywords);
+    
+    // Normalize keywords parameter for more robust handling
+    const normalizedKeywords = (() => {
+      // If keywords is explicitly undefined or null, return empty string
+      if (keywords === undefined || keywords === null) return '';
+      
+      // If keywords is already a string, return it
+      if (typeof keywords === 'string') return keywords;
+      
+      // If we get here, try to stringify it (should never happen, but just in case)
+      try {
+        return String(keywords);
+      } catch (e) {
+        console.error('Failed to normalize keywords:', e);
+        return '';
+      }
+    })();
+    
     const results: SeoCheckResult[] = [];
     let passCountTemp = 0;
     let failCountTemp = 0;
     let warningCountTemp = 0;
+    
+    // Calculate word count once for use throughout the analysis
+    const wordCount = countWords(content);
+    
+    if (wordCount === 0) {
+      results.push({
+        id: 'no-words',
+        title: 'No Words Detected',
+        description: 'Your article appears to be empty or contains only non-text content',
+        status: 'fail',
+        recommendation: 'Add meaningful text content to your article'
+      });
+      failCountTemp++;
+      
+      setSeoResults(results);
+      setOverallScore('fail');
+      setPassCount(0);
+      setFailCount(1);
+      setWarningCount(0);
+      return;
+    }
 
     // Check 1: Title length
     if (title) {
@@ -165,6 +222,148 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
     const headings = extractHeadings(content);
     const h1Count = headings.filter(h => h.level === 1).length;
     const h2Count = headings.filter(h => h.level === 2).length;
+    const h3Count = headings.filter(h => h.level === 3).length;
+    const h4Count = headings.filter(h => h.level === 4).length;
+    const h5Count = headings.filter(h => h.level === 5).length;
+    const h6Count = headings.filter(h => h.level === 6).length;
+    
+    // Check heading structure
+    const headingStructureCheck: SeoCheckResult = {
+      id: 'heading-structure',
+      title: 'Heading Structure',
+      description: `Your article has ${h1Count} H1, ${h2Count} H2, and ${h3Count} H3 tags`,
+      status: 'pass',
+      recommendation: 'Good heading structure helps both readers and search engines understand your content.'
+    };
+    
+    // Check for heading structure issues
+    const headingIssues: string[] = [];
+    
+    // Check if H1 is present
+    if (h1Count === 0) {
+      headingIssues.push('Missing H1 tag - every page should have one main heading');
+      headingStructureCheck.status = 'fail';
+    } else if (h1Count > 1) {
+      headingIssues.push(`Multiple H1 tags (${h1Count}) - consider using only one H1 for the main topic`);
+      headingStructureCheck.status = 'warning';
+    }
+    
+    // Check if H2s are present
+    if (h2Count === 0 && wordCount > 300) {
+      headingIssues.push('No H2 tags - consider adding section headings for longer content');
+      headingStructureCheck.status = headingStructureCheck.status === 'fail' ? 'fail' : 'warning';
+    }
+    
+    // Check for proper heading hierarchy - only if H3 tags are present
+    if (h3Count > 0 && h2Count === 0) {
+      headingIssues.push('H3 tags used without H2 tags - consider adding H2 headings for better structure');
+      headingStructureCheck.status = headingStructureCheck.status === 'fail' ? 'fail' : 'warning';
+    }
+    
+    // Check for keyword usage in headings
+    if (normalizedKeywords !== '') {
+      const keywordsList = normalizedKeywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      
+      if (keywordsList.length > 0) {
+        // Check if any H1 contains keywords
+        const h1Headings = headings.filter(h => h.level === 1);
+        const h1WithKeywords = h1Headings.some(h => 
+          keywordsList.some(keyword => 
+            h.text.toLowerCase().includes(keyword.toLowerCase())
+          )
+        );
+        
+        if (h1Count > 0 && !h1WithKeywords) {
+          headingIssues.push('H1 tag doesn\'t contain any of your keywords - consider including your primary keyword');
+          headingStructureCheck.status = headingStructureCheck.status === 'fail' ? 'fail' : 'warning';
+        }
+        
+        // Check if any H2 contains keywords
+        const h2Headings = headings.filter(h => h.level === 2);
+        const h2WithKeywords = h2Headings.some(h => 
+          keywordsList.some(keyword => 
+            h.text.toLowerCase().includes(keyword.toLowerCase())
+          )
+        );
+        
+        if (h2Count > 0 && !h2WithKeywords) {
+          headingIssues.push('None of your H2 tags contain keywords - consider including keywords in some section headings');
+          headingStructureCheck.status = headingStructureCheck.status === 'fail' ? 'fail' : 'warning';
+        }
+      }
+    }
+    
+    // Analyze heading content quality
+    const headingQuality = analyzeHeadingQuality(headings);
+    
+    // Add heading quality issues to the list
+    if (headingQuality.issues.length > 0) {
+      headingIssues.push(...headingQuality.issues);
+      
+      // Update status based on heading quality
+      if (headingQuality.quality === 'poor' && headingStructureCheck.status === 'pass') {
+        headingStructureCheck.status = 'warning';
+      }
+    }
+    
+    // Update description and recommendation based on issues
+    if (headingIssues.length > 0) {
+      headingStructureCheck.description = `Heading structure issues found: ${h1Count} H1, ${h2Count} H2, ${h3Count} H3 tags`;
+      
+      // Combine structural issues with content quality recommendations
+      const allRecommendations = [
+        ...headingIssues.map(issue => issue + '.'),
+        ...headingQuality.recommendations
+      ];
+      
+      // Format recommendations as a bulleted list for better readability
+      headingStructureCheck.recommendation = `Improve your heading structure:\n• ${allRecommendations.join('\n• ')}`;
+    } else {
+      // Provide positive feedback for good structure
+      headingStructureCheck.description = `Great heading structure with ${h1Count} H1, ${h2Count} H2, and ${h3Count} H3 tags`;
+      headingStructureCheck.recommendation = 'Your heading structure follows SEO best practices with a clear H1 title and well-organized sections.';
+    }
+    
+    // Add detailed heading analysis to the description
+    if (headings.length > 0) {
+      let headingAnalysis = '\n\nHeadings:';
+      
+      // Group headings by level
+      const h1Headings = headings.filter(h => h.level === 1);
+      const h2Headings = headings.filter(h => h.level === 2);
+      const h3Headings = headings.filter(h => h.level === 3);
+      
+      // Add H1 analysis
+      if (h1Headings.length > 0) {
+        const h1Text = h1Headings.map(h => h.text.trim()).join(', ');
+        headingAnalysis += `\nH1: "${h1Text.length > 50 ? h1Text.substring(0, 47) + '...' : h1Text}"`;
+      }
+      
+      // Add H2 analysis (limited to first 3 for brevity)
+      if (h2Headings.length > 0) {
+        const h2Display = h2Headings.length > 3 
+          ? h2Headings.slice(0, 3).map(h => `"${h.text.trim().substring(0, 30)}${h.text.trim().length > 30 ? '...' : ''}"`).join(', ') + ` (+ ${h2Headings.length - 3} more)`
+          : h2Headings.map(h => `"${h.text.trim().substring(0, 30)}${h.text.trim().length > 30 ? '...' : ''}"`).join(', ');
+        
+        headingAnalysis += `\nH2: ${h2Display}`;
+      }
+      
+      // Add H3 analysis (limited to first 3 for brevity)
+      if (h3Headings.length > 0) {
+        const h3Display = h3Headings.length > 3 
+          ? h3Headings.slice(0, 3).map(h => `"${h.text.trim().substring(0, 30)}${h.text.trim().length > 30 ? '...' : ''}"`).join(', ') + ` (+ ${h3Headings.length - 3} more)`
+          : h3Headings.map(h => `"${h.text.trim().substring(0, 30)}${h.text.trim().length > 30 ? '...' : ''}"`).join(', ');
+        
+        headingAnalysis += `\nH3: ${h3Display}`;
+      }
+      
+      headingStructureCheck.description += headingAnalysis;
+    }
+    
+    results.push(headingStructureCheck);
+    if (headingStructureCheck.status === 'pass') passCountTemp++;
+    else if (headingStructureCheck.status === 'fail') failCountTemp++;
+    else warningCountTemp++;
     
     // Check H1
     if (h1Count === 0) {
@@ -195,30 +394,8 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
       });
       passCountTemp++;
     }
-    
-    // Check H2
-    if (h2Count === 0) {
-      results.push({
-        id: 'missing-h2',
-        title: 'Missing H2 Headings',
-        description: 'Your article has no H2 headings',
-        status: 'warning',
-        recommendation: 'Consider adding H2 subheadings to structure your content'
-      });
-      warningCountTemp++;
-    } else {
-      results.push({
-        id: 'has-h2',
-        title: 'H2 Headings',
-        description: `Your article has ${h2Count} H2 headings`,
-        status: 'pass',
-        recommendation: 'Good job using H2 headings to structure your content!'
-      });
-      passCountTemp++;
-    }
 
     // Check 4: Content length
-    const wordCount = countWords(content);
     const contentLengthCheck: SeoCheckResult = {
       id: 'content-length',
       title: 'Content Length',
@@ -242,54 +419,232 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
     else if (contentLengthCheck.status === 'fail') failCountTemp++;
     else warningCountTemp++;
 
-    // Check 5: Keyword density (assuming the title contains the main keyword)
-    if (title) {
-      // Extract potential keywords from title (simplistic approach)
-      const keywords = extractPotentialKeywords(title);
+    // Check 5: Keywords
+    if (normalizedKeywords !== '') {
+      const keywordsList = normalizedKeywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
       
-      let keywordFound = false;
-      let keywordDensity = 0;
-      
-      if (keywords.length > 0 && wordCount > 0) {
-        const mainKeyword = keywords[0]; // Just take the first potential keyword
-        const keywordCount = countKeywordOccurrences(content, mainKeyword);
-        keywordDensity = (keywordCount / wordCount) * 100;
+      if (keywordsList.length > 0) {
+        // Check if keywords are used in title
+        const keywordsInTitle = keywordsList.filter(keyword => 
+          title.toLowerCase().includes(keyword.toLowerCase())
+        );
         
-        if (keywordDensity > 0) {
-          keywordFound = true;
+        if (keywordsInTitle.length > 0) {
+          results.push({
+            id: 'keywords-in-title',
+            title: 'Keywords in Title',
+            description: `Your title contains ${keywordsInTitle.length} of your specified keywords`,
+            status: 'pass',
+            recommendation: 'Good job including keywords in your title!'
+          });
+          passCountTemp++;
+        } else {
+          results.push({
+            id: 'missing-keywords-in-title',
+            title: 'Keywords in Title',
+            description: 'Your title doesn\'t contain any of your specified keywords',
+            status: 'warning',
+            recommendation: 'Consider including at least one of your main keywords in the title'
+          });
+          warningCountTemp++;
         }
-      }
-      
-      if (!keywordFound) {
+        
+        // Check if keywords are used in description
+        const keywordsInDesc = keywordsList.filter(keyword => 
+          smallDescription.toLowerCase().includes(keyword.toLowerCase())
+        );
+        
+        if (keywordsInDesc.length > 0) {
+          results.push({
+            id: 'keywords-in-desc',
+            title: 'Keywords in Meta Description',
+            description: `Your meta description contains ${keywordsInDesc.length} of your specified keywords`,
+            status: 'pass',
+            recommendation: 'Good job including keywords in your meta description!'
+          });
+          passCountTemp++;
+        } else {
+          results.push({
+            id: 'missing-keywords-in-desc',
+            title: 'Keywords in Meta Description',
+            description: 'Your meta description doesn\'t contain any of your specified keywords',
+            status: 'warning',
+            recommendation: 'Consider including at least one of your main keywords in the meta description'
+          });
+          warningCountTemp++;
+        }
+        
+        // Check keywords in content
+        const fullText = getFullText(content).toLowerCase();
+        const keywordOccurrences = keywordsList.map(keyword => ({
+          keyword,
+          count: (fullText.match(new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'g')) || []).length
+        }));
+        
+        const keywordsInContent = keywordOccurrences.filter(k => k.count > 0);
+        
+        if (keywordsInContent.length > 0) {
+          results.push({
+            id: 'keywords-in-content',
+            title: 'Keywords in Content',
+            description: `Your content contains ${keywordsInContent.length} of your ${keywordsList.length} specified keywords`,
+            status: 'pass',
+            recommendation: 'Good job including keywords throughout your content!'
+          });
+          passCountTemp++;
+        } else {
+          results.push({
+            id: 'missing-keywords-in-content',
+            title: 'Keywords in Content',
+            description: 'Your content doesn\'t contain any of your specified keywords',
+            status: 'warning',
+            recommendation: 'Include your keywords naturally throughout your content'
+          });
+          warningCountTemp++;
+        }
+      } else {
         results.push({
-          id: 'keyword-density',
-          title: 'Keyword Usage',
-          description: 'No potential keywords from title found in content',
+          id: 'empty-keywords',
+          title: 'Keywords',
+          description: 'You\'ve provided empty keywords',
           status: 'warning',
-          recommendation: 'Include your main keyword from the title in your content'
+          recommendation: 'Add 3-5 relevant keywords separated by commas'
         });
         warningCountTemp++;
-      } else {
-        const keywordCheck: SeoCheckResult = {
-          id: 'keyword-density',
-          title: 'Keyword Density',
-          description: `Keyword density is approximately ${keywordDensity.toFixed(1)}%`,
-          status: 'pass',
-          recommendation: 'Aim for a keyword density between 1-2%'
-        };
+      }
+    } else {
+      results.push({
+        id: 'missing-keywords',
+        title: 'Missing Keywords',
+        description: 'You haven\'t provided any keywords',
+        status: 'warning',
+        recommendation: 'Add 3-5 relevant keywords to improve SEO'
+      });
+      warningCountTemp++;
+    }
+
+    // Check 6: Keyword density (using the provided keywords instead of extracting from title)
+    if (normalizedKeywords !== '') {
+      const keywordsList = normalizedKeywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
+      
+      if (keywordsList.length > 0 && wordCount > 0) {
+        // Calculate density for all keywords combined
+        let totalKeywordOccurrences = 0;
+        const keywordDensities: { keyword: string; count: number; density: number }[] = [];
         
-        if (keywordDensity < 0.5) {
-          keywordCheck.status = 'warning';
-          keywordCheck.recommendation = 'Consider increasing your keyword usage slightly';
-        } else if (keywordDensity > 3) {
-          keywordCheck.status = 'warning';
-          keywordCheck.recommendation = 'Your keyword density might be too high, which could be seen as keyword stuffing';
+        // Calculate individual keyword densities
+        keywordsList.forEach(keyword => {
+          const keywordCount = countKeywordOccurrences(content, keyword);
+          totalKeywordOccurrences += keywordCount;
+          
+          if (keywordCount > 0) {
+            const density = (keywordCount / wordCount) * 100;
+            keywordDensities.push({ 
+              keyword, 
+              count: keywordCount, 
+              density
+            });
+          }
+        });
+        
+        // Calculate overall density
+        const overallDensity = (totalKeywordOccurrences / wordCount) * 100;
+        
+        if (keywordDensities.length === 0) {
+          results.push({
+            id: 'keyword-density',
+            title: 'Keyword Usage',
+            description: 'None of your keywords were found in the content',
+            status: 'warning',
+            recommendation: 'Include your keywords naturally throughout your content'
+          });
+          warningCountTemp++;
+        } else {
+          // Find the highest density keyword for reporting
+          keywordDensities.sort((a, b) => b.density - a.density);
+          const highestDensityKeyword = keywordDensities[0];
+          
+          const keywordCheck: SeoCheckResult = {
+            id: 'keyword-density',
+            title: 'Keyword Density',
+            description: `Overall keyword density is approximately ${overallDensity.toFixed(1)}% (highest: "${highestDensityKeyword.keyword}" at ${highestDensityKeyword.density.toFixed(1)}%)`,
+            status: 'pass',
+            recommendation: getKeywordDensityRecommendations(keywordDensities)
+          };
+          
+          if (overallDensity < 0.5) {
+            keywordCheck.status = 'warning';
+          } else if (overallDensity > 5) {
+            keywordCheck.status = 'warning';
+          } 
+          // Check for individual keyword stuffing
+          else if (highestDensityKeyword.density > 3) {
+            keywordCheck.status = 'warning';
+            keywordCheck.description = `Keyword "${highestDensityKeyword.keyword}" has a high density of ${highestDensityKeyword.density.toFixed(1)}%`;
+          }
+          
+          // Add detailed keyword density breakdown
+          if (keywordDensities.length > 0) {
+            let densityDetails = 'Keyword density breakdown:\n';
+            keywordDensities.forEach(kw => {
+              const densityClass = 
+                kw.density > 3 ? 'too high' :
+                kw.density >= 1 && kw.density <= 2 ? 'optimal' :
+                kw.density < 0.5 ? 'low' : 'acceptable';
+              
+              densityDetails += `• "${kw.keyword}": ${kw.density.toFixed(1)}% (${kw.count} occurrences) - ${densityClass}\n`;
+            });
+            
+            keywordCheck.description += `\n\n${densityDetails}`;
+          }
+          
+          results.push(keywordCheck);
+          if (keywordCheck.status === 'pass') passCountTemp++;
+          else if (keywordCheck.status === 'fail') failCountTemp++;
+          else warningCountTemp++;
         }
+      } else if (wordCount > 0) {
+        // Keywords string exists but has no valid keywords after filtering
+        results.push({
+          id: 'invalid-keywords',
+          title: 'Invalid Keywords',
+          description: 'Your keywords field doesn\'t contain valid keywords',
+          status: 'warning',
+          recommendation: 'Add 3-5 relevant keywords separated by commas'
+        });
+        warningCountTemp++;
+      }
+    } else if (title && wordCount > 0) {
+      // Only fall back to title-based keyword check if no keywords were provided
+      const extractedKeywords = extractPotentialKeywords(title);
+      
+      if (extractedKeywords.length > 0) {
+        const mainKeyword = extractedKeywords[0]; // Just take the first potential keyword
+        const keywordCount = countKeywordOccurrences(content, mainKeyword);
+        const keywordDensity = (keywordCount / wordCount) * 100;
         
-        results.push(keywordCheck);
-        if (keywordCheck.status === 'pass') passCountTemp++;
-        else if (keywordCheck.status === 'fail') failCountTemp++;
-        else warningCountTemp++;
+        if (keywordCount === 0) {
+          results.push({
+            id: 'keyword-density-fallback',
+            title: 'Keyword Usage',
+            description: `Main keyword "${mainKeyword}" from title not found in content`,
+            status: 'warning',
+            recommendation: 'Include your main keyword from the title in your content or add specific keywords in the keywords field'
+          });
+          warningCountTemp++;
+        } else {
+          const keywordCheck: SeoCheckResult = {
+            id: 'keyword-density-fallback',
+            title: 'Keyword Density',
+            description: `Title keyword "${mainKeyword}" density is approximately ${keywordDensity.toFixed(1)}%`,
+            status: 'pass',
+            recommendation: 'For better analysis, add specific keywords in the keywords field'
+          };
+          
+          results.push(keywordCheck);
+          if (keywordCheck.status === 'pass') passCountTemp++;
+          else warningCountTemp++;
+        }
       }
     }
 
@@ -308,7 +663,7 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
     }
 
     setSeoResults(results);
-  }, [content, title, smallDescription]);
+  }, [content, title, smallDescription, keywords]);
 
   // Get background color based on status
   const getBgColor = (status: CheckStatus) => {
@@ -353,43 +708,186 @@ export function SeoRecommendations({ content, title, smallDescription }: SeoReco
   };
 
   return (
-    <div className={`mt-4 rounded-lg p-4 ${getBgColor(overallScore)}`}>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold flex items-center gap-2">
-          {getStatusIcon(overallScore)}
-          <span>SEO Recommendations</span>
-        </h3>
-        <div className="flex gap-2">
-          <Badge variant={overallScore === 'pass' ? 'default' : 'outline'} className={overallScore === 'pass' ? 'bg-green-500' : ''}>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <StatusIcon status={overallScore} />
+          <h3 className="text-base font-medium">
+            SEO Score: {passCount} passed, {warningCount} warnings, {failCount} failed
+          </h3>
+        </div>
+        <div className="flex space-x-1">
+          <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">
             {passCount} Passed
           </Badge>
-          <Badge variant={overallScore === 'warning' ? 'default' : 'outline'} className={overallScore === 'warning' ? 'bg-yellow-500' : ''}>
+          <Badge variant="outline" className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300">
             {warningCount} Warnings
           </Badge>
-          <Badge variant={overallScore === 'fail' ? 'default' : 'outline'} className={overallScore === 'fail' ? 'bg-red-500' : ''}>
+          <Badge variant="outline" className="bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300">
             {failCount} Failed
           </Badge>
         </div>
       </div>
 
-      <Accordion className="w-full">
+      <Accordion className="space-y-2">
         {seoResults.map((result) => (
-          <AccordionItem key={result.id} value={result.id} className={`mb-2 border ${getBgColor(result.status)}`}>
-            <AccordionTrigger 
-              className={`px-4 py-2 ${getTextColor(result.status)}`}
+          <AccordionItem 
+            key={result.id} 
+            value={result.id}
+            className={`
+              ${result.status === 'pass' ? 'border-green-200 dark:border-green-800' : ''}
+              ${result.status === 'warning' ? 'border-amber-200 dark:border-amber-800' : ''}
+              ${result.status === 'fail' ? 'border-red-200 dark:border-red-800' : ''}
+            `}
+          >
+            <AccordionTrigger
               onClick={() => toggleItem(result.id)}
+              className={`
+                ${result.status === 'pass' ? 'bg-green-50 dark:bg-green-950/30 text-green-800 dark:text-green-200' : ''}
+                ${result.status === 'warning' ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200' : ''}
+                ${result.status === 'fail' ? 'bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-200' : ''}
+              `}
             >
-              <div className="flex items-center gap-2">
-                {getStatusIcon(result.status)}
+              <div className="flex items-center space-x-2">
+                <StatusIcon status={result.status} />
                 <span>{result.title}</span>
               </div>
             </AccordionTrigger>
-            {expandedItem === result.id && (
-              <AccordionContent className="px-4 py-2">
-                <p className="mb-2">{result.description}</p>
-                <p className="text-sm font-medium">Recommendation: {result.recommendation}</p>
-              </AccordionContent>
-            )}
+            <AccordionContent className="text-sm">
+              <div className="space-y-2">
+                <p>{result.description.split('\n\n')[0]}</p>
+                
+                {/* Special handling for keyword density breakdown */}
+                {result.id === 'keyword-density' && result.description.includes('Keyword density breakdown:') && (
+                  <div className="mt-3 border rounded-md p-2 bg-gray-50 dark:bg-gray-900">
+                    <h4 className="font-medium mb-2">Keyword Density Analysis</h4>
+                    <div className="space-y-1">
+                      {result.description.split('\n\n')[1].split('\n').map((line, i) => {
+                        if (!line.startsWith('Keyword density breakdown:')) {
+                          const [keywordPart, densityClass] = line.split(' - ');
+                          return (
+                            <div key={i} className="flex items-center justify-between">
+                              <span>{keywordPart}</span>
+                              <Badge 
+                                variant="outline" 
+                                className={
+                                  densityClass === 'optimal' ? 'bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' :
+                                  densityClass === 'too high' ? 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' :
+                                  densityClass === 'low' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' :
+                                  'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                                }
+                              >
+                                {densityClass}
+                              </Badge>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                    
+                    <div className="mt-3 pt-2 border-t text-xs text-gray-600 dark:text-gray-400">
+                      <h5 className="font-medium mb-1">Keyword Density Reference:</h5>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li><span className="text-green-600 dark:text-green-400 font-medium">Optimal:</span> 1-2% for primary keywords</li>
+                        <li><span className="text-blue-600 dark:text-blue-400 font-medium">Acceptable:</span> 0.5-3% range</li>
+                        <li><span className="text-amber-600 dark:text-amber-400 font-medium">Low:</span> Below 0.5% (may need more emphasis)</li>
+                        <li><span className="text-red-600 dark:text-red-400 font-medium">Too High:</span> Above 3% (risk of keyword stuffing)</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Special handling for heading structure guide */}
+                {result.id === 'heading-structure' && (
+                  <div className="mt-3 border rounded-md p-2 bg-gray-50 dark:bg-gray-900">
+                    <h4 className="font-medium mb-2">Heading Structure Best Practices</h4>
+                    
+                    <div className="space-y-3 text-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h5 className="font-medium text-gray-800 dark:text-gray-200">H1 Tags</h5>
+                          <ul className="list-disc pl-4 space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>Use exactly one H1 per page</li>
+                            <li>Include your primary keyword</li>
+                            <li>Keep it clear and descriptive</li>
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-gray-800 dark:text-gray-200">H2 Tags</h5>
+                          <ul className="list-disc pl-4 space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>Divide content into major sections</li>
+                            <li>Include relevant keywords</li>
+                            <li>Support the main H1 topic</li>
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-gray-800 dark:text-gray-200">H3-H6 Tags</h5>
+                          <ul className="list-disc pl-4 space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>Optional for deeper structure</li>
+                            <li>Use when needed for subsections</li>
+                            <li>Improve content scanability</li>
+                          </ul>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-gray-800 dark:text-gray-200">Keywords in Headings</h5>
+                          <ul className="list-disc pl-4 space-y-1 text-gray-600 dark:text-gray-400">
+                            <li>Primary keyword in H1</li>
+                            <li>Keyword variations in H2/H3</li>
+                            <li>Use question-based headings</li>
+                          </ul>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h5 className="font-medium text-gray-800 dark:text-gray-200">Length Guidelines</h5>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-1">
+                          <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-center">
+                            <span className="font-medium text-blue-700 dark:text-blue-300">H1:</span> 
+                            <span className="text-gray-600 dark:text-gray-400 block">5-10 words</span>
+                          </div>
+                          <div className="bg-green-50 dark:bg-green-900/20 p-2 rounded text-center">
+                            <span className="font-medium text-green-700 dark:text-green-300">H2:</span> 
+                            <span className="text-gray-600 dark:text-gray-400 block">3-8 words</span>
+                          </div>
+                          <div className="bg-amber-50 dark:bg-amber-900/20 p-2 rounded text-center">
+                            <span className="font-medium text-amber-700 dark:text-amber-300">H3+:</span> 
+                            <span className="text-gray-600 dark:text-gray-400 block">3-7 words</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 pt-2 border-t text-xs text-gray-600 dark:text-gray-400">
+                      <h5 className="font-medium mb-1">Example Structure:</h5>
+                      <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded font-mono text-xs">
+                        <div className="text-blue-600 dark:text-blue-400">&lt;h1&gt;Complete Guide to SEO&lt;/h1&gt;</div>
+                        <div className="ml-2 text-green-600 dark:text-green-400">&lt;h2&gt;On-Page SEO Factors&lt;/h2&gt;</div>
+                        <div className="ml-2 text-green-600 dark:text-green-400">&lt;h2&gt;Technical SEO&lt;/h2&gt;</div>
+                        <div className="ml-4 text-amber-600 dark:text-amber-400 opacity-70">&lt;h3&gt;Optional Subsection&lt;/h3&gt; <span className="text-gray-500">(optional)</span></div>
+                      </div>
+                      <p className="mt-1 italic">Note: H3-H6 tags are optional and should be used only when needed for deeper content organization.</p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="pt-2 border-t">
+                  <h4 className="font-medium mb-1">Recommendation:</h4>
+                  {result.id === 'heading-structure' && result.recommendation.includes('\n') ? (
+                    <div className="text-gray-700 dark:text-gray-300">
+                      {result.recommendation.split('\n').map((line, i) => (
+                        <p key={i} className={i === 0 ? 'mb-2' : 'mb-1'}>{line}</p>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-700 dark:text-gray-300">{result.recommendation}</p>
+                  )}
+                </div>
+              </div>
+            </AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
@@ -494,8 +992,123 @@ function extractPotentialKeywords(title: string): string[] {
  * Count occurrences of a keyword in content
  */
 function countKeywordOccurrences(content: JSONContent, keyword: string): number {
+  if (!keyword || keyword.trim().length === 0) return 0;
+  
   const text = getFullText(content).toLowerCase();
-  const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
-  const matches = text.match(regex);
-  return matches ? matches.length : 0;
+  const cleanKeyword = keyword.toLowerCase().trim();
+  
+  try {
+    // Escape special regex characters in the keyword to avoid errors
+    const escapedKeyword = cleanKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'gi');
+    const matches = text.match(regex);
+    return matches ? matches.length : 0;
+  } catch (error) {
+    // Fallback method in case regex fails
+    const words = text.split(/\s+/);
+    return words.filter(word => word === cleanKeyword).length;
+  }
+}
+
+/**
+ * Get keyword density optimization recommendations
+ */
+function getKeywordDensityRecommendations(keywordDensities: { keyword: string; count: number; density: number }[]): string {
+  const highDensityKeywords = keywordDensities.filter(kw => kw.density > 3);
+  const lowDensityKeywords = keywordDensities.filter(kw => kw.density < 0.5 && kw.count > 0);
+  const optimalKeywords = keywordDensities.filter(kw => kw.density >= 1 && kw.density <= 2);
+  
+  let recommendations = [];
+  
+  // Recommendations for high density keywords
+  if (highDensityKeywords.length > 0) {
+    const keywordsList = highDensityKeywords.map(kw => `"${kw.keyword}" (${kw.density.toFixed(1)}%)`).join(', ');
+    recommendations.push(`Consider reducing the frequency of overused keywords: ${keywordsList}. Use synonyms, related terms, or LSI (Latent Semantic Indexing) keywords instead.`);
+  }
+  
+  // Recommendations for low density keywords
+  if (lowDensityKeywords.length > 0 && optimalKeywords.length === 0) {
+    const keywordsList = lowDensityKeywords.map(kw => `"${kw.keyword}" (${kw.density.toFixed(1)}%)`).join(', ');
+    recommendations.push(`Try to increase usage of these keywords: ${keywordsList}. Aim for 1-2% density for primary keywords.`);
+  }
+  
+  // General recommendations
+  if (recommendations.length === 0) {
+    if (optimalKeywords.length > 0) {
+      recommendations.push(`Good job! Your keyword density is optimal for: ${optimalKeywords.map(kw => `"${kw.keyword}"`).join(', ')}.`);
+    } else {
+      recommendations.push('Aim for 1-2% density for primary keywords and 0.5-1% for secondary keywords. Avoid exceeding 3% for any single keyword to prevent keyword stuffing penalties.');
+    }
+  }
+  
+  recommendations.push('For best SEO results, include keywords naturally in headings, the first paragraph, and throughout the content.');
+  
+  return recommendations.join('\n\n');
+}
+
+/**
+ * Analyze heading content quality
+ */
+function analyzeHeadingQuality(headings: {level: number, text: string}[]): {
+  quality: 'good' | 'average' | 'poor',
+  issues: string[],
+  recommendations: string[]
+} {
+  const issues: string[] = [];
+  const recommendations: string[] = [];
+  
+  // Check for empty headings
+  const emptyHeadings = headings.filter(h => h.text.trim().length === 0);
+  if (emptyHeadings.length > 0) {
+    issues.push(`Found ${emptyHeadings.length} empty heading(s)`);
+    recommendations.push('Add text to empty headings');
+  }
+  
+  // Check for very short headings (less than 3 words)
+  const shortHeadings = headings.filter(h => h.text.trim().split(/\s+/).length < 3 && h.text.trim().length > 0);
+  if (shortHeadings.length > 0) {
+    issues.push(`Found ${shortHeadings.length} very short heading(s)`);
+    recommendations.push('Make short headings more descriptive (3-10 words ideal)');
+  }
+  
+  // Check for very long headings (more than 15 words)
+  const longHeadings = headings.filter(h => h.text.trim().split(/\s+/).length > 15);
+  if (longHeadings.length > 0) {
+    issues.push(`Found ${longHeadings.length} very long heading(s)`);
+    recommendations.push('Make long headings more concise (3-10 words ideal)');
+  }
+  
+  // Check for duplicate headings
+  const headingTexts = headings.map(h => h.text.trim().toLowerCase());
+  const duplicateHeadings = headingTexts.filter((text, index) => headingTexts.indexOf(text) !== index);
+  if (duplicateHeadings.length > 0) {
+    issues.push(`Found ${duplicateHeadings.length} duplicate heading(s)`);
+    recommendations.push('Use unique headings throughout your content');
+  }
+  
+  // Check for proper capitalization (at least first letter should be capitalized)
+  const improperCapitalization = headings.filter(h => {
+    const text = h.text.trim();
+    return text.length > 0 && text[0] === text[0].toLowerCase();
+  });
+  if (improperCapitalization.length > 0) {
+    issues.push(`Found ${improperCapitalization.length} heading(s) without proper capitalization`);
+    recommendations.push('Capitalize the first letter of each heading');
+  }
+  
+  // Determine overall quality
+  let quality: 'good' | 'average' | 'poor' = 'good';
+  if (issues.length > 3) {
+    quality = 'poor';
+  } else if (issues.length > 0) {
+    quality = 'average';
+  }
+  
+  // Add general recommendations if no specific issues found
+  if (recommendations.length === 0) {
+    recommendations.push('Your headings look good! Continue using descriptive, keyword-rich headings');
+    recommendations.push('Consider using questions in some headings for voice search');
+  }
+  
+  return { quality, issues, recommendations };
 } 

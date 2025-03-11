@@ -106,6 +106,7 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
           slug,
           postCoverImage: await toNullable(postCoverImage),
           contentImages: contentImages,
+          keywords: formData.get("keywords") as string || null,
           siteId,
           userId: user.id, // Add the userId from authenticated user
           views: 0,

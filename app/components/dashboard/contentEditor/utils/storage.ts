@@ -16,6 +16,7 @@ export interface FormDraft {
   title?: string;
   slug?: string;
   smallDescription?: string;
+  keywords?: string;
   coverImage?: string | null;
   siteId?: string;
   articleContent?: any; // For rich text editor content

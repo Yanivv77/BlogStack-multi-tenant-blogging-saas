@@ -10,11 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-
+import { ArticleBasicForm } from "./ArticleBasicForm";
 import { ArticleContentForm } from "./ArticleContentForm";
 import { useCreateArticle } from "../hooks/useCreateArticle";
 import { useArticleDraft } from "../hooks/useArticleDraft";
-import { ArticleBasicForm } from "./ArticleBasicForm";
 
 type AppRouterInstance = ReturnType<typeof useRouter>;
 
@@ -24,6 +23,21 @@ interface ArticleFormContainerProps {
   isNewFromUrl: boolean;
   initialStep?: number;
 }
+
+interface FormData {
+  title: string;
+  slug: string;
+  smallDescription: string;
+  keywords?: string;
+}
+
+// Use this type for the state to make keywords optional
+type FormDataState = {
+  title: string;
+  slug: string;
+  smallDescription: string;
+  keywords: string;
+};
 
 type FormStep = 1 | 2;
 
@@ -41,10 +55,11 @@ export function ArticleFormContainer({
   // Core state for article
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [value, setValue] = useState<JSONContent | undefined>(undefined);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     title: "",
     slug: "",
-    smallDescription: ""
+    smallDescription: "",
+    keywords: ""
   });
   
   // Validation states
@@ -62,7 +77,14 @@ export function ArticleFormContainer({
   } = useArticleDraft({
     siteId,
     formData,
-    setFormData,
+    setFormData: (data: FormData) => {
+      // Ensure keywords is always a string
+      const updatedData = {
+        ...data,
+        keywords: data.keywords || ""
+      };
+      setFormData(updatedData);
+    },
     imageUrl,
     setImageUrl,
     value,
@@ -94,7 +116,7 @@ export function ArticleFormContainer({
   useEffect(() => {
     if (isNewFromUrl) {
       clearAllDrafts();
-      setFormData({ title: "", slug: "", smallDescription: "" });
+      setFormData({ title: "", slug: "", smallDescription: "", keywords: "" });
       setImageUrl(null);
       setValue(undefined);
       setCurrentStep(1);
@@ -114,7 +136,7 @@ export function ArticleFormContainer({
   
   // Reset form to create a new article
   const resetForm = () => {
-    setFormData({ title: "", slug: "", smallDescription: "" });
+    setFormData({ title: "", slug: "", smallDescription: "", keywords: "" });
     setImageUrl(null);
     setValue(undefined);
     clearAllDrafts();
@@ -217,7 +239,14 @@ export function ArticleFormContainer({
             <CardContent>
               <ArticleBasicForm
                 formData={formData}
-                setFormData={setFormData}
+                setFormData={(data) => {
+                  // Ensure keywords is always a string
+                  const updatedData = {
+                    ...data,
+                    keywords: data.keywords || ""
+                  };
+                  setFormData(updatedData);
+                }}
                 imageUrl={imageUrl}
                 setImageUrl={setImageUrl}
                 isValid={basicInfoValid}

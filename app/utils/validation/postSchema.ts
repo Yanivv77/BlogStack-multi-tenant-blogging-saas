@@ -24,6 +24,7 @@ export const PostSchema = z.object({
     z.array(z.any()),
     z.object({}).passthrough()
   ]).optional(),
+  keywords: z.string().optional(),
 });
 
 /**
@@ -82,6 +83,7 @@ export function PostCreationSchema(options?: {
       z.array(z.any()),
       z.object({}).passthrough()
     ]).optional(),
+    keywords: z.string().optional(),
   });
 }
 
@@ -111,5 +113,6 @@ export function PostEditSchema(options?: {
       z.array(z.any()),
       z.object({}).passthrough()
     ]).optional(),
+    keywords: z.string().optional(),
   });
 } 
