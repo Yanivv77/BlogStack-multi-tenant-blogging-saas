@@ -33,8 +33,8 @@ model User {
 
 // Language options enum
 enum Language {
-  English
-  Hebrew
+  LTR
+  RTL
 }
 
 model Site {
@@ -62,7 +62,7 @@ model Site {
   portfolioUrl   String?
   
   // Language setting
-  language       Language @default(English)
+  language       Language @default(LTR)
   
   @@index([userId]) // Speeds up user-related queries
   @@index([subdirectory]) // Faster lookup by subdirectory

@@ -3,20 +3,17 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { siteSchema } from "@/app/utils/validation/siteSchema";
-import { LanguageEnum } from "@/app/utils/validation/common";
+import { siteSchema, SiteEditSchema } from "@/app/utils/validation/siteSchema";
+import { LanguageEnum, Language } from "@/app/utils/validation";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { UpdateSiteAction } from "@/app/serverActions/site/updateSite";
+import { parseFormWithZod } from "@/app/utils/validation/conform";
 
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Form,
@@ -38,7 +35,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Globe, Mail, Link as LinkIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 
 // Define the props type
 type UpdateSiteFormProps = {
@@ -69,9 +65,9 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
       name: site.name,
       description: site.description || "",
       subdirectory: site.subdirectory, // Use the existing subdirectory value
-      language: site.language === "English" || site.language === "Hebrew" 
-        ? site.language 
-        : "English",
+      language: site.language === Language.LTR || site.language === Language.RTL
+        ? site.language as z.infer<typeof LanguageEnum>
+        : Language.LTR, // Default to LTR for any other values
       email: site.email || "",
       githubUrl: site.githubUrl || "",
       linkedinUrl: site.linkedinUrl || "",
@@ -95,34 +91,46 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
         formData.append("subdirectory", site.subdirectory);
       }
       
-      // Ensure language is included in form data
-      const language = form.getValues("language");
-      if (!formData.get("language") && language) {
-        formData.append("language", language);
+      // Preserve image fields if they're not explicitly set in the form
+      if (!formData.has("siteImageCover") && site.siteImageCover) {
+        formData.append("siteImageCover", site.siteImageCover);
       }
       
+      if (!formData.has("logoImage") && site.logoImage) {
+        formData.append("logoImage", site.logoImage);
+      }
+
+      // First, validate the form data with our schema
+      const validationResult = parseFormWithZod(formData, SiteEditSchema());
+      
+      if (validationResult.status !== "success") {
+        // Show error toast for validation failures
+        toast.error("Please fix the validation errors");
+        setIsSubmitting(false);
+        return;
+      }
+      
+      // Submit the form if validation passes
       const result = await UpdateSiteAction(null, formData);
       
-      if (result && 'success' in result && result.success) {
-        toast.success("Site updated successfully");
-        
-        // Refresh the page data
-        router.refresh();
-        
-        // Don't redirect, even if a URL is provided
-        // if ('redirectUrl' in result && result.redirectUrl) {
-        //   router.push(result.redirectUrl);
-        // }
-      } else if (result && 'error' in result) {
-        // Handle form errors
-        const formError = result.error?._form?.[0];
+      // Handle different response formats
+      if (!result) {
+        toast.error("No response received from server");
+      } else if ('error' in result && result.error) {
+        // Handle form errors from the server
+        const formError = result.error._form?.[0];
         if (formError) {
           toast.error(formError);
+        } else {
+          toast.error("An error occurred while updating the site");
         }
+      } else if ('success' in result && result.success) {
+        toast.success("Site updated successfully");
+        router.refresh();
       }
     } catch (error) {
-      toast.error("Failed to update site");
-      console.error("Update error:", error);
+      console.error("Error updating site:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
     }
@@ -164,26 +172,23 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                   name="language"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Language</FormLabel>
+                      <FormLabel>Text Direction</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
                         defaultValue={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a language" />
+                            <SelectValue placeholder="Select text direction" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {Object.values(LanguageEnum.enum).map((lang) => (
-                            <SelectItem key={lang} value={lang}>
-                              {lang}
-                            </SelectItem>
-                          ))}
+                          <SelectItem value={Language.LTR}>LTR (Left to Right)</SelectItem>
+                          <SelectItem value={Language.RTL}>RTL (Right to Left)</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        The primary language of your site content
+                        The text direction for your site. LTR for languages like English or Spanish, RTL for Hebrew or Arabic.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

@@ -2,10 +2,13 @@
 
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Settings, Image, Trash2 } from "lucide-react";
-import { GeneralTab, AppearanceTab, DeleteBlogTab } from "../../../dashboard/sites/[siteId]/settings/components/index";
+
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { AppearanceTab } from "./AppearanceTab";
+import { GeneralTab } from "@/app/components/dashboard/settings/GeneralTab";
+import { DeleteBlogTab } from "@/app/components/dashboard/settings/DeleteBlogTab";
 
 // CSS for hiding scrollbar while allowing scrolling
 const hideScrollbarStyle = `

@@ -48,14 +48,14 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
           });
           
           return !existingPost;
-        },
-      }),
-      async: true,
+        }
+      })
     });
 
+    // If validation fails, return the error
     if (submission.status !== "success") {
-      logger.warn("Form validation failed", { errors: submission.error });
-      return submission.reply();
+      logger.error("Validation failed", null, { errors: submission.error });
+      return submission;
     }
 
     logger.debug("Form validation successful");

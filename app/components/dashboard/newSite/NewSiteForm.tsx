@@ -62,7 +62,7 @@ export function NewSiteForm() {
     name: "",
     description: "",
     subdirectory: "",
-    language: "English",
+    language: "LTR",
     email: "",
     githubUrl: "",
     linkedinUrl: "",

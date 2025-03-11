@@ -64,7 +64,11 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
     lastResult,
 
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: PostSchema });
+      // Use the PostSchema for basic validation
+      // In a server action we'd use PostEditSchema with slug uniqueness check
+      return parseWithZod(formData, { 
+        schema: PostSchema 
+      });
     },
 
     shouldValidate: "onBlur",

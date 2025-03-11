@@ -18,6 +18,35 @@ export async function DeleteSite(formData: FormData) {
     return { error: "You must be logged in to delete a site" };
   }
 
+  // Check if the user exists in the database
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+    
+    if (!dbUser) {
+      logger.info("User not found in database, creating user record", { userId: user.id });
+      
+      // Create the user in the database
+      await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email || "",
+          firstName: user.given_name || "",
+          lastName: user.family_name || "",
+          profileImage: user.picture || null,
+        },
+      });
+      
+      logger.info("User created in database", { userId: user.id });
+    } else {
+      logger.debug("User exists in database", { userId: user.id });
+    }
+  } catch (userError) {
+    logger.error("Error checking/creating user", userError, { userId: user.id });
+    return { error: "Error with user account. Please try again." };
+  }
+
   try {
     // Get siteId from formData
     const siteId = formData.get("siteId") as string;

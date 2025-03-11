@@ -162,7 +162,9 @@ export default async function SitesRoute() {
             href={`/dashboard/sites/${site.id}`}
             buttonText="Manage Articles"
             buttonIcon={<FileIcon className="size-4" />}
-            badge={{ text: site.language || "English" }}
+            badge={{ text: site.language === "LTR" ? "Left to Right" : 
+                   site.language === "RTL" ? "Right to Left" : 
+                   site.language || "LTR" }}
             subdirectory={site.subdirectory}
             priority={index === 0}
           />

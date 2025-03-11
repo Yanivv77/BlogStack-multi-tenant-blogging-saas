@@ -76,19 +76,19 @@ export function validateDescription(description: string): string | undefined {
 }
 
 /**
- * Validate language
+ * Validates a language selection
  * @param language Language to validate
  * @returns Error message or undefined if valid
  */
 export function validateLanguage(language: string): string | undefined {
-  const validLanguages = ["English", "Hebrew"];
+  const validLanguages = ["LTR", "RTL"];
   
   if (!language) {
-    return "Language is required";
+    return "Text direction is required";
   }
   
   if (!validLanguages.includes(language)) {
-    return "Please select a valid language";
+    return "Invalid text direction selection";
   }
   
   return undefined;

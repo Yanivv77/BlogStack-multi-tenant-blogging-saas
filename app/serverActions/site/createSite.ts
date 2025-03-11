@@ -5,6 +5,7 @@ import { SiteCreationSchema } from "../../utils/validation/siteSchema";
 import { getAuthenticatedUser, toNullable } from "../utils/helpers";
 import { parseWithZod } from "@conform-to/zod";
 import { serverLogger } from "../../utils/logger";
+import { Language } from "@prisma/client";
 
 export async function CreateSiteAction(_prevState: any, formData: FormData) {
   const logger = serverLogger("CreateSiteAction");
@@ -31,6 +32,35 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
   }
   
   logger.info("User authenticated", { id: user.id, email: user.email });
+
+  // Check if the user exists in the database
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+    
+    if (!dbUser) {
+      logger.info("User not found in database, creating user record", { userId: user.id });
+      
+      // Create the user in the database
+      await prisma.user.create({
+        data: {
+          id: user.id,
+          email: user.email || "",
+          firstName: user.given_name || "",
+          lastName: user.family_name || "",
+          profileImage: user.picture || null,
+        },
+      });
+      
+      logger.info("User created in database", { userId: user.id });
+    } else {
+      logger.info("User exists in database", { userId: user.id });
+    }
+  } catch (userError) {
+    logger.error("Error checking/creating user", userError, { userId: user.id });
+    return { error: { _form: ["Error with user account. Please try again."] } };
+  }
 
   try {
     logger.debug("Validating form data with Zod schema");
@@ -84,6 +114,11 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
       userId: user.id,
     });
     
+    // Make sure we have a valid language value
+    const languageValue = language === "LTR" || language === "RTL" 
+      ? language === "LTR" ? Language.LTR : Language.RTL
+      : Language.LTR; // Default to LTR for any unexpected values
+      
     // Create the site
     const newSite = await prisma.site.create({
       data: {
@@ -97,7 +132,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
         githubUrl: await toNullable(githubUrl),
         linkedinUrl: await toNullable(linkedinUrl),
         portfolioUrl: await toNullable(portfolioUrl),
-        language: language || "English",
+        language: languageValue,
       },
     });
     

@@ -348,6 +348,12 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
             />
             <div id="description-hint" className="text-[0.8rem] text-muted-foreground">
               Describe what your site is about (10-500 characters)
+              <span className="float-right" aria-live="polite">
+                <span className={`${formValues.description.length > 500 ? 'text-destructive' : ''}`}>
+                  {formValues.description.length}
+                </span>
+                /500 characters
+              </span>
             </div>
             {shouldShowError('description') && (
               <div id="description-error" className="text-destructive text-sm">
@@ -359,7 +365,7 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
           {/* Language */}
           <div className="space-y-2">
             <Label htmlFor="site-language" className="text-base">
-              Language
+              Text Direction
             </Label>
             <Select 
               value={formValues.language} 
@@ -369,15 +375,15 @@ export function BasicsTab({ fields, goToNextTab, formValues, handleInputChange }
                 id="site-language"
                 className={`h-11 text-foreground ${shouldShowError('language') ? 'border-destructive' : ''}`}
               >
-                <SelectValue placeholder="Select a language" className="text-muted-foreground" />
+                <SelectValue placeholder="Select text direction" className="text-muted-foreground" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="English">English</SelectItem>
-                <SelectItem value="Hebrew">Hebrew</SelectItem>
+                <SelectItem value="LTR">LTR (Left to Right)</SelectItem>
+                <SelectItem value="RTL">RTL (Right to Left)</SelectItem>
               </SelectContent>
             </Select>
             <div id="language-hint" className="text-[0.8rem] text-muted-foreground">
-              Select the primary language for your site
+              Select the text direction for your site. LTR for languages like English, Spanish; RTL for Hebrew, Arabic.
             </div>
             {shouldShowError('language') && (
               <div id="language-error" className="text-destructive text-sm">

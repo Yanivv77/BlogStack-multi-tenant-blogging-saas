@@ -101,7 +101,7 @@ export function SummaryTab({
               
               {/* Overlay gradient for better text contrast if there's an image */}
               {siteImageCover && (
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                <div className="absolute inset-0  from-black/30 to-transparent"></div>
               )}
             </div>
             
@@ -132,7 +132,10 @@ export function SummaryTab({
                     </Badge>
                     <Badge variant="secondary" className="text-sm px-3 py-1.5 flex items-center gap-2">
                       <SimpleIcon name="languages" size={16} className="flex-shrink-0" />
-                      <span className="truncate">{formValues.language}</span>
+                      <span className="truncate">
+                        {formValues.language === "LTR" ? "Left to Right" : "Right to Left"}
+                        <span className="ml-1 opacity-70">({formValues.language})</span>
+                      </span>
                     </Badge>
                   </div>
                 </div>
@@ -198,7 +201,7 @@ export function SummaryTab({
               <div>
                 <p className="font-semibold mb-2 text-base">Ready to create your blog?</p>
                 <p className="text-muted-foreground leading-relaxed break-words">
-                  Once created, you can start adding blog posts and customizing your site further from the dashboard.
+                  Once created, you can start adding blog posts and customizing your site further from the blog settings page.
                   Your site will be immediately available at <span className="font-mono text-primary font-medium break-all">{`blogstack.io/${formValues.subdirectory}`}</span>.
                 </p>
               </div>

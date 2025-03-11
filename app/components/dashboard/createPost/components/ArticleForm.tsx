@@ -59,7 +59,9 @@ export function ArticleForm({
   const [form, fields] = useForm({
     lastResult,
     onValidate({ formData }) {
-      return parseWithZod(formData, { schema: PostSchema });
+      return parseWithZod(formData, { 
+        schema: PostSchema 
+      });
     },
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
