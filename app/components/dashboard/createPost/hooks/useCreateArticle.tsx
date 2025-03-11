@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useActionState } from "react";
 import { JSONContent } from "novel";
 import { toast } from "sonner";
 import { CreatePostAction } from "@/app/serverActions/post/createPost";
 import { getUploadedImages } from "@/app/components/dashboard/contentEditor";
+import { startTransition } from "react";
 
 // Define the possible action result types
 type ActionResult = 
@@ -26,10 +27,10 @@ interface UseCreateArticleProps {
 
 export function useCreateArticle({ siteId, onSuccess }: UseCreateArticleProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [lastResult, action] = useActionState(CreatePostAction, undefined);
+  const [lastResult, dispatch] = useActionState(CreatePostAction, undefined);
   
   // Handle submission to server action
-  const handleSubmit = async (formData: FormData, content: JSONContent | undefined, imageUrl: string | null) => {
+  const handleSubmit = (formData: FormData, content: JSONContent | undefined, imageUrl: string | null) => {
     setIsSubmitting(true);
     
     try {
@@ -57,25 +58,35 @@ export function useCreateArticle({ siteId, onSuccess }: UseCreateArticleProps) {
         formDataToSubmit.append("contentImages", JSON.stringify(contentImages));
       }
       
-      const result = await action(formDataToSubmit) as unknown as ActionResult;
-      
-      if ('success' in result || (result as any).status === "success") {
-        onSuccess();
-      } else {
-        const errors = 'error' in result && result.error ? 
-          ('_form' in result.error ? result.error._form : []) : 
-          ((result as any).errors || []);
-          
-        (Array.isArray(errors) ? errors : [errors]).forEach(
-          (error: string) => toast.error(error)
-        );
-      }
+      // Use startTransition to properly dispatch the server action
+      startTransition(() => {
+        dispatch(formDataToSubmit);
+      });
     } catch (error) {
       toast.error(`Submission failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
       setIsSubmitting(false);
     }
   };
+  
+  // Handle result changes
+  useEffect(() => {
+    if (!lastResult) return;
+    
+    if ('success' in lastResult || (lastResult as any).status === "success") {
+      // Don't show a toast here, let the onSuccess callback handle it
+      onSuccess();
+      setIsSubmitting(false);
+    } else if (lastResult) {
+      const errors = 'error' in lastResult && lastResult.error ? 
+        ('_form' in lastResult.error ? lastResult.error._form : []) : 
+        ((lastResult as any).errors || []);
+        
+      (Array.isArray(errors) ? errors : [errors]).forEach(
+        (error: string) => toast.error(error)
+      );
+      setIsSubmitting(false);
+    }
+  }, [lastResult, onSuccess]);
   
   return {
     handleSubmit,

@@ -68,6 +68,8 @@ export function ArticleFormContainer({
   // Track if this is a new article (from URL param)
   const [isNewArticle, setIsNewArticle] = useState(isNewFromUrl);
   
+  const [slugAvailable, setSlugAvailable] = useState(false);
+  
   // Custom hooks for article management
   const { 
     draftLoaded, 
@@ -96,7 +98,7 @@ export function ArticleFormContainer({
     siteId,
     onSuccess: () => {
       clearAllDrafts();
-      toast.success("Article created successfully");
+      
       router.push(`/dashboard/sites/${siteId}`);
     }
   });
@@ -107,10 +109,11 @@ export function ArticleFormContainer({
     const isValid = 
       title.trim().length >= 3 && 
       slug.trim().length >= 3 && 
-      smallDescription.trim().length >= 10;
+      smallDescription.trim().length >= 10 &&
+      slugAvailable;
     
     setBasicInfoValid(isValid);
-  }, [formData]);
+  }, [formData, slugAvailable]);
   
   // Handle new article parameter
   useEffect(() => {
@@ -250,6 +253,8 @@ export function ArticleFormContainer({
                 imageUrl={imageUrl}
                 setImageUrl={setImageUrl}
                 isValid={basicInfoValid}
+                siteId={siteId}
+                onSlugAvailabilityChange={setSlugAvailable}
               />
               
               <div className="flex justify-end mt-6">

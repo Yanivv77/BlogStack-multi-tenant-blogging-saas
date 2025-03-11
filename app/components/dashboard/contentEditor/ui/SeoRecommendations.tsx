@@ -310,10 +310,19 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     if (headingIssues.length > 0) {
       headingStructureCheck.description = `Heading structure issues found: ${h1Count} H1, ${h2Count} H2, ${h3Count} H3 tags`;
       
+      // Filter out any contradictory recommendations
+      const filteredHeadingQualityRecommendations = headingQuality.recommendations.filter(rec => {
+        // If there's a missing H1 issue, don't include the "headings look good" recommendation
+        if (h1Count === 0 && rec.includes('Your headings look good')) {
+          return false;
+        }
+        return true;
+      });
+      
       // Combine structural issues with content quality recommendations
       const allRecommendations = [
         ...headingIssues.map(issue => issue + '.'),
-        ...headingQuality.recommendations
+        ...filteredHeadingQualityRecommendations
       ];
       
       // Format recommendations as a bulleted list for better readability
@@ -365,34 +374,38 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     else if (headingStructureCheck.status === 'fail') failCountTemp++;
     else warningCountTemp++;
     
-    // Check H1
-    if (h1Count === 0) {
-      results.push({
-        id: 'missing-h1',
-        title: 'Missing H1 Heading',
-        description: 'Your article has no H1 headings',
-        status: 'fail',
-        recommendation: 'Add an H1 heading to your article (main title)'
-      });
-      failCountTemp++;
-    } else if (h1Count > 1) {
-      results.push({
-        id: 'too-many-h1',
-        title: 'Too Many H1 Headings',
-        description: `Your article has ${h1Count} H1 headings`,
-        status: 'warning',
-        recommendation: 'Use only one H1 heading per article'
-      });
-      warningCountTemp++;
-    } else {
-      results.push({
-        id: 'correct-h1',
-        title: 'H1 Heading',
-        description: 'Your article has one H1 heading',
-        status: 'pass',
-        recommendation: 'Good job! This follows SEO best practices.'
-      });
-      passCountTemp++;
+    // Only add separate H1 check if it's not already covered in the heading structure check
+    // This avoids duplicate recommendations
+    if (!headingIssues.some(issue => issue.includes('H1 tag'))) {
+      // Check H1
+      if (h1Count === 0) {
+        results.push({
+          id: 'missing-h1',
+          title: 'Missing H1 Heading',
+          description: 'Your article has no H1 headings',
+          status: 'fail',
+          recommendation: 'Add an H1 heading to your article (main title)'
+        });
+        failCountTemp++;
+      } else if (h1Count > 1) {
+        results.push({
+          id: 'too-many-h1',
+          title: 'Too Many H1 Headings',
+          description: `Your article has ${h1Count} H1 headings`,
+          status: 'warning',
+          recommendation: 'Use only one H1 heading per article'
+        });
+        warningCountTemp++;
+      } else {
+        results.push({
+          id: 'correct-h1',
+          title: 'H1 Heading',
+          description: 'Your article has one H1 heading',
+          status: 'pass',
+          recommendation: 'Good job! This follows SEO best practices.'
+        });
+        passCountTemp++;
+      }
     }
 
     // Check 4: Content length
@@ -1157,9 +1170,12 @@ function analyzeHeadingQuality(headings: {level: number, text: string}[]): {
     quality = 'average';
   }
   
-  // Add general recommendations if no specific issues found
+  // Add general recommendations only if no specific issues found
   if (recommendations.length === 0) {
     recommendations.push('Your headings look good! Continue using descriptive, keyword-rich headings');
+    recommendations.push('Consider using questions in some headings for voice search');
+  } else {
+    // Always add the voice search recommendation as it's helpful regardless of issues
     recommendations.push('Consider using questions in some headings for voice search');
   }
   

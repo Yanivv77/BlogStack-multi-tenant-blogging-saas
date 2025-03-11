@@ -1,7 +1,6 @@
 import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { JSONContent } from "novel";
-import slugify from "react-slugify";
 import { toast } from "sonner";
 import { Atom } from "lucide-react";
 
@@ -18,6 +17,8 @@ import {
 } from "@/app/components/dashboard/contentEditor";
 import { SeoRecommendations } from "@/app/components/dashboard/contentEditor/ui/SeoRecommendations";
 import { ImageUploader } from "./ImageUploader";
+import { SlugInput } from "./SlugInput";
+import { formatAsSlug } from "@/app/utils/validation/postUtils";
 
 interface FormData {
   title: string;
@@ -73,13 +74,41 @@ export function ArticleForm({
       return toast.error("Please create a title first");
     }
 
-    const generatedSlug = slugify(title);
-    updateFormData("slug", generatedSlug);
+    // Format the title into a proper slug
+    const formattedSlug = formatAsSlug(title);
+    
+    if (!formattedSlug) {
+      return toast.error("Could not generate a valid slug from title");
+    }
+    
+    updateFormData("slug", formattedSlug);
     return toast.success("Slug has been created");
   }
 
   const handleFormSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    
+    // Validate required fields before submitting
+    if (!title || title.length < 3) {
+      toast.error("Please enter a valid title (at least 3 characters)");
+      return;
+    }
+    
+    if (!slug || slug.length < 3) {
+      toast.error("Please enter a valid slug (at least 3 characters)");
+      return;
+    }
+    
+    if (!smallDescription || smallDescription.length < 10) {
+      toast.error("Please enter a valid meta description (at least 10 characters)");
+      return;
+    }
+    
+    if (!editorValue) {
+      toast.error("Please add some content to your article");
+      return;
+    }
+    
     onSubmit(formData, editorValue, imageUrl);
   };
 
@@ -200,13 +229,17 @@ export function ArticleForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor={fields.slug.id}>Slug</Label>
-            <Input
-              id={fields.slug.id}
-              key={fields.slug.key}
+            <SlugInput
+              siteId={siteId}
+              value={slug}
+              onChange={(value) => updateFormData("slug", value)}
+              autoGenerateFromTitle={true}
+              title={title}
+              error={fields.slug.errors ? fields.slug.errors.join(', ') : undefined}
+            />
+            <input
+              type="hidden"
               name={fields.slug.name}
-              placeholder="Article Slug"
-              onChange={(e) => updateFormData("slug", e.target.value)}
               value={slug}
             />
             <Button
@@ -214,10 +247,11 @@ export function ArticleForm({
               className="w-fit"
               variant="secondary"
               type="button"
+              disabled={!title || title.length < 3}
+              aria-label="Generate slug from title"
             >
-              <Atom className="size-4 mr-2" /> Generate Slug
+              <Atom className="size-4 mr-2" aria-hidden="true" /> Generate Slug
             </Button>
-            <p className="text-red-500 text-sm">{fields.slug.errors}</p>
           </div>
 
           <div className="grid gap-2">

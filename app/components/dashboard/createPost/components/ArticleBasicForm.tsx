@@ -4,8 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUploader } from "./ImageUploader";
 import { Atom, Info } from "lucide-react";
-import slugify from "react-slugify";
 import { toast } from "sonner";
+import { SlugInput } from "./SlugInput";
+import { formatAsSlug, checkSlugAvailability } from "@/app/utils/validation/postUtils";
+import { useState, useEffect, useRef } from "react";
 
 interface FormData {
   title: string;
@@ -20,6 +22,8 @@ interface ArticleBasicFormProps {
   imageUrl: string | null;
   setImageUrl: (url: string | null) => void;
   isValid: boolean;
+  siteId: string;
+  onSlugAvailabilityChange?: (isAvailable: boolean) => void;
 }
 
 export function ArticleBasicForm({
@@ -27,23 +31,81 @@ export function ArticleBasicForm({
   setFormData,
   imageUrl,
   setImageUrl,
-  isValid
+  isValid,
+  siteId,
+  onSlugAvailabilityChange
 }: ArticleBasicFormProps) {
   const { title, slug, smallDescription } = formData;
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+  const [slugAvailable, setSlugAvailable] = useState(false);
+  const slugInputRef = useRef<{ checkSlug: (slug: string) => Promise<void> } | null>(null);
   
   const updateFormData = (field: keyof FormData, value: string) => {
+    if (field === "slug") {
+      // Reset slug availability when slug changes
+      setSlugAvailable(false);
+    }
     setFormData({ ...formData, [field]: value });
   };
   
-  function handleSlugGeneration() {
+  async function handleSlugGeneration() {
     if (!title || title.length === 0) {
       return toast.error("Please create a title first");
     }
 
-    const generatedSlug = slugify(title);
-    updateFormData("slug", generatedSlug);
-    return toast.success("Slug has been created");
+    // Format the title into a proper slug
+    const formattedSlug = formatAsSlug(title);
+    
+    if (!formattedSlug) {
+      return toast.error("Could not generate a valid slug from title");
+    }
+    
+    // Update the slug in the form data
+    updateFormData("slug", formattedSlug);
+    
+    // Check if the slug is available
+    setIsCheckingSlug(true);
+    try {
+      const isAvailable = await checkSlugAvailability(formattedSlug, siteId);
+      
+      if (isAvailable) {
+        setSlugAvailable(true);
+        // Manually trigger the slug check in the SlugInput component
+        if (slugInputRef.current) {
+          await slugInputRef.current.checkSlug(formattedSlug);
+        }
+      } else {
+        // If not available, try adding a random number
+        const randomSuffix = Math.floor(Math.random() * 1000);
+        const alternativeSlug = `${formattedSlug}-${randomSuffix}`;
+        
+        const isAlternativeAvailable = await checkSlugAvailability(alternativeSlug, siteId);
+        
+        if (isAlternativeAvailable) {
+          updateFormData("slug", alternativeSlug);
+          setSlugAvailable(true);
+          // Manually trigger the slug check for the alternative slug
+          if (slugInputRef.current) {
+            await slugInputRef.current.checkSlug(alternativeSlug);
+          }
+          toast.success("Generated an alternative available slug");
+        } else {
+          toast.error("Could not generate an available slug. Please try a different title or create a custom slug.");
+        }
+      }
+    } catch (error) {
+      toast.error("Error checking slug availability");
+      console.error("Error checking slug availability:", error);
+    } finally {
+      setIsCheckingSlug(false);
+    }
   }
+  
+  useEffect(() => {
+    if (onSlugAvailabilityChange) {
+      onSlugAvailabilityChange(slugAvailable);
+    }
+  }, [slugAvailable, onSlugAvailabilityChange]);
   
   return (
     <div className="flex flex-col gap-6">
@@ -140,25 +202,34 @@ export function ArticleBasicForm({
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="slug">Slug</Label>
-        <Input
-          id="slug"
-          name="slug"
-          placeholder="Article Slug"
-          onChange={(e) => updateFormData("slug", e.target.value)}
+        <SlugInput
+          ref={slugInputRef}
+          siteId={siteId}
           value={slug}
+          onChange={(value) => updateFormData("slug", value)}
+          autoGenerateFromTitle={true}
+          title={title}
+          onAvailabilityChange={setSlugAvailable}
         />
         <Button
           onClick={handleSlugGeneration}
           className="w-fit"
           variant="secondary"
           type="button"
+          disabled={!title || title.length < 3 || isCheckingSlug}
+          aria-label="Generate slug from title"
         >
-          <Atom className="size-4 mr-2" /> Generate Slug
+          {isCheckingSlug ? (
+            <>
+              <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              Checking...
+            </>
+          ) : (
+            <>
+              <Atom className="size-4 mr-2" aria-hidden="true" /> Generate Slug
+            </>
+          )}
         </Button>
-        {slug.length > 0 && slug.length < 3 && (
-          <p className="text-red-500 text-sm">Slug must be at least 3 characters</p>
-        )}
       </div>
 
       <div className="grid gap-2">
@@ -223,6 +294,7 @@ export function ArticleBasicForm({
               <p className="font-medium text-blue-800 dark:text-blue-300">Required Fields</p>
               <p className="text-blue-700 dark:text-blue-400">
                 Please complete all required fields before proceeding to the next step.
+                {slug && !slugAvailable && " Make sure your slug is available."}
               </p>
             </div>
           </div>

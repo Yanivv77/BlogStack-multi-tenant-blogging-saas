@@ -28,14 +28,17 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
     }
 
     // Log form data for debugging
+    const postCoverImageValue = formData.get("postCoverImage");
+    const contentImagesValue = formData.get("contentImages");
+    
     logger.debug("Form data received", {
       title: formData.get("title"),
       smallDescription: formData.get("smallDescription")?.toString().substring(0, 20) + "...",
       slug: formData.get("slug"),
-      postCoverImage: formData.get("postCoverImage") ? "Present" : "Not provided",
+      postCoverImage: postCoverImageValue ? (typeof postCoverImageValue === 'string' ? `Present (${postCoverImageValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
       keywords: formData.get("keywords") ? "Present" : "Not provided",
       articleContent: formData.get("articleContent") ? "Present" : "Not provided",
-      contentImages: formData.get("contentImages") ? "Present" : "Not provided",
+      contentImages: contentImagesValue ? (typeof contentImagesValue === 'string' ? `Present (${contentImagesValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
     });
 
     // Verify the user owns the site
@@ -86,6 +89,12 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
       keywords,
     } = submission.value;
 
+    // Log the extracted values
+    logger.debug("Extracted values from submission", {
+      postCoverImage: postCoverImage ? `Present (${typeof postCoverImage})` : "Not provided",
+      contentImages: rawContentImages ? `Present (${typeof rawContentImages})` : "Not provided",
+    });
+
     // Process content images
     let contentImages = [];
     if (rawContentImages) {
@@ -94,7 +103,14 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
         contentImages = typeof rawContentImages === 'string' 
           ? JSON.parse(rawContentImages) 
           : rawContentImages;
-        logger.debug("Processed content images", { count: Array.isArray(contentImages) ? contentImages.length : 0 });
+        logger.debug("Processed content images", { 
+          count: Array.isArray(contentImages) ? contentImages.length : 0,
+          type: typeof contentImages,
+          isArray: Array.isArray(contentImages),
+          sample: Array.isArray(contentImages) && contentImages.length > 0 
+            ? contentImages[0].substring(0, 30) + "..." 
+            : "No images"
+        });
       } catch (e) {
         logger.error("Error parsing content images", e);
         contentImages = [];
@@ -112,6 +128,20 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
       return { error: { _form: ["Invalid article content format"] } };
     }
 
+    // Process postCoverImage
+    let processedCoverImage = null;
+    try {
+      processedCoverImage = await toNullable(postCoverImage);
+      logger.debug("Processed cover image", { 
+        hasImage: processedCoverImage ? "Yes" : "No",
+        type: typeof processedCoverImage,
+        sample: processedCoverImage ? processedCoverImage.substring(0, 30) + "..." : "None"
+      });
+    } catch (e) {
+      logger.error("Error processing cover image", e);
+      processedCoverImage = null;
+    }
+
     // Create the post with proper JSON fields
     try {
       logger.info("Creating post in database", { title, slug, siteId });
@@ -122,8 +152,8 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
           smallDescription,
           articleContent: processedArticleContent,
           slug,
-          postCoverImage: await toNullable(postCoverImage),
-          contentImages: contentImages,
+          postCoverImage: processedCoverImage,
+          contentImages: contentImages.length > 0 ? contentImages : null,
           keywords: keywords || null,
           siteId,
           userId: user.id,
@@ -132,7 +162,11 @@ export async function CreatePostAction(_prevState: any, formData: FormData) {
         },
       });
 
-      logger.success("Post created successfully", { postId: post.id });
+      logger.success("Post created successfully", { 
+        postId: post.id,
+        hasCoverImage: post.postCoverImage ? "Yes" : "No",
+        hasContentImages: post.contentImages ? "Yes" : "No"
+      });
       return { success: true, postId: post.id };
     } catch (dbError) {
       logger.error("Database error creating post", dbError);

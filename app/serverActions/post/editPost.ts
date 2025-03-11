@@ -41,15 +41,18 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     }
 
     // Log form data for debugging
+    const postCoverImageValue = formData.get("postCoverImage");
+    const contentImagesValue = formData.get("contentImages");
+    
     logger.debug("Form data received", {
       postId,
       siteId,
       title: formData.get("title"),
       smallDescription: formData.get("smallDescription")?.toString().substring(0, 20) + "...",
       slug: formData.get("slug"),
-      postCoverImage: formData.get("postCoverImage") ? "Present" : "Not provided",
+      postCoverImage: postCoverImageValue ? (typeof postCoverImageValue === 'string' ? `Present (${postCoverImageValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
       articleContent: formData.get("articleContent") ? "Present" : "Not provided",
-      contentImages: formData.get("contentImages") ? "Present" : "Not provided",
+      contentImages: contentImagesValue ? (typeof contentImagesValue === 'string' ? `Present (${contentImagesValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
     });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
@@ -123,14 +126,27 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
       contentImages: rawContentImages,
     } = submission.value;
 
+    // Log the extracted values
+    logger.debug("Extracted values from submission", {
+      postCoverImage: postCoverImage ? `Present (${typeof postCoverImage})` : "Not provided",
+      contentImages: rawContentImages ? `Present (${typeof rawContentImages})` : "Not provided",
+    });
+
     // Process content images
-    let contentImages: string[] = [];
+    let contentImages = [];
     if (rawContentImages) {
       try {
         contentImages = typeof rawContentImages === 'string'
           ? JSON.parse(rawContentImages)
           : rawContentImages;
-        logger.debug("Processed content images", { count: contentImages.length });
+        logger.debug("Processed content images", { 
+          count: Array.isArray(contentImages) ? contentImages.length : 0,
+          type: typeof contentImages,
+          isArray: Array.isArray(contentImages),
+          sample: Array.isArray(contentImages) && contentImages.length > 0 
+            ? contentImages[0].substring(0, 30) + "..." 
+            : "No images"
+        });
       } catch (e) {
         logger.error("Error parsing content images", e);
         contentImages = [];
@@ -148,24 +164,42 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
       return { error: { _form: ["Invalid article content format"] } };
     }
 
+    // Process postCoverImage
+    let processedCoverImage = null;
+    try {
+      processedCoverImage = await toNullable(postCoverImage);
+      logger.debug("Processed cover image", { 
+        hasImage: processedCoverImage ? "Yes" : "No",
+        type: typeof processedCoverImage,
+        sample: processedCoverImage ? processedCoverImage.substring(0, 30) + "..." : "None"
+      });
+    } catch (e) {
+      logger.error("Error processing cover image", e);
+      processedCoverImage = null;
+    }
+
     logger.info("Updating post", { postId, title, slug });
     
     // Update the post
     try {
-      await prisma.post.update({
+      const updatedPost = await prisma.post.update({
         where: { id: postId },
         data: {
           title,
           smallDescription,
           articleContent: processedArticleContent,
           slug,
-          postCoverImage: await toNullable(postCoverImage),
-          contentImages: contentImages,
+          postCoverImage: processedCoverImage,
+          contentImages: contentImages.length > 0 ? contentImages : null,
           updatedAt: new Date(),
         },
       });
 
-      logger.success("Post updated successfully", { postId });
+      logger.success("Post updated successfully", { 
+        postId,
+        hasCoverImage: updatedPost.postCoverImage ? "Yes" : "No",
+        hasContentImages: updatedPost.contentImages ? "Yes" : "No"
+      });
       
       // Return success
       return { success: true, postId };
