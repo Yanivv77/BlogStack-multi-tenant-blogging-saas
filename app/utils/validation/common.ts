@@ -29,6 +29,15 @@ export const CommonFields = {
   slug: () => z.string()
     .min(3, ValidationMessages.TOO_SHORT(3))
     .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens are allowed"),
+    
+  domain: () => z.string()
+    .regex(
+      /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
+      "Invalid domain format. Enter a valid domain without http:// or https://"
+    )
+    .optional()
+    .or(z.literal(''))
+    .transform(val => val === '' ? null : val),
 };
 
 /**

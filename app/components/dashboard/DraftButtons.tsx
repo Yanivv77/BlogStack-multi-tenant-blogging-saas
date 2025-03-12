@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle, Edit } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 // Constants
 const DRAFT_STORAGE_KEY = 'article-form-draft';
@@ -37,14 +37,14 @@ export function DraftButtons({ siteId }: { siteId: string }) {
       {hasDraft && (
         <Button asChild variant="secondary">
           <Link href={`/dashboard/sites/${siteId}/create`}>
-            <Edit className="size-4 mr-2" />
+            <SimpleIcon name="edit" size={16} className="mr-2" />
             Continue Draft
           </Link>
         </Button>
       )}
       <Button asChild>
         <Link href={`/dashboard/sites/${siteId}/create?new=true`}>
-          <PlusCircle className="size-4 mr-2" />
+          <SimpleIcon name="plus" size={16} className="mr-2" />
           Create Article
         </Link>
       </Button>

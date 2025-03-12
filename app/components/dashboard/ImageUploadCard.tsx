@@ -14,7 +14,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { UpdateImage } from "@/app/serverActions/image/updateImage";
-import { Loader2, AlertTriangle, RefreshCw, ImageIcon } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 interface ImageUploadCardProps {
   siteId: string;
@@ -122,7 +122,7 @@ export function ImageUploadCard({
           ) : uploadError ? (
             <div className="w-full flex-1 flex items-center justify-center">
               <div className="border-dashed border-2 border-destructive/30 bg-destructive/5 rounded-md p-4 flex flex-col items-center justify-center space-y-3 mx-auto">
-                <AlertTriangle className="text-destructive size-6" />
+                <SimpleIcon name="x" size={24} className="text-destructive" />
                 <div className="text-center">
                   <h3 className="font-semibold text-sm mb-1">Upload Error</h3>
                   <p className="text-xs text-muted-foreground mb-1">{uploadError}</p>
@@ -133,7 +133,7 @@ export function ImageUploadCard({
             <div className="w-full flex-1 flex items-center justify-center">
               <div className="border-dashed border-2 border-muted-foreground rounded-md p-6 flex flex-col items-center justify-center mx-auto">
                 <div className="flex flex-col items-center gap-2">
-                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                  <SimpleIcon name="loader" size={28} className="animate-spin text-primary" />
                   <p className="text-sm text-muted-foreground">Uploading image...</p>
                 </div>
               </div>
@@ -142,7 +142,7 @@ export function ImageUploadCard({
             <div className="w-full flex-1 flex items-center justify-center">
               <div className="border-dashed border-2 border-muted-foreground/50 rounded-lg p-4 flex flex-col items-center justify-center">
                 <div className={`${imageContainerClass} flex items-center justify-center bg-muted/30`}>
-                  <ImageIcon className="size-10 text-muted-foreground/40" />
+                  <SimpleIcon name="image" size={40} className="text-muted-foreground/40" />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 mb-4 text-center">
                   No image uploaded
@@ -212,7 +212,7 @@ export function ImageUploadCard({
               onClick={handleRetry}
               className="flex items-center gap-1"
             >
-              <RefreshCw className="size-3" /> Try Again
+              <SimpleIcon name="arrowright" size={12} className="rotate-180" /> Try Again
             </Button>
           ) : null}
           
@@ -225,7 +225,7 @@ export function ImageUploadCard({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-3 animate-spin" />
+                  <SimpleIcon name="loader" size={12} className="animate-spin" />
                   Saving...
                 </>
               ) : (

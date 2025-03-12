@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Link from "next/link";
 import prisma from "@/app/utils/db/prisma";
 import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { SettingsTabs } from "../../../../components/dashboard/settings/SettingsTabs";
+import { SettingsTabs } from "@/app/components/dashboard/sites";
+
 
 export default async function SettingsSiteRoute({
   params,
@@ -41,6 +42,8 @@ export default async function SettingsSiteRoute({
       portfolioUrl: true,
       siteImageCover: true,
       logoImage: true,
+      customDomain: true,
+      domainVerified: true,
     },
   });
 
@@ -56,7 +59,7 @@ export default async function SettingsSiteRoute({
         <div className="flex items-center gap-x-2">
           <Button variant="outline" size="icon" asChild>
             <Link href={`/dashboard/sites/${siteId}`}>
-              <ChevronLeft className="size-4" />
+              <SimpleIcon name="chevronleft" size={16} />
             </Link>
           </Button>
           <div>

@@ -1,10 +1,10 @@
-import { FileIcon, Edit, PlusCircle } from "lucide-react";
-import prisma from "../utils/db/prisma";
 import { requireUser } from "../utils/auth/user";
 import { DEFAULT_IMAGE_URL } from "../utils/constants/images";
 import { DashboardCard } from "../components/dashboard/DashboardCard";
 import { DashboardGrid } from "../components/dashboard/DashboardGrid";
 import { SectionHeader } from "../components/dashboard/SectionHeader";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import prisma from "../utils/db/prisma";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -52,7 +52,7 @@ export default async function DashboardIndexPage() {
           action={{
             href: "/dashboard/sites/new",
             text: "Create Site",
-            icon: <PlusCircle className="size-4" />
+            icon: <SimpleIcon name="pluscircle" size={16} />
           }}
         />
         
@@ -74,7 +74,7 @@ export default async function DashboardIndexPage() {
               imageUrl={site.siteImageCover || DEFAULT_IMAGE_URL}
               href={`/dashboard/sites/${site.id}`}
               buttonText="View Articles"
-              buttonIcon={<FileIcon className="size-4" />}
+              buttonIcon={<SimpleIcon name="file" size={16} />}
               priority={index === 0}
               subdirectory={site.subdirectory}
             />
@@ -113,7 +113,7 @@ export default async function DashboardIndexPage() {
               imageUrl={article.postCoverImage || DEFAULT_IMAGE_URL}
               href={`/dashboard/sites/${article.siteId}/${article.id}`}
               buttonText="Edit Article"
-              buttonIcon={<Edit className="size-4" />}
+              buttonIcon={<SimpleIcon name="edit" size={16} />}
               priority={index === 0}
               createdAt={article.createdAt}
             />

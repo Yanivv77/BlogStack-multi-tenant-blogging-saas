@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 import globe from "@/public/globe.svg";
 import Image from "next/image";
 import { DashboardItems } from "../components/dashboard/DashboardItems";
-import { DollarSign, Globe, Home, Menu } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { ThemeToggle } from "../components/dashboard/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
@@ -13,17 +13,17 @@ export const navLinks = [
   {
     name: "Dashboard",
     href: "/dashboard",
-    icon: Home,
+    icon: "home",
   },
   {
     name: "Sites",
     href: "/dashboard/sites",
-    icon: Globe,
+    icon: "globe",
   },
   {
     name: "Pricing",
     href: "/dashboard/pricing",
-    icon: DollarSign,
+    icon: "dollarsign",
   },
 ];
 
@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
+              <SimpleIcon name="menu" size={20} />
               <span className="sr-only">Toggle menu</span>
             </Button>
           </SheetTrigger>

@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { JSONContent } from 'novel';
-import { AlertCircle, CheckCircle, HelpCircle } from 'lucide-react';
+import { SimpleIcon } from '@/components/ui/icons/SimpleIcon';
 import { Badge } from '@/components/ui/badge';
 
 // Status icon component for SEO checks
 const StatusIcon = ({ status }: { status: CheckStatus }) => {
   switch (status) {
     case 'pass':
-      return <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />;
+      return <SimpleIcon name="check" size={16} className="text-green-600 dark:text-green-400" />;
     case 'fail':
-      return <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />;
+      return <SimpleIcon name="alertcircle" size={16} className="text-red-600 dark:text-red-400" />;
     case 'warning':
-      return <HelpCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+      return <SimpleIcon name="info" size={16} className="text-amber-600 dark:text-amber-400" />;
     default:
       return null;
   }
@@ -47,9 +47,7 @@ const Accordion = ({ children, className }: { children: React.ReactNode, classNa
 
 // Simple chevron icon for accordion
 const ChevronIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+  <SimpleIcon name="chevrondown" size={20} className="text-current" />
 );
 
 interface SeoRecommendationsProps {
@@ -721,11 +719,11 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
   const getStatusIcon = (status: CheckStatus) => {
     switch (status) {
       case 'pass':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <SimpleIcon name="check" size={20} className="text-green-500" />;
       case 'fail':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <SimpleIcon name="alertcircle" size={20} className="text-red-500" />;
       case 'warning':
-        return <HelpCircle className="h-5 w-5 text-yellow-500" />;
+        return <SimpleIcon name="info" size={20} className="text-yellow-500" />;
       default:
         return null;
     }
@@ -843,7 +841,7 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
                  result.description.includes('Missing keywords:') && (
                   <div className="mt-3 border border-amber-200 rounded-md p-2 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800">
                     <div className="flex items-start">
-                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mr-2 mt-0.5" />
+                      <SimpleIcon name="alerttriangle" size={20} className="text-amber-600 dark:text-amber-400 mr-2 mt-0.5" />
                       <div>
                         <h4 className="font-medium text-amber-800 dark:text-amber-300 mb-1">Missing Keywords</h4>
                         <p >

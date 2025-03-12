@@ -2,7 +2,7 @@ import { RenderArticle } from "@/app/components/blog/post/RenderArticle";
 import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 import prisma from "@/app/utils/db/prisma";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,7 +42,7 @@ export default async function SlugRoute({
       <div className="flex items-center gap-x-3 pt-10 pb-5">
         <Button size="icon" variant="outline" asChild>
           <Link href={`/blog/${params.name}`}>
-            <ArrowLeft className="size-4" />
+            <SimpleIcon name="arrowleft" size={16} />
           </Link>
         </Button>
         <h1 className="text-xl font-medium">Go Back</h1>

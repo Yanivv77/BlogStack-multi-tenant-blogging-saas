@@ -1,4 +1,4 @@
-import { Check, ChevronDown } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import type { Dispatch, SetStateAction } from "react";
 import { EditorBubbleItem, useEditor } from "novel";
 
@@ -114,7 +114,7 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
             }}>
             A
           </span>
-          <ChevronDown className='h-4 w-4' />
+          <SimpleIcon name="chevrondown" size={16} />
         </Button>
       </PopoverTrigger>
 
@@ -164,7 +164,7 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                 </div>
                 <span>{name}</span>
               </div>
-              {editor.isActive("highlight", { color }) && <Check className='h-4 w-4' />}
+              {editor.isActive("highlight", { color }) && <SimpleIcon name="check" size={16} />}
             </EditorBubbleItem>
           ))}
         </div>

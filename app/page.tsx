@@ -5,7 +5,7 @@ import {
   LogoutLink,
 } from "@kinde-oss/kinde-auth-nextjs/components";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { ArrowRight, Edit, Globe, Layers, Users } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Link from "next/link";
 
 export default async function Home() {
@@ -62,7 +62,7 @@ export default async function Home() {
             <div className="flex flex-wrap justify-center gap-4 mt-8">
               <RegisterLink>
                 <Button size="lg" className="hover-lift">
-                  Start for free <ArrowRight className="ml-2 h-4 w-4" />
+                  Start for free <SimpleIcon name="arrowright" className="ml-2" size={16} />
                 </Button>
               </RegisterLink>
               <Link href="/examples">
@@ -91,7 +91,7 @@ export default async function Home() {
             <div className="card-grid">
               <div className="card">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Edit className="h-6 w-6 text-primary" />
+                  <SimpleIcon name="edit" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Rich Text Editor</h3>
                 <p className="card-content">
@@ -100,7 +100,7 @@ export default async function Home() {
               </div>
               <div className="card">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Globe className="h-6 w-6 text-primary" />
+                  <SimpleIcon name="globe" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Custom Domains</h3>
                 <p className="card-content">
@@ -109,7 +109,7 @@ export default async function Home() {
               </div>
               <div className="card">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Layers className="h-6 w-6 text-primary" />
+                  <SimpleIcon name="layers" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Multi-tenant</h3>
                 <p className="card-content">
@@ -118,7 +118,7 @@ export default async function Home() {
               </div>
               <div className="card">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <Users className="h-6 w-6 text-primary" />
+                  <SimpleIcon name="users" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Team Collaboration</h3>
                 <p className="card-content">

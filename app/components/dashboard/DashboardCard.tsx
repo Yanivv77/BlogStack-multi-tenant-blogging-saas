@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Globe } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Image from "next/image";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -75,7 +75,7 @@ export function DashboardCard({
         <CardTitle className="truncate text-lg">{title}</CardTitle>
         {subdirectory && (
           <div className="flex items-center text-xs text-muted-foreground">
-            <Globe className="mr-1 size-3" />
+            <SimpleIcon name="globe" size={12} className="mr-1" />
             <span className="font-mono">blogstack.io/{subdirectory}</span>
           </div>
         )}

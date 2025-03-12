@@ -1,6 +1,6 @@
 import prisma from "@/app/utils/db/prisma";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { FileIcon, PlusCircle } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { redirect } from "next/navigation";
 import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 import { DashboardCard } from "@/app/components/dashboard/DashboardCard";
@@ -138,7 +138,7 @@ export default async function SitesRoute() {
         action={{
           href: "/dashboard/sites/new",
           text: "Create New Site",
-          icon: <PlusCircle className="size-4" />
+          icon: <SimpleIcon name="pluscircle" size={16} />
         }}
       />
 
@@ -161,7 +161,7 @@ export default async function SitesRoute() {
             createdAt={site.createdAt}
             href={`/dashboard/sites/${site.id}`}
             buttonText="Manage Articles"
-            buttonIcon={<FileIcon className="size-4" />}
+            buttonIcon={<SimpleIcon name="file" size={16} />}
             badge={{ text: site.language === "LTR" ? "Left to Right" : 
                    site.language === "RTL" ? "Right to Left" : 
                    site.language || "LTR" }}

@@ -64,6 +64,10 @@ model Site {
   // Language setting
   language       Language @default(LTR)
   
+  // Domain settings
+  customDomain   String?  // Custom domain for the site
+  domainVerified Boolean  @default(false) // Whether the domain has been verified
+  
   @@index([userId]) // Speeds up user-related queries
   @@index([subdirectory]) // Faster lookup by subdirectory
 }

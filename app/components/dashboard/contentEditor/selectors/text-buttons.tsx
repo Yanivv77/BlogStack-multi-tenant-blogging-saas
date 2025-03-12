@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { EditorBubbleItem, useEditor } from "novel";
-import { BoldIcon, ItalicIcon, UnderlineIcon, StrikethroughIcon, CodeIcon } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import type { SelectorItem } from "./node-selector";
 import { Button } from "@/components/ui/button";
 
@@ -12,31 +12,31 @@ export const TextButtons = () => {
       name: "bold",
       isActive: (editor) => !!editor?.isActive("bold"),
       command: (editor) => editor?.chain().focus().toggleBold().run(),
-      icon: BoldIcon,
+      icon: "bold",
     },
     {
       name: "italic",
       isActive: (editor) => !!editor?.isActive("italic"),
       command: (editor) => editor?.chain().focus().toggleItalic().run(),
-      icon: ItalicIcon,
+      icon: "italic",
     },
     {
       name: "underline",
       isActive: (editor) => !!editor?.isActive("underline"),
       command: (editor) => editor?.chain().focus().toggleUnderline().run(),
-      icon: UnderlineIcon,
+      icon: "underline",
     },
     {
       name: "strike",
       isActive: (editor) => !!editor?.isActive("strike"),
       command: (editor) => editor?.chain().focus().toggleStrike().run(),
-      icon: StrikethroughIcon,
+      icon: "strikethrough",
     },
     {
       name: "code",
       isActive: (editor) => !!editor?.isActive("code"),
       command: (editor) => editor?.chain().focus().toggleCode().run(),
-      icon: CodeIcon,
+      icon: "code",
     },
   ];
   return (
@@ -48,8 +48,10 @@ export const TextButtons = () => {
             item.command(editor);
           }}>
           <Button size='icon' className='rounded-none' variant='ghost'>
-            <item.icon
-              className={cn("h-4 w-4", {
+            <SimpleIcon
+              name={item.icon}
+              size={16}
+              className={cn({
                 "text-blue-500": item.isActive(editor),
               })}
             />

@@ -17,7 +17,16 @@ export const siteSchema = z.object({
   githubUrl: CommonFields.url(),
   linkedinUrl: CommonFields.url(),
   portfolioUrl: CommonFields.url(),
+  customDomain: CommonFields.domain(),
 });
+
+// Helper function to validate domain format
+function isValidDomain(domain: string | null): boolean {
+  if (!domain) return true;
+  // Basic domain validation regex
+  const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  return domainRegex.test(domain);
+}
 
 /**
  * Helper to perform subdirectory uniqueness validation
@@ -70,6 +79,7 @@ export function SiteCreationSchema(options?: {
     portfolioUrl: CommonFields.url(),
     siteImageCover: z.string().optional(),
     logoImage: z.string().optional(),
+    customDomain: CommonFields.domain(),
   });
 }
 
@@ -89,6 +99,7 @@ export function SiteEditSchema() {
     portfolioUrl: CommonFields.url(),
     siteImageCover: z.string().optional().nullable(),
     logoImage: z.string().optional().nullable(),
+    customDomain: CommonFields.domain(),
     siteId: z.string().min(1, ValidationMessages.REQUIRED), // Required for identifying which site to update
   });
 } 

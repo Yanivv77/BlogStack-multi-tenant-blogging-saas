@@ -1,10 +1,10 @@
-import { ArrowLeft } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import prisma from "@/app/utils/db/prisma";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { EditArticleForm } from "@/app/components/dashboard/forms/EditArticleForm";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
+import { EditArticleForm } from "@/app/components/dashboard/posts/components/EditArticleForm";
 
 async function getData(articleId: string, userId: string, siteId: string) {
   // First verify site ownership
@@ -83,7 +83,7 @@ export default async function EditArticlePage({
         <div className="flex items-center">
           <Button asChild size="icon" variant="outline" className="mr-3">
             <Link href={`/dashboard/sites/${siteId}`}>
-              <ArrowLeft className="size-4" />
+              <SimpleIcon name="arrowleft" size={16} />
             </Link>
           </Button>
           <h1 className="text-xl font-semibold">Edit Article</h1>
@@ -100,7 +100,7 @@ export default async function EditArticlePage({
         <div className="flex items-center">
           <Button asChild size="icon" variant="outline" className="mr-3">
             <Link href={`/dashboard/sites/${siteId}`}>
-              <ArrowLeft className="size-4" />
+              <SimpleIcon name="arrowleft" size={16} />
             </Link>
           </Button>
           <h1 className="text-xl font-semibold">Error</h1>

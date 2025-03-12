@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useEditor } from "novel";
-import { Check, Trash } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { type Dispatch, type FC, type SetStateAction, useEffect, useRef } from "react";
 import { Popover, PopoverTrigger } from "@radix-ui/react-popover";
 import { Button } from "@/components/ui/button";
@@ -78,11 +78,11 @@ export const LinkSelector = ({ open, onOpenChange }: LinkSelectorProps) => {
               onClick={() => {
                 editor.chain().focus().unsetLink().run();
               }}>
-              <Trash className='h-4 w-4' />
+              <SimpleIcon name="trash" size={16} />
             </Button>
           ) : (
             <Button size='icon' className='h-8'>
-              <Check className='h-4 w-4' />
+              <SimpleIcon name="check" size={16} />
             </Button>
           )}
         </form>

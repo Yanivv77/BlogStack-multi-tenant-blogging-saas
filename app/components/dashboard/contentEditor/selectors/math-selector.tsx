@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SigmaIcon } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { useEditor } from "novel";
 
 export const MathSelector = () => {
@@ -26,9 +26,10 @@ export const MathSelector = () => {
         }
       }}
     >
-      <SigmaIcon
-        className={cn("size-4", { "text-blue-500": editor.isActive("math") })}
-        strokeWidth={2.3}
+      <SimpleIcon 
+        name="sigma" 
+        size={16} 
+        className={cn({ "text-blue-500": editor.isActive("math") })}
       />
     </Button>
   );

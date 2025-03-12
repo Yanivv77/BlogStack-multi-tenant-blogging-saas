@@ -4,6 +4,7 @@ import { EmptyState } from "@/app/components/dashboard/EmptyState";
 import prisma from "@/app/utils/db/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import {
   Card,
   CardContent,
@@ -28,18 +29,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import {
-  Book,
-  FileIcon,
-  MoreHorizontal,
-  PlusCircle,
-  Settings,
-  ArrowLeft,
-  Calendar,
-  Globe,
-  Edit,
-  Trash2,
-} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -126,7 +115,7 @@ export default async function SiteIdRoute(props: {
         <div className="flex flex-col space-y-4">
           <div className="flex items-center text-sm text-muted-foreground">
             <Link href="/dashboard/sites" className="flex items-center hover:text-foreground transition-colors">
-              <ArrowLeft className="mr-1 size-3.5" />
+              <SimpleIcon name="arrowleft" size={14} className="mr-1" />
               <span>Back to sites</span>
             </Link>
           </div>
@@ -135,7 +124,7 @@ export default async function SiteIdRoute(props: {
             <div className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight">{data.site.name}</h1>
               <div className="flex items-center text-sm text-muted-foreground">
-                <Globe className="mr-1.5 size-3.5" />
+                <SimpleIcon name="globe" size={14} className="mr-1.5" />
                 <span className="font-mono">blogstack.io/{data.site.subdirectory}</span>
               </div>
             </div>
@@ -143,13 +132,13 @@ export default async function SiteIdRoute(props: {
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/blog/${data.site.subdirectory}`} className="flex items-center">
-                  <Book className="mr-1.5 size-4" />
+                  <SimpleIcon name="book" size={16} className="mr-1.5" />
                   <span>View Blog</span>
                 </Link>
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link href={`/dashboard/sites/${siteId}/settings`} className="flex items-center">
-                  <Settings className="mr-1.5 size-4" />
+                  <SimpleIcon name="settings" size={16} className="mr-1.5" />
                   <span>Site Settings</span>
                 </Link>
               </Button>
@@ -166,7 +155,7 @@ export default async function SiteIdRoute(props: {
               description="Start creating content for your blog by adding your first article."
               buttonText="Create New Article"
               href={`/dashboard/sites/${siteId}/create`}
-              icon={<FileIcon className="size-10 text-muted-foreground" />}
+              icon={<SimpleIcon name="file" size={40} className="text-muted-foreground" />}
             />
           ) : (
             <Card className="shadow-sm">
@@ -180,7 +169,7 @@ export default async function SiteIdRoute(props: {
                   </div>
                   <Button asChild size="sm">
                     <Link href={`/dashboard/sites/${siteId}/create`} className="flex items-center">
-                      <PlusCircle className="mr-1.5 size-4" />
+                      <SimpleIcon name="pluscircle" size={16} className="mr-1.5" />
                       <span>New Article</span>
                     </Link>
                   </Button>
@@ -232,7 +221,7 @@ export default async function SiteIdRoute(props: {
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                   <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
+                                  <SimpleIcon name="morehorizontal" size={16} />
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
@@ -242,7 +231,7 @@ export default async function SiteIdRoute(props: {
                                     href={`/dashboard/sites/${siteId}/editor/${post.id}`}
                                     className="flex items-center cursor-pointer"
                                   >
-                                    <Edit className="mr-2 size-4" />
+                                    <SimpleIcon name="edit" size={16} className="mr-2" />
                                     Edit Article
                                   </Link>
                                 </DropdownMenuItem>
@@ -253,7 +242,7 @@ export default async function SiteIdRoute(props: {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                    <Book className="mr-2 size-4" />
+                                    <SimpleIcon name="book" size={16} className="mr-2" />
                                     View Published
                                   </Link>
                                 </DropdownMenuItem>
@@ -263,7 +252,7 @@ export default async function SiteIdRoute(props: {
                                     href={`/dashboard/sites/${siteId}/editor/${post.id}/delete`}
                                     className="flex items-center cursor-pointer text-destructive"
                                   >
-                                    <Trash2 className="mr-2 size-4" />
+                                    <SimpleIcon name="trash2" size={16} className="mr-2" />
                                     Delete Article
                                   </Link>
                                 </DropdownMenuItem>
@@ -289,14 +278,14 @@ export default async function SiteIdRoute(props: {
       <div className="space-y-8">
         <div className="flex items-center text-sm text-muted-foreground">
           <Link href="/dashboard/sites" className="flex items-center hover:text-foreground transition-colors">
-            <ArrowLeft className="mr-1 size-3.5" />
+            <SimpleIcon name="arrowleft" size={14} className="mr-1" />
             <span>Back to sites</span>
           </Link>
         </div>
         
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="rounded-full bg-destructive/10 p-4 mb-4">
-            <Trash2 className="size-8 text-destructive" />
+            <SimpleIcon name="trash2" size={32} className="text-destructive" />
           </div>
           <h2 className="text-2xl font-bold mb-2">Site or Article Not Found</h2>
           <p className="text-muted-foreground max-w-md mb-6">

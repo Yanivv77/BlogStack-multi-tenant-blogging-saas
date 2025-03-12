@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CircleUser } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export function UserButton({
           )}
           {...props}
         >
-          <CircleUser className="h-5 w-5" />
+          <SimpleIcon name="user" size={20} />
           {showName && <span className="truncate">{displayName}</span>}
         </Button>
       </DropdownMenuTrigger>

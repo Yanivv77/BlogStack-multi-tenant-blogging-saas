@@ -16,7 +16,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { UpdateImage } from "@/app/serverActions/image/updateImage";
-import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 interface iAppProps {
   siteId: string;
@@ -108,7 +108,7 @@ export function UploadImageForm({ siteId }: iAppProps) {
           </div>
         ) : uploadError ? (
           <div className="border-dashed border-2 border-destructive/30 bg-destructive/5 rounded-md p-6 w-full max-w-[400px] flex flex-col items-center justify-center space-y-4 mx-auto">
-            <AlertTriangle className="text-destructive size-8" />
+            <SimpleIcon name="x" size={32} className="text-destructive" />
             <div className="text-center">
               <h3 className="font-semibold mb-1">Upload Error</h3>
               <p className="text-sm text-muted-foreground mb-2">{uploadError}</p>
@@ -121,14 +121,14 @@ export function UploadImageForm({ siteId }: iAppProps) {
                 onClick={handleRetry}
                 className="flex items-center gap-1"
               >
-                <RefreshCw className="size-3" /> Try Again
+                <SimpleIcon name="arrowright" size={12} className="rotate-180" /> Try Again
               </Button>
             </div>
           </div>
         ) : isUploading ? (
           <div className="border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px] flex flex-col items-center justify-center h-[200px] mx-auto">
             <div className="flex flex-col items-center gap-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <SimpleIcon name="loader" size={32} className="animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">Uploading image...</p>
             </div>
           </div>
@@ -181,7 +181,7 @@ export function UploadImageForm({ siteId }: iAppProps) {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
+                  <SimpleIcon name="loader" size={16} className="animate-spin" />
                   Saving...
                 </>
               ) : (
