@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Atom } from "lucide-react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { SubmitButton } from "../SubmitButtons";
+
 import { useActionState, useState, useEffect } from "react";
 import { JSONContent } from "novel";
 import { useForm } from "@conform-to/react";
@@ -25,6 +25,7 @@ import { PostSchema } from "@/app/utils/validation/postSchema";
 import slugify from "react-slugify";
 import { EditorWrapper, getUploadedImages, clearUploadedImages, addExistingImages, SeoRecommendations } from "../contentEditor";
 import { EditPostActions } from "@/app/serverActions/post/editPost";
+import { SubmitButton } from "../../SubmitButtons";
 
 interface iAppProps {
   data: {
