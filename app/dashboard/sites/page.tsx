@@ -23,104 +23,6 @@ async function getData(userId: string) {
   return data;
 }
 
-// Function to fetch all posts across all user sites
-async function getAllUserPosts(userId: string) {
-  const data = await prisma.post.findMany({
-    where: {
-      Site: {
-        userId: userId,
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      title: true,
-      smallDescription: true,
-      postCoverImage: true,
-      slug: true,
-      createdAt: true,
-      views: true,
-      likes: true,
-      siteId: true,
-      Site: {
-        select: {
-          name: true,
-          subdirectory: true,
-        },
-      },
-    },
-  });
-
-  return data;
-}
-
-// Function to fetch posts for a specific site
-async function getSitePosts(siteId: string, userId: string) {
-  const data = await prisma.post.findMany({
-    where: {
-      siteId: siteId,
-      Site: {
-        userId: userId, // Security check to ensure user owns this site
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      title: true,
-      smallDescription: true,
-      postCoverImage: true,
-      slug: true,
-      createdAt: true,
-      views: true,
-      likes: true,
-    },
-  });
-
-  return data;
-}
-
-// Function to fetch a single post with full details
-async function getPostDetails(postId: string, userId: string) {
-  const post = await prisma.post.findFirst({
-    where: {
-      id: postId,
-      Site: {
-        userId: userId, // Security check to ensure user owns the site containing this post
-      },
-    },
-    select: {
-      id: true,
-      title: true,
-      smallDescription: true,
-      articleContent: true,
-      postCoverImage: true,
-      contentImages: true,
-      slug: true,
-      createdAt: true,
-      updatedAt: true,
-      views: true,
-      likes: true,
-      siteId: true,
-      Site: {
-        select: {
-          name: true,
-          subdirectory: true,
-        },
-      },
-    },
-  });
-
-  if (!post) {
-    throw new Error("Article not found");
-  }
-
-  return post;
-}
-
 export default async function SitesRoute() {
   const { getUser } = getKindeServerSession();
   const user = await getUser();
@@ -165,12 +67,11 @@ export default async function SitesRoute() {
             buttonText="Manage Articles"
             buttonIcon={<SimpleIcon name="file" size={16} />}
             badge={{
-              text:
-                site.language === "LTR"
-                  ? "Left to Right"
-                  : site.language === "RTL"
-                    ? "Right to Left"
-                    : site.language || "LTR",
+              text: (() => {
+                if (site.language === "LTR") return "Left to Right";
+                if (site.language === "RTL") return "Right to Left";
+                return site.language || "LTR";
+              })(),
             }}
             subdirectory={site.subdirectory}
             priority={index === 0}

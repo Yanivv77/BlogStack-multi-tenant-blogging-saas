@@ -16,6 +16,12 @@ interface iAppProps {
   siteId: string;
 }
 
+// Define the upload response type
+interface UploadResponse {
+  ufsUrl: string;
+  // Add other properties as needed
+}
+
 export function UploadImageForm({ siteId }: iAppProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -53,7 +59,7 @@ export function UploadImageForm({ siteId }: iAppProps) {
       formData.set("type", "site");
       formData.set("imageUrl", imageUrl);
 
-      console.log("Submitting image update with URL:", imageUrl);
+      console.info("Submitting image update with URL:", imageUrl);
 
       const result = await UpdateImage(formData);
 
@@ -71,6 +77,97 @@ export function UploadImageForm({ siteId }: iAppProps) {
     }
   };
 
+  // Function to render card content based on state
+  function renderCardContent() {
+    if (imageUrl) {
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <div className="relative h-[200px] w-full max-w-[400px]">
+            <Image
+              src={imageUrl}
+              alt="Uploaded Image"
+              className="rounded-lg object-cover"
+              fill
+              sizes="(max-width: 400px) 100vw, 400px"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={() => setImageUrl(null)} className="mt-2">
+            Change Image
+          </Button>
+        </div>
+      );
+    }
+
+    if (uploadError) {
+      return (
+        <div className="mx-auto flex w-full max-w-[400px] flex-col items-center justify-center space-y-4 rounded-md border-2 border-dashed border-destructive/30 bg-destructive/5 p-6">
+          <SimpleIcon name="x" size={32} className="text-destructive" />
+          <div className="text-center">
+            <h3 className="mb-1 font-semibold">Upload Error</h3>
+            <p className="mb-2 text-sm text-muted-foreground">{uploadError}</p>
+            <p className="text-xs text-muted-foreground">
+              This could be due to network issues or UploadThing service problems.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleRetry} className="flex items-center gap-1">
+              <SimpleIcon name="arrowright" size={12} className="rotate-180" /> Try Again
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (isUploading) {
+      return (
+        <div className="mx-auto flex h-[200px] w-full max-w-[400px] flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground p-8">
+          <div className="flex flex-col items-center gap-2">
+            <SimpleIcon name="loader" size={32} className="animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Uploading image...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Default state - no image, no error, not uploading
+    return (
+      <div className="flex justify-center">
+        <UploadDropzone
+          endpoint="imageUploader"
+          onUploadBegin={() => {
+            setIsUploading(true);
+            setUploadError(null);
+          }}
+          onClientUploadComplete={(res) => {
+            setIsUploading(false);
+            // Type assertion for the response
+            const responseArray = res as UploadResponse[];
+            if (responseArray && responseArray[0] && responseArray[0].ufsUrl) {
+              console.info("Upload response:", responseArray[0]);
+              const url = responseArray[0].ufsUrl;
+              setImageUrl(url);
+              toast.success("Image uploaded successfully!");
+            } else {
+              console.error("Invalid upload response:", res);
+              setUploadError("Received invalid response from upload service");
+            }
+          }}
+          onUploadError={(error: Error) => {
+            setIsUploading(false);
+            console.error("Upload error:", error);
+            setUploadError(`Upload failed: ${error.message || "FetchError - Network issue detected"}`);
+          }}
+          {...optimizedConfig}
+          appearance={{
+            ...optimizedConfig.appearance,
+            container:
+              "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px] h-[200px] flex flex-col items-center justify-center",
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -79,80 +176,7 @@ export function UploadImageForm({ siteId }: iAppProps) {
           This is the cover image for your site. It will be displayed on your site's homepage and in previews.
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        {imageUrl ? (
-          <div className="flex flex-col items-center gap-2">
-            <div className="relative h-[200px] w-full max-w-[400px]">
-              <Image
-                src={imageUrl}
-                alt="Uploaded Image"
-                className="rounded-lg object-cover"
-                fill
-                sizes="(max-width: 400px) 100vw, 400px"
-              />
-            </div>
-            <Button variant="outline" size="sm" onClick={() => setImageUrl(null)} className="mt-2">
-              Change Image
-            </Button>
-          </div>
-        ) : uploadError ? (
-          <div className="mx-auto flex w-full max-w-[400px] flex-col items-center justify-center space-y-4 rounded-md border-2 border-dashed border-destructive/30 bg-destructive/5 p-6">
-            <SimpleIcon name="x" size={32} className="text-destructive" />
-            <div className="text-center">
-              <h3 className="mb-1 font-semibold">Upload Error</h3>
-              <p className="mb-2 text-sm text-muted-foreground">{uploadError}</p>
-              <p className="text-xs text-muted-foreground">
-                This could be due to network issues or UploadThing service problems.
-              </p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleRetry} className="flex items-center gap-1">
-                <SimpleIcon name="arrowright" size={12} className="rotate-180" /> Try Again
-              </Button>
-            </div>
-          </div>
-        ) : isUploading ? (
-          <div className="mx-auto flex h-[200px] w-full max-w-[400px] flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground p-8">
-            <div className="flex flex-col items-center gap-2">
-              <SimpleIcon name="loader" size={32} className="animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Uploading image...</p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <UploadDropzone
-              endpoint="imageUploader"
-              onUploadBegin={() => {
-                setIsUploading(true);
-                setUploadError(null);
-              }}
-              onClientUploadComplete={(res: unknown) => {
-                setIsUploading(false);
-                if (res && res[0] && res[0].ufsUrl) {
-                  console.log("Upload response:", res[0]);
-                  const url = res[0].ufsUrl;
-                  setImageUrl(url);
-                  toast.success("Image uploaded successfully!");
-                } else {
-                  console.error("Invalid upload response:", res);
-                  setUploadError("Received invalid response from upload service");
-                }
-              }}
-              onUploadError={(error: Error) => {
-                setIsUploading(false);
-                console.error("Upload error:", error);
-                setUploadError(`Upload failed: ${error.message || "FetchError - Network issue detected"}`);
-              }}
-              {...optimizedConfig}
-              appearance={{
-                ...optimizedConfig.appearance,
-                container:
-                  "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[400px] h-[200px] flex flex-col items-center justify-center",
-              }}
-            />
-          </div>
-        )}
-      </CardContent>
+      <CardContent>{renderCardContent()}</CardContent>
       <CardFooter className="flex justify-center">
         <form ref={formRef} action={handleFormAction}>
           <input type="hidden" name="siteId" value={siteId} />
