@@ -3,7 +3,7 @@
  */
 import { z } from "zod";
 
-import { siteSchema } from "@/app/utils/validation/siteSchema";
+import { siteSchema } from "@/app/utils/validation/site-schema";
 
 import type { SiteFormValues } from "./types";
 

@@ -30,7 +30,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { CreateSiteAction } from "@/app/serverActions/site/createSite";
-import { SiteCreationSchema } from "@/app/utils/validation/siteSchema";
+import { SiteCreationSchema } from "@/app/utils/validation/site-schema";
 
 import { addHiddenInput } from "../utils/hooks";
 // Import types and utilities

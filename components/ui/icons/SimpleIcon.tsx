@@ -28,7 +28,6 @@ import InfoIcon from "./icons/InfoIcon";
 import LayersIcon from "./icons/LayersIcon";
 import LinkIcon from "./icons/LinkIcon";
 import LoaderIcon from "./icons/LoaderIcon";
-import LockIcon from "./icons/LockIcon";
 import MailIcon from "./icons/MailIcon";
 import MenuIcon from "./icons/MenuIcon";
 import MoreHorizontalIcon from "./icons/MoreHorizontalIcon";
@@ -55,7 +54,7 @@ interface SimpleIconProps {
 }
 
 // Map of icon names to their components
-const iconComponents: Record<string, React.FC<unknown>> = {
+const iconComponents: Record<string, React.FC<SimpleIconProps>> = {
   arrowright: ArrowrightIcon,
   arrowleft: ArrowleftIcon,
   check: CheckIcon,
@@ -94,7 +93,6 @@ const iconComponents: Record<string, React.FC<unknown>> = {
   refreshcw: RefreshCwIcon,
   search: SearchIcon,
   bell: BellIcon,
-  lock: LockIcon,
   user: UserIcon,
   // Add more mappings as needed
 };
@@ -170,7 +168,7 @@ export function SimpleIcon({
             } as React.CSSProperties
           }
         >
-          <IconComponent size={size} color="currentColor" strokeWidth={strokeWidth} />
+          <IconComponent {...{ name, size, color: "currentColor", strokeWidth }} />
         </span>
       ) : (
         // Fallback icon (plus sign in a circle)
@@ -201,11 +199,4 @@ export function SimpleIcon({
       )}
     </div>
   );
-}
-
-/**
- * Simplified helper to convert a color to CSS filter
- */
-function colorToFilter(color: string): string {
-  return "opacity(0.75)";
 }

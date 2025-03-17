@@ -99,20 +99,24 @@ export default [
       "import/order": "off", // Handled by Prettier plugin
       "import/newline-after-import": "error", // Newline after imports
       "import/no-cycle": "warn", // Prevent circular dependencies
-      "import/extensions": ["error", "ignorePackages", {
-        "js": "never",
-        "mjs": "never",
-        "jsx": "never",
-        "ts": "never",
-        "tsx": "never"
-      }],
+      "import/extensions": [
+        "error",
+        "ignorePackages",
+        {
+          js: "never",
+          mjs: "never",
+          jsx: "never",
+          ts: "never",
+          tsx: "never",
+        },
+      ],
 
       // Unicorn rules (modern JavaScript practices)
       "unicorn/prefer-node-protocol": "error", // Use node: protocol
       "unicorn/no-null": "off", // Allow null
       "unicorn/no-array-reduce": "off", // Allow reduce
       "unicorn/prefer-module": "error", // Prefer ESM
-      "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true } }], // Consistent file naming
+      "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true, camelCase: true } }], // Consistent file naming
       "unicorn/prevent-abbreviations": "off", // Allow common abbreviations
 
       // Prettier integration
@@ -177,8 +181,8 @@ export default [
     },
     rules: {
       "no-unused-expressions": "off",
-      "semi": "off",
-      "quotes": "off",
+      semi: "off",
+      quotes: "off",
       "comma-dangle": "off",
     },
   },
