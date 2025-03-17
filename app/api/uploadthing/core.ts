@@ -24,8 +24,8 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
-      console.log("file ufsUrl", file.ufsUrl);
+      console.info("Upload complete for userId:", metadata.userId);
+      console.info("file ufsUrl", file.ufsUrl);
 
       // Return minimal data to reduce response size
       return { ufsUrl: file.ufsUrl };
