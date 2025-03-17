@@ -45,23 +45,33 @@ export async function EditPostActions(_prevState: unknown, formData: FormData) {
     const postCoverImageValue = formData.get("postCoverImage");
     const contentImagesValue = formData.get("contentImages");
 
+    // Format the cover image value for logging
+    let postCoverImageLog = "Not provided";
+    if (postCoverImageValue) {
+      postCoverImageLog =
+        typeof postCoverImageValue === "string"
+          ? `Present (${postCoverImageValue.substring(0, 30)}...)`
+          : "Present (non-string)";
+    }
+
+    // Format the content images value for logging
+    let contentImagesLog = "Not provided";
+    if (contentImagesValue) {
+      contentImagesLog =
+        typeof contentImagesValue === "string"
+          ? `Present (${contentImagesValue.substring(0, 30)}...)`
+          : "Present (non-string)";
+    }
+
     logger.debug("Form data received", {
       postId,
       siteId,
       title: formData.get("title"),
       smallDescription: `${formData.get("smallDescription")?.toString().substring(0, 20)}...`,
       slug: formData.get("slug"),
-      postCoverImage: postCoverImageValue
-        ? typeof postCoverImageValue === "string"
-          ? `Present (${postCoverImageValue.substring(0, 30)}...)`
-          : "Present (non-string)"
-        : "Not provided",
+      postCoverImage: postCoverImageLog,
       articleContent: formData.get("articleContent") ? "Present" : "Not provided",
-      contentImages: contentImagesValue
-        ? typeof contentImagesValue === "string"
-          ? `Present (${contentImagesValue.substring(0, 30)}...)`
-          : "Present (non-string)"
-        : "Not provided",
+      contentImages: contentImagesLog,
     });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });

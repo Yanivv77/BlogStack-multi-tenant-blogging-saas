@@ -113,8 +113,14 @@ export async function UpdateSiteAction(
       submission.value;
 
     // Make sure we have a valid language value
-    const languageValue =
-      language === "LTR" || language === "RTL" ? (language === "LTR" ? Language.LTR : Language.RTL) : Language.LTR; // Default to LTR for any unexpected values
+    let languageValue: Language;
+    if (language === "LTR") {
+      languageValue = Language.LTR;
+    } else if (language === "RTL") {
+      languageValue = Language.RTL;
+    } else {
+      languageValue = Language.LTR; // Default to LTR for any unexpected values
+    }
 
     logger.info("Updating site in database", {
       id: siteId,

@@ -116,8 +116,14 @@ export async function CreateSiteAction(_prevState: unknown, formData: FormData) 
     });
 
     // Make sure we have a valid language value
-    const languageValue =
-      language === "LTR" || language === "RTL" ? (language === "LTR" ? Language.LTR : Language.RTL) : Language.LTR; // Default to LTR for any unexpected values
+    let languageValue: Language;
+    if (language === "LTR") {
+      languageValue = Language.LTR;
+    } else if (language === "RTL") {
+      languageValue = Language.RTL;
+    } else {
+      languageValue = Language.LTR; // Default to LTR for any unexpected values
+    }
 
     // Create the site
     const newSite = await prisma.site.create({
