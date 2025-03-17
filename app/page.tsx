@@ -1,42 +1,54 @@
-import { Button } from "@/components/ui/button";
-import {
-  RegisterLink,
-  LoginLink,
-  LogoutLink,
-} from "@kinde-oss/kinde-auth-nextjs/components";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Link from "next/link";
+
+import { LoginLink, LogoutLink, RegisterLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 export default async function Home() {
   const { getUser } = getKindeServerSession();
   const session = await getUser();
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex min-h-screen flex-col">
       {/* Navigation */}
       <header className="border-b border-border">
         <div className="page-container">
           <nav className="nav">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xl">B</div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+                B
+              </div>
               <span className="text-xl font-medium">BlogStack</span>
             </div>
             <div className="nav-links">
-              <Link href="/features" className="nav-link">Features</Link>
-              <Link href="/pricing" className="nav-link">Pricing</Link>
-              <Link href="/docs" className="nav-link">Docs</Link>
+              <Link href="/features" className="nav-link">
+                Features
+              </Link>
+              <Link href="/pricing" className="nav-link">
+                Pricing
+              </Link>
+              <Link href="/docs" className="nav-link">
+                Docs
+              </Link>
               {session ? (
                 <div className="flex items-center gap-4">
-                  <Link href="/dashboard" className="nav-link">Dashboard</Link>
+                  <Link href="/dashboard" className="nav-link">
+                    Dashboard
+                  </Link>
                   <LogoutLink>
-                    <Button variant="outline" size="sm">Logout</Button>
+                    <Button variant="outline" size="sm">
+                      Logout
+                    </Button>
                   </LogoutLink>
                 </div>
               ) : (
                 <div className="flex items-center gap-4">
                   <LoginLink>
-                    <Button variant="outline" size="sm">Login</Button>
+                    <Button variant="outline" size="sm">
+                      Login
+                    </Button>
                   </LoginLink>
                   <RegisterLink>
                     <Button size="sm">Get Started</Button>
@@ -56,10 +68,10 @@ export default async function Home() {
               Create beautiful blogs with <span className="text-gradient">BlogStack</span>
             </h1>
             <p className="hero-subtitle">
-              A modern, multi-tenant blogging platform for creators, businesses, and everyone in between.
-              Publish your thoughts with elegance and simplicity.
+              A modern, multi-tenant blogging platform for creators, businesses, and everyone in between. Publish your
+              thoughts with elegance and simplicity.
             </p>
-            <div className="flex flex-wrap justify-center gap-4 mt-8">
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
               <RegisterLink>
                 <Button size="lg" className="hover-lift">
                   Start for free <SimpleIcon name="arrowright" className="ml-2" size={16} />
@@ -71,9 +83,9 @@ export default async function Home() {
                 </Button>
               </Link>
             </div>
-            <div className="mt-16 max-w-5xl mx-auto rounded-xl overflow-hidden shadow-lg card-hover">
-              <div className="aspect-video bg-card rounded-xl border border-border p-4 flex items-center justify-center">
-                <div className="text-muted-foreground text-lg">Blog preview image</div>
+            <div className="card-hover mx-auto mt-16 max-w-5xl overflow-hidden rounded-xl shadow-lg">
+              <div className="flex aspect-video items-center justify-center rounded-xl border border-border bg-card p-4">
+                <div className="text-lg text-muted-foreground">Blog preview image</div>
               </div>
             </div>
           </div>
@@ -82,15 +94,15 @@ export default async function Home() {
         {/* Features Section */}
         <section className="py-24">
           <div className="page-container">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-medium mb-4">Powerful features for modern blogging</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
+            <div className="mb-16 text-center">
+              <h2 className="mb-4 text-3xl font-medium md:text-4xl">Powerful features for modern blogging</h2>
+              <p className="mx-auto max-w-2xl text-muted-foreground">
                 Everything you need to create, manage, and grow your blog, all in one place.
               </p>
             </div>
             <div className="card-grid">
               <div className="card">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                   <SimpleIcon name="edit" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Rich Text Editor</h3>
@@ -99,7 +111,7 @@ export default async function Home() {
                 </p>
               </div>
               <div className="card">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                   <SimpleIcon name="globe" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Custom Domains</h3>
@@ -108,7 +120,7 @@ export default async function Home() {
                 </p>
               </div>
               <div className="card">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                   <SimpleIcon name="layers" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Multi-tenant</h3>
@@ -117,7 +129,7 @@ export default async function Home() {
                 </p>
               </div>
               <div className="card">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                   <SimpleIcon name="users" size={24} className="text-primary" />
                 </div>
                 <h3 className="card-title">Team Collaboration</h3>
@@ -130,11 +142,11 @@ export default async function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-muted/30">
+        <section className="bg-muted/30 py-16">
           <div className="page-container">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl md:text-4xl font-medium mb-4">Ready to start your blogging journey?</h2>
-              <p className="text-muted-foreground mb-8">
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="mb-4 text-3xl font-medium md:text-4xl">Ready to start your blogging journey?</h2>
+              <p className="mb-8 text-muted-foreground">
                 Join thousands of creators and businesses who trust BlogStack for their content needs.
               </p>
               <RegisterLink>
@@ -152,8 +164,10 @@ export default async function Home() {
         <div className="page-container">
           <div className="footer-content">
             <div className="footer-column">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">B</div>
+              <div className="mb-4 flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                  B
+                </div>
                 <span className="text-lg font-medium">BlogStack</span>
               </div>
               <p className="text-muted-foreground">
@@ -163,25 +177,61 @@ export default async function Home() {
             <div className="footer-column">
               <h4 className="footer-title">Product</h4>
               <ul className="space-y-2">
-                <li><Link href="/features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link href="/pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link></li>
-                <li><Link href="/roadmap" className="text-muted-foreground hover:text-foreground transition-colors">Roadmap</Link></li>
+                <li>
+                  <Link href="/features" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Features
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/pricing" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Pricing
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/roadmap" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Roadmap
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="footer-column">
               <h4 className="footer-title">Resources</h4>
               <ul className="space-y-2">
-                <li><Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><Link href="/guides" className="text-muted-foreground hover:text-foreground transition-colors">Guides</Link></li>
-                <li><Link href="/api" className="text-muted-foreground hover:text-foreground transition-colors">API</Link></li>
+                <li>
+                  <Link href="/docs" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/guides" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Guides
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/api" className="text-muted-foreground transition-colors hover:text-foreground">
+                    API
+                  </Link>
+                </li>
               </ul>
             </div>
             <div className="footer-column">
               <h4 className="footer-title">Company</h4>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors">About</Link></li>
-                <li><Link href="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="/contact" className="text-muted-foreground hover:text-foreground transition-colors">Contact</Link></li>
+                <li>
+                  <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">
+                    Contact
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

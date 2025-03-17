@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { type JSONContent, type EditorInstance, useEditor } from "novel";
+import { useEffect, useState } from "react";
+
+import { type EditorInstance, type JSONContent, useEditor } from "novel";
 import { useDebouncedCallback } from "use-debounce";
-import { saveHtmlContent, saveEditorContent, loadEditorContent } from "../utils/storage";
+
+import { loadEditorContent, saveEditorContent, saveHtmlContent } from "../utils/storage";
 
 /**
  * Empty document with a single empty paragraph
@@ -11,7 +13,7 @@ import { saveHtmlContent, saveEditorContent, loadEditorContent } from "../utils/
  */
 const EMPTY_DOCUMENT: JSONContent = {
   type: "doc",
-  content: [{ type: "paragraph" }]
+  content: [{ type: "paragraph" }],
 };
 
 /**
@@ -25,7 +27,7 @@ export function useEditorState(options: {
   highlightCodeFn?: (content: string) => string;
 }) {
   const { onChange, initialValue, autosave = true, highlightCodeFn } = options;
-  
+
   // Editor state
   const [initialContent, setInitialContent] = useState<null | JSONContent>(null);
   const [saveStatus, setSaveStatus] = useState("Saved");
@@ -38,35 +40,35 @@ export function useEditorState(options: {
    */
   const debouncedUpdates = useDebouncedCallback(async (editor: EditorInstance) => {
     if (!editor) return;
-    
+
     const json = editor.getJSON();
-    
+
     // Update word count
     if (editor.storage.characterCount) {
       setWordCount(editor.storage.characterCount.words());
     }
-    
+
     // Save content if autosave is enabled
     if (autosave) {
       const html = editor.getHTML();
       const processedHtml = highlightCodeFn ? highlightCodeFn(html) : html;
-      
+
       saveHtmlContent(processedHtml);
       saveEditorContent(json);
     }
-    
+
     // Trigger onChange callback if provided
     if (onChange) {
       onChange(json);
     }
-    
+
     setSaveStatus("Saved");
   }, 500);
 
   // Handle editor updates
   const handleUpdate = ({ editor }: { editor: EditorInstance }) => {
     if (!editor) return;
-    
+
     debouncedUpdates(editor);
     setSaveStatus("Unsaved");
   };
@@ -74,7 +76,7 @@ export function useEditorState(options: {
   // Load initial content on mount
   useEffect(() => {
     console.log("useEditorState: Initializing with value:", initialValue);
-    
+
     if (initialValue) {
       // If we have initialValue prop, use it directly
       setInitialContent(initialValue);
@@ -102,6 +104,6 @@ export function useEditorState(options: {
     saveStatus,
     wordCount,
     handleUpdate,
-    editor
+    editor,
   };
-} 
+}

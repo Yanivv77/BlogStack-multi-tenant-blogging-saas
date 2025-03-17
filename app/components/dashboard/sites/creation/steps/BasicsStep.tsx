@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import { BasicsStepProps, SiteFormValues, SubdirectoryStatus } from "../../utils/types";
-import { useDebounce } from "../../utils/hooks";
-import { validateField, checkSubdirectoryAvailability, ValidationErrors } from "../../utils/zodValidation";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+import { useDebounce } from "../../utils/hooks";
+import type { BasicsStepProps, SiteFormValues, SubdirectoryStatus } from "../../utils/types";
+import type { ValidationErrors } from "../../utils/zodValidation";
+import { checkSubdirectoryAvailability, validateField } from "../../utils/zodValidation";
 
 /**
  * BasicsStep component for collecting basic site information
@@ -22,7 +25,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
   const [isCheckingSubdirectory, setIsCheckingSubdirectory] = useState(false);
   const [subdirectoryStatus, setSubdirectoryStatus] = useState<SubdirectoryStatus>(null);
   const [attemptedNext, setAttemptedNext] = useState(false);
-  
+
   // Track if we've already validated the subdirectory to prevent unnecessary API calls
   const validatedSubdirectories = useRef<Set<string>>(new Set());
 
@@ -31,33 +34,33 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
    */
   const checkSubdirectoryUniqueness = async (subdirectory: string) => {
     // First validate the subdirectory format
-    const formatError = validateField('subdirectory', subdirectory);
+    const formatError = validateField("subdirectory", subdirectory);
     if (formatError) {
       setSubdirectoryStatus("invalid");
-      setErrors(prev => ({ ...prev, subdirectory: formatError }));
+      setErrors((prev) => ({ ...prev, subdirectory: formatError }));
       return;
     }
-    
+
     // If we've already validated this subdirectory as available, don't check again
     if (validatedSubdirectories.current.has(subdirectory)) {
       setSubdirectoryStatus("available");
-      setErrors(prev => ({ ...prev, subdirectory: undefined }));
+      setErrors((prev) => ({ ...prev, subdirectory: undefined }));
       return;
     }
-    
+
     setIsCheckingSubdirectory(true);
     setSubdirectoryStatus("checking");
-    
+
     try {
       const isAvailable = await checkSubdirectoryAvailability(subdirectory);
-      
+
       if (isAvailable) {
         setSubdirectoryStatus("available");
         validatedSubdirectories.current.add(subdirectory); // Remember this subdirectory is valid
-        setErrors(prev => ({ ...prev, subdirectory: undefined }));
+        setErrors((prev) => ({ ...prev, subdirectory: undefined }));
       } else {
         setSubdirectoryStatus("unavailable");
-        setErrors(prev => ({ ...prev, subdirectory: "This subdirectory is already taken" }));
+        setErrors((prev) => ({ ...prev, subdirectory: "This subdirectory is already taken" }));
       }
     } catch (error) {
       console.error("Error checking subdirectory:", error);
@@ -73,20 +76,20 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
   useEffect(() => {
     if (!formValues.subdirectory) {
       setSubdirectoryStatus(null);
-      setErrors(prev => ({ ...prev, subdirectory: undefined }));
+      setErrors((prev) => ({ ...prev, subdirectory: undefined }));
       return;
     }
-    
+
     // Only validate if the user has interacted with the field or attempted to proceed
     if (touchedFields.subdirectory || attemptedNext) {
       // Validate subdirectory format first
-      const formatError = validateField('subdirectory', formValues.subdirectory);
+      const formatError = validateField("subdirectory", formValues.subdirectory);
       if (formatError) {
         setSubdirectoryStatus("invalid");
-        setErrors(prev => ({ ...prev, subdirectory: formatError }));
+        setErrors((prev) => ({ ...prev, subdirectory: formatError }));
         return;
       }
-      
+
       debouncedCheckSubdirectory(formValues.subdirectory);
     }
   }, [formValues.subdirectory, touchedFields.subdirectory, attemptedNext]);
@@ -96,40 +99,40 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
    */
   const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    
+
     // For subdirectory, handle special validation
-    if (name === 'subdirectory') {
+    if (name === "subdirectory") {
       // Remove spaces automatically
       if (value.includes(" ")) {
         const newValue = value.replace(/\s+/g, "").toLowerCase();
-        
+
         // Create a simpler synthetic event without trying to clone the original event
         const syntheticEvent = {
-          target: { name, value: newValue }
+          target: { name, value: newValue },
         } as React.ChangeEvent<HTMLInputElement>;
-        
+
         handleInputChange(syntheticEvent);
         return;
       }
-      
+
       // Convert to lowercase
       if (value !== value.toLowerCase()) {
         const newValue = value.toLowerCase();
-        
+
         const syntheticEvent = {
-          target: { name, value: newValue }
+          target: { name, value: newValue },
         } as React.ChangeEvent<HTMLInputElement>;
-        
+
         handleInputChange(syntheticEvent);
         return;
       }
-      
+
       // Reset validation status when typing
       if (value !== formValues.subdirectory) {
         setSubdirectoryStatus("checking");
       }
     }
-    
+
     // Pass to parent handler
     handleInputChange(e as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>);
   };
@@ -139,16 +142,16 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
    */
   const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
+
     // Validate the field
     const fieldError = validateField(name as keyof SiteFormValues, value);
-    setErrors(prev => ({ ...prev, [name]: fieldError }));
-    
+    setErrors((prev) => ({ ...prev, [name]: fieldError }));
+
     // For subdirectory, check availability
-    if (name === 'subdirectory' && value && !fieldError) {
+    if (name === "subdirectory" && value && !fieldError) {
       debouncedCheckSubdirectory(value);
     }
   };
@@ -158,15 +161,15 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
    */
   const handleLanguageChange = (value: string) => {
     const syntheticEvent = {
-      target: { name: 'language', value }
+      target: { name: "language", value },
     } as React.ChangeEvent<HTMLSelectElement>;
-    
+
     handleFieldChange(syntheticEvent);
-    
+
     // Mark as touched and validate
-    setTouchedFields(prev => ({ ...prev, language: true }));
-    const fieldError = validateField('language', value);
-    setErrors(prev => ({ ...prev, language: fieldError }));
+    setTouchedFields((prev) => ({ ...prev, language: true }));
+    const fieldError = validateField("language", value);
+    setErrors((prev) => ({ ...prev, language: fieldError }));
   };
 
   /**
@@ -178,30 +181,30 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
       name: true,
       subdirectory: true,
       description: true,
-      language: true
+      language: true,
     });
-    
+
     // Set attempted next to true to show all errors
     setAttemptedNext(true);
-    
+
     // Validate all fields
     const newErrors: ValidationErrors = {};
-    
+
     // Validate each field
-    const nameError = validateField('name', formValues.name);
+    const nameError = validateField("name", formValues.name);
     if (nameError) newErrors.name = nameError;
-    
-    const subdirectoryError = validateField('subdirectory', formValues.subdirectory);
+
+    const subdirectoryError = validateField("subdirectory", formValues.subdirectory);
     if (subdirectoryError) {
       newErrors.subdirectory = subdirectoryError;
     } else if (subdirectoryStatus !== "available") {
       newErrors.subdirectory = "Please ensure subdirectory is available";
     }
-    
-    const descriptionError = validateField('description', formValues.description);
+
+    const descriptionError = validateField("description", formValues.description);
     if (descriptionError) newErrors.description = descriptionError;
-    
-    const languageError = validateField('language', formValues.language);
+
+    const languageError = validateField("language", formValues.language);
     if (languageError) newErrors.language = languageError;
 
     setErrors(newErrors);
@@ -213,7 +216,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
    */
   const handleContinue = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    
+
     // Only proceed if validation passes
     if (validateAndProceed()) {
       goToNextStep(e);
@@ -221,11 +224,11 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
   };
 
   // Determine if continue button should be disabled
-  const isContinueDisabled = 
-    isCheckingSubdirectory || 
-    !formValues.name || 
-    !formValues.subdirectory || 
-    !formValues.description || 
+  const isContinueDisabled =
+    isCheckingSubdirectory ||
+    !formValues.name ||
+    !formValues.subdirectory ||
+    !formValues.description ||
     (formValues.subdirectory && subdirectoryStatus !== "available" && subdirectoryStatus !== null);
 
   // Helper function to determine if an error should be shown
@@ -235,16 +238,14 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
 
   return (
     <>
-      <CardContent className="space-y-6 pt-6 px-6 sm:px-8">
+      <CardContent className="space-y-6 px-6 pt-6 sm:px-8">
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <SimpleIcon name="briefcase" size={20} color="currentColor"/>
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <SimpleIcon name="briefcase" size={20} color="currentColor" />
               Basic Information
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Let's start with the essentials for your new site
-            </p>
+            <p className="text-sm text-muted-foreground">Let's start with the essentials for your new site</p>
           </div>
 
           {/* Site Name */}
@@ -256,7 +257,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
               id="site-name"
               name="name"
               placeholder="My Awesome Blog"
-              className={`h-11 ${shouldShowError('name') ? 'border-destructive' : ''}`}
+              className={`h-11 ${shouldShowError("name") ? "border-destructive" : ""}`}
               required
               value={formValues.name}
               onChange={handleFieldChange}
@@ -267,8 +268,8 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
             <div id="name-hint" className="text-[0.8rem] text-muted-foreground">
               Choose a memorable name for your site
             </div>
-            {shouldShowError('name') && (
-              <div id="name-error" className="text-destructive text-sm">
+            {shouldShowError("name") && (
+              <div id="name-error" className="text-sm text-destructive">
                 {errors.name}
               </div>
             )}
@@ -280,7 +281,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
               Subdirectory
             </Label>
             <div className="flex items-center">
-              <span className="bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input text-muted-foreground">
+              <span className="rounded-l-md border border-r-0 border-input bg-muted px-3 py-2 text-muted-foreground">
                 blogstack.io/
               </span>
               <div className="relative flex-1">
@@ -289,11 +290,11 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
                   name="subdirectory"
                   placeholder="your-site"
                   className={`h-11 rounded-l-none pr-8 ${
-                    subdirectoryStatus === "available" 
-                      ? 'border-green-500 focus-visible:ring-green-500' 
-                      : shouldShowError('subdirectory')
-                        ? 'border-destructive' 
-                        : ''
+                    subdirectoryStatus === "available"
+                      ? "border-green-500 focus-visible:ring-green-500"
+                      : shouldShowError("subdirectory")
+                        ? "border-destructive"
+                        : ""
                   }`}
                   required
                   value={formValues.subdirectory}
@@ -318,13 +319,13 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
             <div id="subdirectory-hint" className="text-[0.8rem] text-muted-foreground">
               This will be your site's URL (only lowercase letters, numbers, and hyphens)
             </div>
-            {shouldShowError('subdirectory') && (
-              <div id="subdirectory-error" className="text-destructive text-sm">
+            {shouldShowError("subdirectory") && (
+              <div id="subdirectory-error" className="text-sm text-destructive">
                 {errors.subdirectory}
               </div>
             )}
             {subdirectoryStatus === "available" && (
-              <div id="subdirectory-success" className="text-green-500 text-sm">
+              <div id="subdirectory-success" className="text-sm text-green-500">
                 This subdirectory is available
               </div>
             )}
@@ -339,7 +340,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
               id="site-description"
               name="description"
               placeholder="Write a brief description of your site..."
-              className={`min-h-[100px] ${shouldShowError('description') ? 'border-destructive' : ''}`}
+              className={`min-h-[100px] ${shouldShowError("description") ? "border-destructive" : ""}`}
               required
               value={formValues.description}
               onChange={handleFieldChange}
@@ -349,14 +350,14 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
             <div id="description-hint" className="text-[0.8rem] text-muted-foreground">
               Describe what your site is about (10-500 characters)
               <span className="float-right" aria-live="polite">
-                <span className={`${formValues.description.length > 500 ? 'text-destructive' : ''}`}>
+                <span className={`${formValues.description.length > 500 ? "text-destructive" : ""}`}>
                   {formValues.description.length}
                 </span>
                 /500 characters
               </span>
             </div>
-            {shouldShowError('description') && (
-              <div id="description-error" className="text-destructive text-sm">
+            {shouldShowError("description") && (
+              <div id="description-error" className="text-sm text-destructive">
                 {errors.description}
               </div>
             )}
@@ -367,13 +368,10 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
             <Label htmlFor="site-language" className="text-base">
               Text Direction
             </Label>
-            <Select 
-              value={formValues.language} 
-              onValueChange={handleLanguageChange}
-            >
-              <SelectTrigger 
+            <Select value={formValues.language} onValueChange={handleLanguageChange}>
+              <SelectTrigger
                 id="site-language"
-                className={`h-11 text-foreground ${shouldShowError('language') ? 'border-destructive' : ''}`}
+                className={`h-11 text-foreground ${shouldShowError("language") ? "border-destructive" : ""}`}
               >
                 <SelectValue placeholder="Select text direction" className="text-muted-foreground" />
               </SelectTrigger>
@@ -385,21 +383,22 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
             <div id="language-hint" className="text-[0.8rem] text-muted-foreground">
               Select the text direction for your site. LTR for languages like English, Spanish; RTL for Hebrew, Arabic.
             </div>
-            {shouldShowError('language') && (
-              <div id="language-error" className="text-destructive text-sm">
+            {shouldShowError("language") && (
+              <div id="language-error" className="text-sm text-destructive">
                 {errors.language}
               </div>
             )}
           </div>
-          
+
           {/* Information box at the bottom of the form */}
-          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md text-sm">
+          <div className="mt-6 rounded-md border border-blue-200 bg-blue-50 p-4 text-sm dark:border-blue-800 dark:bg-blue-950/30">
             <div className="flex gap-3">
-              <SimpleIcon name="info" size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
+              <SimpleIcon name="info" size={20} className="mt-0.5 flex-shrink-0 text-blue-500" />
               <div>
-                <p className="font-medium text-blue-800 dark:text-blue-300 mb-1">Getting Started</p>
+                <p className="mb-1 font-medium text-blue-800 dark:text-blue-300">Getting Started</p>
                 <p className="text-blue-700 dark:text-blue-400">
-                  All fields on this page are required. After completing this step, you'll be able to upload branding images and add optional social links for your blog.
+                  All fields on this page are required. After completing this step, you'll be able to upload branding
+                  images and add optional social links for your blog.
                 </p>
               </div>
             </div>
@@ -407,17 +406,13 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between px-6 sm:px-8 pb-6">
-        <div></div> {/* Empty div for spacing */}
-        <Button 
-          onClick={handleContinue}
-          disabled={!!isContinueDisabled}
-          className="w-full sm:w-auto"
-        >
+      <CardFooter className="flex justify-between px-6 pb-6 sm:px-8">
+        <div /> {/* Empty div for spacing */}
+        <Button onClick={handleContinue} disabled={!!isContinueDisabled} className="w-full sm:w-auto">
           Continue
           <SimpleIcon name="arrow-right" className="ml-2" size={16} />
         </Button>
       </CardFooter>
     </>
   );
-} 
+}

@@ -1,5 +1,7 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
 import prisma from "@/app/utils/db/prisma";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,10 +9,7 @@ export async function GET(request: NextRequest) {
     const subdirectory = searchParams.get("subdirectory");
 
     if (!subdirectory) {
-      return NextResponse.json(
-        { error: "Subdirectory parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Subdirectory parameter is required" }, { status: 400 });
     }
 
     // Check if the subdirectory already exists
@@ -21,9 +20,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ isUnique: !existingSite });
   } catch (error) {
     console.error("Error checking subdirectory:", error);
-    return NextResponse.json(
-      { error: "Failed to check subdirectory" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to check subdirectory" }, { status: 500 });
   }
-} 
+}

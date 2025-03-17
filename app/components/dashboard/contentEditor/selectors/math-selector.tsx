@@ -1,7 +1,9 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { useEditor } from "novel";
+
+import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+
+import { cn } from "@/lib/utils";
 
 export const MathSelector = () => {
   const { editor } = useEditor();
@@ -12,7 +14,7 @@ export const MathSelector = () => {
     <Button
       variant="ghost"
       size="sm"
-      className="rounded-none w-12"
+      className="w-12 rounded-none"
       onClick={(evt) => {
         if (editor.isActive("math")) {
           editor.chain().focus().unsetLatex().run();
@@ -26,11 +28,7 @@ export const MathSelector = () => {
         }
       }}
     >
-      <SimpleIcon 
-        name="sigma" 
-        size={16} 
-        className={cn({ "text-blue-500": editor.isActive("math") })}
-      />
+      <SimpleIcon name="sigma" size={16} className={cn({ "text-blue-500": editor.isActive("math") })} />
     </Button>
   );
 };

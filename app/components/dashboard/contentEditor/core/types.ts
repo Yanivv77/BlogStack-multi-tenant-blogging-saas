@@ -1,4 +1,4 @@
-import { JSONContent } from "novel";
+import type { JSONContent } from "novel";
 
 /**
  * Editor component props
@@ -32,4 +32,4 @@ export interface MenuSwitchProps {
 export interface SelectorProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-} 
+}

@@ -1,12 +1,13 @@
+import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import Link from "next/link";
-import prisma from "@/app/utils/db/prisma";
-import { requireUser } from "@/app/utils/auth/user";
-import { notFound, redirect } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
-import { SettingsTabs } from "@/app/components/dashboard/sites";
 
+import { SettingsTabs } from "@/app/components/dashboard/sites";
+import { requireUser } from "@/app/utils/auth/user";
+import prisma from "@/app/utils/db/prisma";
 
 export default async function SettingsSiteRoute({
   params,
@@ -19,7 +20,7 @@ export default async function SettingsSiteRoute({
 
   // Get the current user
   const user = await requireUser();
-  
+
   if (!user) {
     redirect("/api/auth/login");
   }
@@ -53,9 +54,9 @@ export default async function SettingsSiteRoute({
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-5xl">
+    <div className="container mx-auto max-w-5xl py-6">
       {/* Header with breadcrumb navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <Button variant="outline" size="icon" asChild>
             <Link href={`/dashboard/sites/${siteId}`}>
@@ -64,9 +65,7 @@ export default async function SettingsSiteRoute({
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your site "{site.name}" settings and preferences
-            </p>
+            <p className="text-sm text-muted-foreground">Manage your site "{site.name}" settings and preferences</p>
           </div>
         </div>
       </div>
@@ -77,4 +76,4 @@ export default async function SettingsSiteRoute({
       <SettingsTabs site={site} />
     </div>
   );
-} 
+}

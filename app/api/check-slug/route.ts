@@ -1,5 +1,7 @@
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+
 import prisma from "@/app/utils/db/prisma";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,37 +10,28 @@ export async function GET(request: NextRequest) {
     const siteId = searchParams.get("siteId");
 
     if (!slug) {
-      return NextResponse.json(
-        { error: "Slug parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Slug parameter is required" }, { status: 400 });
     }
 
     if (!siteId) {
-      return NextResponse.json(
-        { error: "Site ID parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Site ID parameter is required" }, { status: 400 });
     }
 
     // Check if the slug already exists for this site
     const existingPost = await prisma.post.findFirst({
-      where: { 
+      where: {
         slug,
         siteId,
-        deletedAt: null // Only check non-deleted posts
+        deletedAt: null, // Only check non-deleted posts
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       isUnique: !existingPost,
-      slug
+      slug,
     });
   } catch (error) {
     console.error("Error checking slug:", error);
-    return NextResponse.json(
-      { error: "Failed to check slug availability" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to check slug availability" }, { status: 500 });
   }
-} 
+}

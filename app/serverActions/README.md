@@ -26,7 +26,7 @@ serverActions/
 Import actions from the index file:
 
 ```typescript
-import { CreateSiteAction, UpdateSiteAction, DeleteSite } from "@/app/actions";
+import { CreateSiteAction, DeleteSite, UpdateSiteAction } from "@/app/actions";
 ```
 
 ## Best Practices
@@ -46,4 +46,4 @@ Common utility functions are available in `utils/helpers.ts`:
 - `verifyUserOwnsSite(siteId, userId)`: Verifies that a user owns a site
 - `toNullable(value)`: Converts empty strings to null
 - `createErrorResponse(message)`: Creates a standardized error response
-- `createSuccessResponse()`: Creates a standardized success response 
+- `createSuccessResponse()`: Creates a standardized success response

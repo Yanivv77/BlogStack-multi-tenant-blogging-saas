@@ -1,12 +1,14 @@
-import prisma from "@/app/utils/db/prisma";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { redirect } from "next/navigation";
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
+
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+
 import { DashboardCard } from "@/app/components/dashboard/DashboardCard";
 import { DashboardGrid } from "@/app/components/dashboard/DashboardGrid";
 import { SectionHeader } from "@/app/components/dashboard/SectionHeader";
-
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
+import prisma from "@/app/utils/db/prisma";
 
 async function getData(userId: string) {
   const data = await prisma.site.findMany({
@@ -126,10 +128,10 @@ export default async function SitesRoute() {
   if (!user) {
     return redirect("/api/auth/login");
   }
-  
+
   const sites = await getData(user.id);
   const isEmpty = sites.length === 0;
-  
+
   return (
     <div className="space-y-6">
       <SectionHeader
@@ -138,7 +140,7 @@ export default async function SitesRoute() {
         action={{
           href: "/dashboard/sites/new",
           text: "Create New Site",
-          icon: <SimpleIcon name="pluscircle" size={16} />
+          icon: <SimpleIcon name="pluscircle" size={16} />,
         }}
       />
 
@@ -148,7 +150,7 @@ export default async function SitesRoute() {
           title: "No sites created yet",
           description: "Create your first blog site to start publishing content and sharing your ideas with the world.",
           buttonText: "Create Your First Site",
-          href: "/dashboard/sites/new"
+          href: "/dashboard/sites/new",
         }}
       >
         {sites.map((site, index) => (
@@ -162,9 +164,14 @@ export default async function SitesRoute() {
             href={`/dashboard/sites/${site.id}`}
             buttonText="Manage Articles"
             buttonIcon={<SimpleIcon name="file" size={16} />}
-            badge={{ text: site.language === "LTR" ? "Left to Right" : 
-                   site.language === "RTL" ? "Right to Left" : 
-                   site.language || "LTR" }}
+            badge={{
+              text:
+                site.language === "LTR"
+                  ? "Left to Right"
+                  : site.language === "RTL"
+                    ? "Right to Left"
+                    : site.language || "LTR",
+            }}
             subdirectory={site.subdirectory}
             priority={index === 0}
           />

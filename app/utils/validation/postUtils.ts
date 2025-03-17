@@ -12,15 +12,15 @@ export async function checkSlugAvailability(slug: string, siteId: string): Promi
   try {
     // Skip check for empty slugs
     if (!slug) return false;
-    
+
     const params = new URLSearchParams({ slug, siteId });
     const response = await fetch(`/api/check-slug?${params.toString()}`);
-    
+
     if (!response.ok) {
-      console.error('Error checking slug availability:', response.statusText);
+      console.error("Error checking slug availability:", response.statusText);
       return false;
     }
-    
+
     const data = await response.json();
     return data.isUnique;
   } catch (error) {
@@ -39,15 +39,15 @@ export function validateSlugFormat(slug: string): string | undefined {
   if (!slug) {
     return "Slug is required";
   }
-  
+
   if (slug.length < 3) {
     return "Slug must be at least 3 characters";
   }
-  
+
   if (!/^[a-z0-9-]+$/.test(slug)) {
     return "Only lowercase letters, numbers, and hyphens are allowed";
   }
-  
+
   return undefined;
 }
 
@@ -58,12 +58,12 @@ export function validateSlugFormat(slug: string): string | undefined {
  * @returns string The formatted slug
  */
 export function formatAsSlug(input: string): string {
-  if (!input) return '';
-  
+  if (!input) return "";
+
   return input
     .toLowerCase()
-    .replace(/\s+/g, '-')       // Replace spaces with hyphens
-    .replace(/[^a-z0-9-]/g, '') // Remove special characters
-    .replace(/-+/g, '-')        // Replace multiple hyphens with a single hyphen
-    .replace(/^-|-$/g, '');     // Remove leading and trailing hyphens
-} 
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .replace(/[^a-z0-9-]/g, "") // Remove special characters
+    .replace(/-+/g, "-") // Replace multiple hyphens with a single hyphen
+    .replace(/^-|-$/g, ""); // Remove leading and trailing hyphens
+}

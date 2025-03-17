@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
-import { checkSlugAvailability, validateSlugFormat, formatAsSlug } from '@/app/utils/validation/postUtils';
+import { useEffect, useRef, useState } from "react";
+
+import { checkSlugAvailability, formatAsSlug, validateSlugFormat } from "@/app/utils/validation/postUtils";
 
 /**
  * Status of the slug validation process
  */
-export type SlugStatus = 'idle' | 'checking' | 'available' | 'unavailable' | 'invalid';
+export type SlugStatus = "idle" | "checking" | "available" | "unavailable" | "invalid";
 
 /**
  * Hook for slug validation with real-time feedback
@@ -12,7 +13,7 @@ export type SlugStatus = 'idle' | 'checking' | 'available' | 'unavailable' | 'in
  * @returns Object with slug validation state and functions
  */
 export function useSlugValidation(siteId: string) {
-  const [slugStatus, setSlugStatus] = useState<SlugStatus>('idle');
+  const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [slugError, setSlugError] = useState<string | undefined>(undefined);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -49,36 +50,36 @@ export function useSlugValidation(siteId: string) {
   const checkSlug = async (slug: string) => {
     // Reset status
     setSlugError(undefined);
-    
+
     // Skip check for empty slugs
     if (!slug) {
-      setSlugStatus('idle');
+      setSlugStatus("idle");
       return;
     }
-    
+
     // Validate slug format
     const formatError = validateSlugFormat(slug);
     if (formatError) {
-      setSlugStatus('invalid');
+      setSlugStatus("invalid");
       setSlugError(formatError);
       return;
     }
-    
+
     // Check availability
     setIsCheckingSlug(true);
-    setSlugStatus('checking');
-    
+    setSlugStatus("checking");
+
     try {
       const isAvailable = await checkSlugAvailability(slug, siteId);
-      setSlugStatus(isAvailable ? 'available' : 'unavailable');
-      
+      setSlugStatus(isAvailable ? "available" : "unavailable");
+
       if (!isAvailable) {
-        setSlugError('This slug is already taken');
+        setSlugError("This slug is already taken");
       }
     } catch (error) {
-      console.error('Error checking slug availability:', error);
-      setSlugStatus('unavailable');
-      setSlugError('Error checking availability');
+      console.error("Error checking slug availability:", error);
+      setSlugStatus("unavailable");
+      setSlugError("Error checking availability");
     } finally {
       setIsCheckingSlug(false);
     }
@@ -100,16 +101,16 @@ export function useSlugValidation(siteId: string) {
    */
   const handleSlugChange = (value: string): string => {
     const formattedSlug = formatSlug(value);
-    
+
     // Reset validation status
-    if (slugStatus !== 'idle') {
-      setSlugStatus('idle');
+    if (slugStatus !== "idle") {
+      setSlugStatus("idle");
       setSlugError(undefined);
     }
-    
+
     // Trigger validation check
     debouncedCheckSlug(formattedSlug);
-    
+
     return formattedSlug;
   };
 
@@ -119,6 +120,6 @@ export function useSlugValidation(siteId: string) {
     slugError,
     handleSlugChange,
     formatSlug,
-    checkSlug
+    checkSlug,
   };
-} 
+}

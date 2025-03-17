@@ -1,18 +1,21 @@
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import prisma from "@/app/utils/db/prisma";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
+
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+
 import { EditArticleForm } from "@/app/components/dashboard/posts/components/EditArticleForm";
+import prisma from "@/app/utils/db/prisma";
 
 async function getData(articleId: string, userId: string, siteId: string) {
   // First verify site ownership
   const site = await prisma.site.findUnique({
     where: {
       id: siteId,
-      userId: userId
-    }
+      userId: userId,
+    },
   });
 
   if (!site) {
@@ -23,7 +26,7 @@ async function getData(articleId: string, userId: string, siteId: string) {
   const article = await prisma.post.findUnique({
     where: {
       id: articleId,
-      siteId: siteId
+      siteId: siteId,
     },
     select: {
       id: true,
@@ -49,17 +52,15 @@ async function getData(articleId: string, userId: string, siteId: string) {
     // For article content, which could be JSON, ensure it's in the right format
     articleContent: article.articleContent || {},
     // Handle contentImages - must be a string array or undefined
-    contentImages: Array.isArray(article.contentImages) 
-      ? article.contentImages.map(item => String(item)) 
-      : [],
+    contentImages: Array.isArray(article.contentImages) ? article.contentImages.map((item) => String(item)) : [],
     postCoverImage: article.postCoverImage || "",
   };
 }
 
 export default async function EditArticlePage({
-  params
+  params,
 }: {
-  params: { siteId: string; articleId: string } | Promise<{ siteId: string; articleId: string }>
+  params: { siteId: string; articleId: string } | Promise<{ siteId: string; articleId: string }>;
 }) {
   // Await params before accessing its properties
   const resolvedParams = await params;
@@ -105,16 +106,14 @@ export default async function EditArticlePage({
           </Button>
           <h1 className="text-xl font-semibold">Error</h1>
         </div>
-        
+
         <div className="p-8 text-center">
-          <h2 className="text-lg font-medium mb-2">Article not found</h2>
-          <p className="text-muted-foreground mb-4">
+          <h2 className="mb-2 text-lg font-medium">Article not found</h2>
+          <p className="mb-4 text-muted-foreground">
             The article you're trying to edit doesn't exist or you don't have permission to edit it.
           </p>
           <Button asChild>
-            <Link href={`/dashboard/sites/${siteId}`}>
-              Back to site
-            </Link>
+            <Link href={`/dashboard/sites/${siteId}`}>Back to site</Link>
           </Button>
         </div>
       </div>

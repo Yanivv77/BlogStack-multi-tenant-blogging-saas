@@ -1,34 +1,38 @@
 "use client";
 
 import { useState } from "react";
+
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { UploadDropzone, getOptimizedDropzoneConfig } from "@/app/utils/upload/uploadthing";
-import { toast } from "sonner";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import { BrandingStepProps } from "../../utils/types";
+import { Label } from "@/components/ui/label";
+
+import { getOptimizedDropzoneConfig, UploadDropzone } from "@/app/utils/upload/uploadthing";
+
+import type { BrandingStepProps } from "../../utils/types";
 
 /**
  * BrandingStep component for uploading site images
  * Second step in the site creation process
  */
-export function BrandingStep({ 
-  fields, 
-  siteImageCover, 
-  setSiteImageCover, 
-  logoImage, 
-  setLogoImage, 
-  goToNextStep, 
-  goToPrevStep 
+export function BrandingStep({
+  fields,
+  siteImageCover,
+  setSiteImageCover,
+  logoImage,
+  setLogoImage,
+  goToNextStep,
+  goToPrevStep,
 }: BrandingStepProps) {
   // Add loading states for better UX
   const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  
+
   // Get optimized config
   const optimizedConfig = getOptimizedDropzoneConfig();
-  
+
   /**
    * Handler for cover image upload
    */
@@ -37,7 +41,7 @@ export function BrandingStep({
     setSiteImageCover(imageUrl);
     toast.success("Cover image uploaded successfully!");
   };
-  
+
   /**
    * Handler for logo image upload
    */
@@ -46,49 +50,49 @@ export function BrandingStep({
     setLogoImage(imageUrl);
     toast.success("Logo uploaded successfully!");
   };
-  
+
   return (
     <>
-      <CardContent className="space-y-6 pt-6 px-6 sm:px-8">
+      <CardContent className="space-y-6 px-6 pt-6 sm:px-8">
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
-              <SimpleIcon name="image" size={20} color="currentColor"/>
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <SimpleIcon name="image" size={20} color="currentColor" />
               Visual Branding
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Add visual elements to make your site stand out
-            </p>
+            <p className="text-sm text-muted-foreground">Add visual elements to make your site stand out</p>
           </div>
 
           {/* Cover Image */}
-          <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
-            <Label htmlFor="site-cover-image" className="text-base">Site Cover Image</Label>
+          <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+            <Label htmlFor="site-cover-image" className="text-base">
+              Site Cover Image
+            </Label>
             <div className="flex flex-col items-center gap-4">
               {siteImageCover ? (
                 <div className="relative w-full max-w-[500px]">
                   <img
                     src={siteImageCover}
                     alt="Cover"
-                    className="w-full h-auto rounded-md object-cover aspect-video"
+                    className="aspect-video h-auto w-full rounded-md object-cover"
                   />
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="absolute top-2 right-2"
+                    className="absolute right-2 top-2"
                     onClick={() => setSiteImageCover("")}
                     aria-label="Remove cover image"
                   >
-                    <SimpleIcon name="x" size={16} color="currentColor"/>
+                    <SimpleIcon name="x" size={16} color="currentColor" />
                   </Button>
                 </div>
               ) : (
-                <div className="flex justify-center w-full">
+                <div className="flex w-full justify-center">
                   {isUploadingCover ? (
-                    <div className="border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center">
+                    <div className="flex aspect-video w-full max-w-[500px] flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground p-8">
                       <div className="flex flex-col items-center gap-2">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
                         <p className="text-sm text-muted-foreground">Uploading image...</p>
                       </div>
                     </div>
@@ -98,7 +102,7 @@ export function BrandingStep({
                       onUploadBegin={() => {
                         setIsUploadingCover(true);
                       }}
-                      onClientUploadComplete={(res: any) => {
+                      onClientUploadComplete={(res: unknown) => {
                         const imageUrl = res[0].ufsUrl;
                         handleCoverImageUpload(imageUrl);
                       }}
@@ -109,7 +113,8 @@ export function BrandingStep({
                       {...optimizedConfig}
                       appearance={{
                         ...optimizedConfig.appearance,
-                        container: "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center"
+                        container:
+                          "border-dashed border-2 border-muted-foreground rounded-md p-8 w-full max-w-[500px] aspect-video flex flex-col items-center justify-center",
                       }}
                     />
                   )}
@@ -133,33 +138,31 @@ export function BrandingStep({
           </div>
 
           {/* Logo Image */}
-          <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
-            <Label htmlFor="site-logo-image" className="text-base">Profile / Logo Image</Label>
+          <div className="space-y-3 rounded-lg border bg-muted/20 p-4">
+            <Label htmlFor="site-logo-image" className="text-base">
+              Profile / Logo Image
+            </Label>
             <div className="flex flex-col items-center gap-4">
               {logoImage ? (
                 <div className="relative w-full max-w-[200px]">
-                  <img
-                    src={logoImage}
-                    alt="Logo"
-                    className="w-full h-auto rounded-md"
-                  />
+                  <img src={logoImage} alt="Logo" className="h-auto w-full rounded-md" />
                   <Button
                     type="button"
                     variant="destructive"
                     size="sm"
-                    className="absolute top-2 right-2"
+                    className="absolute right-2 top-2"
                     onClick={() => setLogoImage("")}
                     aria-label="Remove logo image"
                   >
-                    <SimpleIcon name="x" size={16} color="currentColor"/>
+                    <SimpleIcon name="x" size={16} color="currentColor" />
                   </Button>
                 </div>
               ) : (
                 <div className="flex justify-center">
                   {isUploadingLogo ? (
-                    <div className="border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center">
+                    <div className="flex h-[200px] w-full max-w-[270px] flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground p-6">
                       <div className="flex flex-col items-center gap-2">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
                         <p className="text-sm text-muted-foreground">Uploading image...</p>
                       </div>
                     </div>
@@ -169,7 +172,7 @@ export function BrandingStep({
                       onUploadBegin={() => {
                         setIsUploadingLogo(true);
                       }}
-                      onClientUploadComplete={(res: any) => {
+                      onClientUploadComplete={(res: unknown) => {
                         const imageUrl = res[0].ufsUrl;
                         handleLogoImageUpload(imageUrl);
                       }}
@@ -180,7 +183,8 @@ export function BrandingStep({
                       {...optimizedConfig}
                       appearance={{
                         ...optimizedConfig.appearance,
-                        container: "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center"
+                        container:
+                          "border-dashed border-2 border-muted-foreground rounded-md p-6 w-full max-w-[270px] h-[200px] flex flex-col items-center justify-center",
                       }}
                     />
                   )}
@@ -204,10 +208,10 @@ export function BrandingStep({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
-        <Button 
-          type="button" 
-          variant="outline" 
+      <CardFooter className="flex justify-between px-6 pb-8 pt-2 sm:px-8">
+        <Button
+          type="button"
+          variant="outline"
           onClick={goToPrevStep}
           id="branding-back-button"
           className="px-4 text-foreground"
@@ -218,8 +222,8 @@ export function BrandingStep({
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
-        <Button 
-          type="button" 
+        <Button
+          type="button"
           onClick={goToNextStep}
           className="gap-2 px-6"
           id="branding-next-button"
@@ -230,13 +234,15 @@ export function BrandingStep({
           {isUploadingCover || isUploadingLogo ? (
             <>
               <span className="animate-pulse">Processing</span>
-              <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             </>
           ) : (
-            <>Continue <SimpleIcon name="arrowright" size={16} color="currentColor"/></>
+            <>
+              Continue <SimpleIcon name="arrowright" size={16} color="currentColor" />
+            </>
           )}
         </Button>
       </CardFooter>
     </>
   );
-} 
+}

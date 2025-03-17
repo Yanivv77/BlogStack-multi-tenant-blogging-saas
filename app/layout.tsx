@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+
 import "@uploadthing/react/styles.css";
-import "./globals.css";
+
+import { Toaster } from "@/components/ui/sonner";
 
 import { ThemeProvider } from "./components/dashboard/ThemeProvider";
-import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegistration } from "./components/ServiceWorkerRegistration";
+import "./globals.css";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -61,7 +63,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: "/globe.svg",
-    apple: "/globe.svg"
+    apple: "/globe.svg",
   },
 };
 
@@ -76,16 +78,9 @@ export default function RootLayout({
         <link rel="icon" href="/globe.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/globe.svg" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="animate-in flex-grow">
-            {children}
-          </div>
+      <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <div className="flex-grow animate-in">{children}</div>
           <Toaster richColors closeButton position="bottom-right" />
           <ServiceWorkerRegistration />
         </ThemeProvider>

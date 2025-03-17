@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
-import { JSONContent } from "novel";
+import { useEffect, useState } from "react";
+
+import type { JSONContent } from "novel";
 import { toast } from "sonner";
-import { 
-  saveFormDraft, 
-  loadFormDraft, 
-  clearFormDraft, 
-  clearEditorStorage, 
+
+import {
+  clearEditorStorage,
+  clearFormDraft,
   clearUploadedImages,
-  type FormDraft
+  type FormDraft,
+  loadFormDraft,
+  saveFormDraft,
 } from "@/app/components/dashboard/contentEditor";
 
 interface FormData {
@@ -36,10 +38,10 @@ export function useArticleDraft({
   setImageUrl,
   value,
   setValue,
-  isNewArticle
+  isNewArticle,
 }: UseArticleDraftProps) {
   const [draftLoaded, setDraftLoaded] = useState(false);
-  
+
   // Load draft when component initializes
   const loadDraft = () => {
     const draft = loadFormDraft();
@@ -51,20 +53,20 @@ export function useArticleDraft({
           slug: draft.slug || "",
           smallDescription: draft.smallDescription || "",
         };
-        
+
         // Add keywords if available in the draft
         if (draft.keywords) {
           updatedFormData.keywords = draft.keywords;
         }
-        
+
         setFormData(updatedFormData);
       }
-      
+
       if (draft.coverImage) setImageUrl(draft.coverImage);
-      
+
       if (draft.articleContent) {
         try {
-          if (typeof draft.articleContent === 'string') {
+          if (typeof draft.articleContent === "string") {
             setValue(JSON.parse(draft.articleContent));
           } else {
             setValue(draft.articleContent);
@@ -73,21 +75,21 @@ export function useArticleDraft({
           console.error("Error parsing editor content from draft:", e);
         }
       }
-      
+
       setDraftLoaded(true);
       return true;
     }
-    
+
     setDraftLoaded(true);
     return false;
   };
-  
+
   // Save draft with current form state
   const saveDraft = () => {
     if (!formData.title && !formData.smallDescription && !imageUrl && !value) {
       return false;
     }
-    
+
     const draft: FormDraft = {
       title: formData.title,
       slug: formData.slug,
@@ -95,25 +97,25 @@ export function useArticleDraft({
       coverImage: imageUrl,
       siteId,
       articleContent: value,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
-    
+
     // Add keywords if available
     if (formData.keywords) {
       draft.keywords = formData.keywords;
     }
-    
+
     saveFormDraft(draft);
     return true;
   };
-  
+
   // Autosave draft when form values change
   useEffect(() => {
     if (draftLoaded && !isNewArticle) {
       saveDraft();
     }
   }, [formData, imageUrl, value, draftLoaded, isNewArticle]);
-  
+
   // Add beforeunload handler
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -121,20 +123,20 @@ export function useArticleDraft({
         saveDraft();
       }
     };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [formData, imageUrl, value, isNewArticle]);
-  
+
   // Clear all drafts and storage
   const clearAllDrafts = () => {
     clearFormDraft();
     clearEditorStorage();
     clearUploadedImages();
   };
-  
+
   // Save draft explicitly (triggered by button)
   const handleSaveDraft = () => {
     if (saveDraft()) {
@@ -143,12 +145,12 @@ export function useArticleDraft({
       toast.info("Nothing to save - add some content first");
     }
   };
-  
+
   return {
     draftLoaded,
     saveDraft,
     loadDraft,
     clearAllDrafts,
-    handleSaveDraft
+    handleSaveDraft,
   };
-} 
+}

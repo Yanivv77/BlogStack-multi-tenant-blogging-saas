@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface IconProps {
   size?: number;
@@ -6,11 +6,7 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-const ArrowrightIcon: React.FC<IconProps> = ({ 
-  size = 24, 
-  color = 'currentColor',
-  strokeWidth = 2
-}) => {
+const ArrowrightIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -23,12 +19,10 @@ const ArrowrightIcon: React.FC<IconProps> = ({
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <line x1="5" y1="12" x2="19" y2="12"></line>
-      <polyline points="12 5 19 12 12 19"></polyline>
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
     </svg>
   );
 };
 
 export default ArrowrightIcon;
-
- 

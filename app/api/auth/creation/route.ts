@@ -1,6 +1,8 @@
-import prisma from "@/app/utils/db/prisma";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextResponse } from "next/server";
+
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+
+import prisma from "@/app/utils/db/prisma";
 
 export async function GET() {
   const { getUser } = getKindeServerSession();
@@ -25,8 +27,7 @@ export async function GET() {
         firstName: user.given_name ?? "",
         lastName: user.family_name ?? "",
         email: user.email ?? "",
-        profileImage:
-          user.picture ?? `https://avatar.vercel.sh/${user.given_name}`,
+        profileImage: user.picture ?? `https://avatar.vercel.sh/${user.given_name}`,
       },
     });
   }

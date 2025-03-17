@@ -7,11 +7,11 @@ const f = createUploadthing();
 // Optimized FileRouter for your app
 export const ourFileRouter = {
   // Optimized image uploader with better configuration
-  imageUploader: f({ 
-    image: { 
-      maxFileSize: "4MB", 
-      maxFileCount: 1
-    } 
+  imageUploader: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
   })
     .middleware(async ({ req }) => {
       // Authentication check

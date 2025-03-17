@@ -3,7 +3,7 @@
  */
 
 // Tab components
-export * from './tabs';
+export * from "./tabs";
 
 // Form components
-export * from './components'; 
+export * from "./components";

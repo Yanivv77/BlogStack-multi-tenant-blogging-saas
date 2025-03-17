@@ -1,43 +1,29 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { siteSchema, SiteEditSchema } from "@/app/utils/validation/siteSchema";
-import { LanguageEnum, Language } from "@/app/utils/validation";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { toast } from "sonner";
-import { UpdateSiteAction } from "@/app/serverActions/site/updateSite";
-import { parseFormWithZod } from "@/app/utils/validation/conform";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+
+import { UpdateSiteAction } from "@/app/serverActions/site/updateSite";
+import type { LanguageEnum } from "@/app/utils/validation";
+import { Language } from "@/app/utils/validation";
+import { parseFormWithZod } from "@/app/utils/validation/conform";
+import { SiteEditSchema, siteSchema } from "@/app/utils/validation/siteSchema";
 
 // Define the props type
-type UpdateSiteFormProps = {
+interface UpdateSiteFormProps {
   site: {
     id: string;
     name: string;
@@ -51,7 +37,7 @@ type UpdateSiteFormProps = {
     siteImageCover: string | null;
     logoImage: string | null;
   };
-};
+}
 
 // Client component for the update form
 export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
@@ -65,9 +51,10 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
       name: site.name,
       description: site.description || "",
       subdirectory: site.subdirectory, // Use the existing subdirectory value
-      language: site.language === Language.LTR || site.language === Language.RTL
-        ? site.language as z.infer<typeof LanguageEnum>
-        : Language.LTR, // Default to LTR for any other values
+      language:
+        site.language === Language.LTR || site.language === Language.RTL
+          ? (site.language as z.infer<typeof LanguageEnum>)
+          : Language.LTR, // Default to LTR for any other values
       email: site.email || "",
       githubUrl: site.githubUrl || "",
       linkedinUrl: site.linkedinUrl || "",
@@ -80,43 +67,43 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
   // Handle form submission
   const onSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
-    
+
     try {
       // Add the siteId to the form data
       formData.append("siteId", site.id);
-      
+
       // Explicitly add the subdirectory value from the site
       // Make sure we're not adding it if it already exists
       if (!formData.has("subdirectory")) {
         formData.append("subdirectory", site.subdirectory);
       }
-      
+
       // Preserve image fields if they're not explicitly set in the form
       if (!formData.has("siteImageCover") && site.siteImageCover) {
         formData.append("siteImageCover", site.siteImageCover);
       }
-      
+
       if (!formData.has("logoImage") && site.logoImage) {
         formData.append("logoImage", site.logoImage);
       }
 
       // First, validate the form data with our schema
       const validationResult = parseFormWithZod(formData, SiteEditSchema());
-      
+
       if (validationResult.status !== "success") {
         // Show error toast for validation failures
         toast.error("Please fix the validation errors");
         setIsSubmitting(false);
         return;
       }
-      
+
       // Submit the form if validation passes
       const result = await UpdateSiteAction(null, formData);
-      
+
       // Handle different response formats
       if (!result) {
         toast.error("No response received from server");
-      } else if ('error' in result && result.error) {
+      } else if ("error" in result && result.error) {
         // Handle form errors from the server
         const formError = result.error._form?.[0];
         if (formError) {
@@ -124,7 +111,7 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
         } else {
           toast.error("An error occurred while updating the site");
         }
-      } else if ('success' in result && result.success) {
+      } else if ("success" in result && result.success) {
         toast.success("Site updated successfully");
         router.refresh();
       }
@@ -140,11 +127,9 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium">General Information</h3>
-        <p className="text-sm text-muted-foreground">
-          Update your site's basic information and settings
-        </p>
+        <p className="text-sm text-muted-foreground">Update your site's basic information and settings</p>
       </div>
-      
+
       <Form {...form}>
         <form action={onSubmit} className="space-y-8">
           <Card>
@@ -159,24 +144,19 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                       <FormControl>
                         <Input placeholder="My Awesome Blog" {...field} />
                       </FormControl>
-                      <FormDescription>
-                        The name of your site as it will appear to visitors
-                      </FormDescription>
+                      <FormDescription>The name of your site as it will appear to visitors</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="language"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Text Direction</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select text direction" />
@@ -188,34 +168,33 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                         </SelectContent>
                       </Select>
                       <FormDescription>
-                        The text direction for your site. LTR for languages like English or Spanish, RTL for Hebrew or Arabic.
+                        The text direction for your site. LTR for languages like English or Spanish, RTL for Hebrew or
+                        Arabic.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              
+
               {/* Read-only subdirectory field (for display only, not part of the form) */}
               <div className="mt-6">
                 <FormItem>
                   <FormLabel>Site URL</FormLabel>
                   <div className="flex items-center">
-                    <div className="bg-muted px-3 py-2 text-sm rounded-l-md border border-r-0 border-input text-muted-foreground">
+                    <div className="rounded-l-md border border-r-0 border-input bg-muted px-3 py-2 text-sm text-muted-foreground">
                       blogstack.io/
                     </div>
-                    <Input 
+                    <Input
                       value={site.subdirectory}
                       disabled
-                      className="rounded-l-none font-medium text-muted-foreground bg-muted/50"
+                      className="rounded-l-none bg-muted/50 font-medium text-muted-foreground"
                     />
                   </div>
-                  <FormDescription>
-                    Your site's URL cannot be changed after creation
-                  </FormDescription>
+                  <FormDescription>Your site's URL cannot be changed after creation</FormDescription>
                 </FormItem>
               </div>
-              
+
               <div className="mt-6">
                 <FormField
                   control={form.control}
@@ -224,15 +203,13 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="A brief description of your site" 
-                          className="min-h-[120px] resize-y" 
-                          {...field} 
+                        <Textarea
+                          placeholder="A brief description of your site"
+                          className="min-h-[120px] resize-y"
+                          {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Describe what your site is about (supports markdown)
-                      </FormDescription>
+                      <FormDescription>Describe what your site is about (supports markdown)</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -240,12 +217,12 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
               </div>
             </CardContent>
           </Card>
-          
+
           <div className="flex items-center gap-2">
             <SimpleIcon name="mail" size={20} className="text-muted-foreground" />
             <h3 className="text-lg font-medium">Contact Information</h3>
           </div>
-          
+
           <Card>
             <CardContent className="pt-6">
               <FormField
@@ -255,28 +232,21 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="your@email.com" 
-                        {...field} 
-                        value={field.value || ""}
-                      />
+                      <Input type="email" placeholder="your@email.com" {...field} value={field.value || ""} />
                     </FormControl>
-                    <FormDescription>
-                      Public contact email (optional)
-                    </FormDescription>
+                    <FormDescription>Public contact email (optional)</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </CardContent>
           </Card>
-          
+
           <div className="flex items-center gap-2">
             <SimpleIcon name="link" size={20} className="text-muted-foreground" />
             <h3 className="text-lg font-medium">Social Links</h3>
           </div>
-          
+
           <Card>
             <CardContent className="pt-6">
               <div className="grid gap-6 sm:grid-cols-2">
@@ -287,17 +257,13 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     <FormItem>
                       <FormLabel>GitHub URL</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://github.com/yourusername" 
-                          {...field} 
-                          value={field.value || ""}
-                        />
+                        <Input placeholder="https://github.com/yourusername" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="linkedinUrl"
@@ -305,9 +271,9 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     <FormItem>
                       <FormLabel>LinkedIn URL</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://linkedin.com/in/yourusername" 
-                          {...field} 
+                        <Input
+                          placeholder="https://linkedin.com/in/yourusername"
+                          {...field}
                           value={field.value || ""}
                         />
                       </FormControl>
@@ -315,7 +281,7 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="portfolioUrl"
@@ -323,11 +289,7 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
                     <FormItem className="sm:col-span-2">
                       <FormLabel>Portfolio URL</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="https://yourportfolio.com" 
-                          {...field} 
-                          value={field.value || ""}
-                        />
+                        <Input placeholder="https://yourportfolio.com" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -336,13 +298,9 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
               </div>
             </CardContent>
           </Card>
-          
+
           <div className="flex justify-end">
-            <Button 
-              type="submit" 
-              className="w-full sm:w-auto"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <SimpleIcon name="loader" size={16} className="mr-2 animate-spin" />
@@ -357,4 +315,4 @@ export function UpdateSiteForm({ site }: UpdateSiteFormProps) {
       </Form>
     </div>
   );
-} 
+}

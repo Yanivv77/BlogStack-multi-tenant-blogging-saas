@@ -1,8 +1,8 @@
 "use server";
 
 import prisma from "../../utils/db/prisma";
-import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 import { serverLogger } from "../../utils/logger";
+import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 
 /**
  * Updates an image for a site or post
@@ -23,26 +23,26 @@ export async function UpdateImage(formData: FormData) {
     const type = formData.get("type") as string;
     const siteId = formData.get("siteId") as string;
     const postId = formData.get("postId") as string;
-    
-    logger.debug("Image update request", { type, siteId, postId: postId || 'N/A' });
-    
+
+    logger.debug("Image update request", { type, siteId, postId: postId || "N/A" });
+
     if (!imageUrl) {
       logger.error("Image URL is missing");
       return { error: "Image URL is required" };
     }
-    
+
     if (!type) {
       logger.error("Image type is missing");
       return { error: "Image type is required" };
     }
-    
+
     if (!siteId) {
       logger.error("Site ID is missing", null, { userId: user.id });
       return { error: "Site ID is required" };
     }
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
-    
+
     // Verify the user owns the site
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
@@ -62,7 +62,7 @@ export async function UpdateImage(formData: FormData) {
       logger.success("Site cover image updated successfully", { siteId });
       return { success: true };
     }
-    
+
     // Update site logo
     if (type === "logo") {
       logger.info("Updating site logo", { siteId });
@@ -75,11 +75,11 @@ export async function UpdateImage(formData: FormData) {
       logger.success("Site logo updated successfully", { siteId });
       return { success: true };
     }
-    
+
     // Update post cover image
     if (type === "post" && postId) {
       logger.debug("Verifying post exists and belongs to site", { postId, siteId });
-      
+
       // Verify the post exists and belongs to the site
       const existingPost = await prisma.post.findFirst({
         where: {
@@ -104,11 +104,11 @@ export async function UpdateImage(formData: FormData) {
       return { success: true };
     }
 
-    logger.error("Invalid image type or missing post ID", null, { type, postId: postId || 'N/A' });
+    logger.error("Invalid image type or missing post ID", null, { type, postId: postId || "N/A" });
     return { error: "Invalid image type or missing post ID" };
   } catch (error) {
     logger.error("Error updating image", error);
-    
+
     // Add detailed error logging
     if (error instanceof Error) {
       logger.error("Error details", {
@@ -117,7 +117,7 @@ export async function UpdateImage(formData: FormData) {
         name: error.name,
       });
     }
-    
-    return { error: `Failed to update image: ${error instanceof Error ? error.message : 'Unknown error'}` };
+
+    return { error: `Failed to update image: ${error instanceof Error ? error.message : "Unknown error"}` };
   }
-} 
+}

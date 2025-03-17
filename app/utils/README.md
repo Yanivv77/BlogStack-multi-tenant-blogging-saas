@@ -35,7 +35,7 @@ utils/
 Import utilities from the main index file:
 
 ```typescript
-import { prisma, requireUser, ValidationMessages, PostSchema } from "@/app/utils";
+import { PostSchema, prisma, requireUser, ValidationMessages } from "@/app/utils";
 ```
 
 Or import specific utilities directly:
@@ -52,4 +52,4 @@ import prisma from "@/app/utils/db/prisma";
 3. **Documentation**: Document functions and types with JSDoc comments.
 4. **Type Safety**: Use TypeScript types for all functions and parameters.
 5. **Re-export Pattern**: Use index files to re-export utilities for easier imports.
-6. **Consistent Naming**: Use consistent naming conventions across all utilities. 
+6. **Consistent Naming**: Use consistent naming conventions across all utilities.

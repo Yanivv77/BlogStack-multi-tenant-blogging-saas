@@ -2,16 +2,13 @@
 
 import { BubbleMenu } from "@tiptap/react";
 import { useEditor } from "novel";
-import { MenuSwitchProps } from "../core/types";
+
+import type { MenuSwitchProps } from "../core/types";
 
 /**
  * Bubble menu component that shows formatting options when text is selected
  */
-export const MenuSwitch = ({ 
-  open, 
-  onOpenChange, 
-  children 
-}: MenuSwitchProps) => {
+export const MenuSwitch = ({ open, onOpenChange, children }: MenuSwitchProps) => {
   const { editor } = useEditor();
 
   if (!editor) {
@@ -37,4 +34,4 @@ export const MenuSwitch = ({
   );
 };
 
-export default MenuSwitch; 
+export default MenuSwitch;

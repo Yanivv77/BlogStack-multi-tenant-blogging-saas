@@ -1,9 +1,8 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import prisma from "../../utils/db/prisma";
-import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 import { serverLogger } from "../../utils/logger";
+import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 
 /**
  * Deletes a site and all its associated posts
@@ -11,7 +10,7 @@ import { serverLogger } from "../../utils/logger";
 export async function DeleteSite(formData: FormData) {
   const logger = serverLogger("DeleteSite");
   logger.start();
-  
+
   const user = await getAuthenticatedUser();
   if (!user) {
     logger.error("Authentication required", null, { userId: null });
@@ -23,10 +22,10 @@ export async function DeleteSite(formData: FormData) {
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
     });
-    
+
     if (!dbUser) {
       logger.info("User not found in database, creating user record", { userId: user.id });
-      
+
       // Create the user in the database
       await prisma.user.create({
         data: {
@@ -37,7 +36,7 @@ export async function DeleteSite(formData: FormData) {
           profileImage: user.picture || null,
         },
       });
-      
+
       logger.info("User created in database", { userId: user.id });
     } else {
       logger.debug("User exists in database", { userId: user.id });
@@ -56,7 +55,7 @@ export async function DeleteSite(formData: FormData) {
     }
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
-    
+
     // Verify the user owns the site
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
@@ -80,7 +79,7 @@ export async function DeleteSite(formData: FormData) {
     return { success: true };
   } catch (error) {
     logger.error("Error deleting site", error);
-    
+
     // Add detailed error logging
     if (error instanceof Error) {
       logger.error("Error details", {
@@ -89,7 +88,7 @@ export async function DeleteSite(formData: FormData) {
         name: error.name,
       });
     }
-    
-    return { error: `Failed to delete site: ${error instanceof Error ? error.message : 'Unknown error'}` };
+
+    return { error: `Failed to delete site: ${error instanceof Error ? error.message : "Unknown error"}` };
   }
-} 
+}

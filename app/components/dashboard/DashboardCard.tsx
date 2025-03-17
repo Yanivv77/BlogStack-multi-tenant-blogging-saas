@@ -1,18 +1,13 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
+
 import { formatDistanceToNow } from "date-fns";
-import { ReactNode } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 export interface DashboardCardProps {
   id: string;
@@ -47,8 +42,8 @@ export function DashboardCard({
   className = "",
 }: DashboardCardProps) {
   return (
-    <Card className={`overflow-hidden flex flex-col h-full transition-all hover:shadow-md ${className}`}>
-      <div className="relative w-full h-[160px]">
+    <Card className={`flex h-full flex-col overflow-hidden transition-all hover:shadow-md ${className}`}>
+      <div className="relative h-[160px] w-full">
         <Image
           src={imageUrl}
           alt={title}
@@ -58,11 +53,11 @@ export function DashboardCard({
           priority={priority}
         />
         {badge && (
-          <div className="absolute inset-0  from-black/60 to-transparent">
+          <div className="absolute inset-0 from-black/60 to-transparent">
             <div className="absolute bottom-3 left-3">
-              <Badge 
-                variant={badge.variant || "secondary"} 
-                className={badge.variant === undefined ? "bg-black/50 text-white border-none" : ""}
+              <Badge
+                variant={badge.variant || "secondary"}
+                className={badge.variant === undefined ? "border-none bg-black/50 text-white" : ""}
               >
                 {badge.text}
               </Badge>
@@ -70,7 +65,7 @@ export function DashboardCard({
           </div>
         )}
       </div>
-      
+
       <CardHeader className="pb-2 pt-4">
         <CardTitle className="truncate text-lg">{title}</CardTitle>
         {subdirectory && (
@@ -80,21 +75,17 @@ export function DashboardCard({
           </div>
         )}
       </CardHeader>
-      
-      <CardContent className="pb-2 flex-grow">
-        {description && (
-          <CardDescription className="line-clamp-2 text-sm">
-            {description}
-          </CardDescription>
-        )}
+
+      <CardContent className="flex-grow pb-2">
+        {description && <CardDescription className="line-clamp-2 text-sm">{description}</CardDescription>}
         {createdAt && (
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="mt-2 text-xs text-muted-foreground">
             Created {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
           </p>
         )}
       </CardContent>
 
-      <CardFooter className="pt-2 pb-4">
+      <CardFooter className="pb-4 pt-2">
         <Button asChild variant="default" className="w-full" size="sm">
           <Link href={href} className="flex items-center justify-center gap-2">
             {buttonIcon}
@@ -104,4 +95,4 @@ export function DashboardCard({
       </CardFooter>
     </Card>
   );
-} 
+}

@@ -10,6 +10,7 @@ const prismaClientSingleton = () => {
 
 // Type declaration for global prisma instance
 declare global {
+  // eslint-disable-next-line no-var
   var prismaGlobal: ReturnType<typeof prismaClientSingleton> | undefined;
 }
 
@@ -19,4 +20,4 @@ const prisma = global.prismaGlobal ?? prismaClientSingleton();
 // In development, save the prisma instance to avoid hot reloading issues
 if (process.env.NODE_ENV !== "production") global.prismaGlobal = prisma;
 
-export default prisma; 
+export default prisma;

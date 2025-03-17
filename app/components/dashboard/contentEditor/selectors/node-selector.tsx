@@ -1,16 +1,16 @@
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { Popover } from "@radix-ui/react-popover";
 import { EditorBubbleItem, useEditor } from "novel";
 
-import { Popover } from "@radix-ui/react-popover";
-import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export type SelectorItem = {
+export interface SelectorItem {
   name: string;
   icon: string;
   command: (editor: ReturnType<typeof useEditor>["editor"]) => void;
   isActive: (editor: ReturnType<typeof useEditor>["editor"]) => boolean;
-};
+}
 
 const items: SelectorItem[] = [
   {
@@ -18,9 +18,7 @@ const items: SelectorItem[] = [
     icon: "text",
     command: (editor) => editor?.chain().focus().toggleNode("paragraph", "paragraph").run(),
     isActive: (editor) =>
-      !!editor?.isActive("paragraph") &&
-      !editor?.isActive("bulletList") &&
-      !editor?.isActive("orderedList") || false,
+      (!!editor?.isActive("paragraph") && !editor?.isActive("bulletList") && !editor?.isActive("orderedList")) || false,
   },
   {
     name: "Heading 1",
@@ -61,8 +59,7 @@ const items: SelectorItem[] = [
   {
     name: "Quote",
     icon: "quote",
-    command: (editor) =>
-      editor?.chain().focus().toggleNode("paragraph", "paragraph").toggleBlockquote().run(),
+    command: (editor) => editor?.chain().focus().toggleNode("paragraph", "paragraph").toggleBlockquote().run(),
     isActive: (editor) => !!editor?.isActive("blockquote"),
   },
   {
@@ -82,20 +79,18 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
   if (!editor) return null;
   const activeItem = items.filter((item) => item.isActive(editor)).pop() ?? {
     name: "Multiple",
-    icon: "text"
+    icon: "text",
   };
 
   return (
     <Popover modal={true} open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger
-        asChild
-        className='gap-2 rounded-none border-none hover:bg-accent focus:ring-0'>
-        <Button variant='ghost' className='gap-2'>
-          <span className='whitespace-nowrap text-sm'>{activeItem.name}</span>
+      <PopoverTrigger asChild className="gap-2 rounded-none border-none hover:bg-accent focus:ring-0">
+        <Button variant="ghost" className="gap-2">
+          <span className="whitespace-nowrap text-sm">{activeItem.name}</span>
           <SimpleIcon name="chevrondown" size={16} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent sideOffset={5} align='start' className='w-48 p-1'>
+      <PopoverContent sideOffset={5} align="start" className="w-48 p-1">
         {items.map((item, index) => (
           <EditorBubbleItem
             key={index}
@@ -103,9 +98,10 @@ export const NodeSelector = ({ open, onOpenChange }: NodeSelectorProps) => {
               item.command(editor);
               onOpenChange(false);
             }}
-            className='flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-accent'>
-            <div className='flex items-center space-x-2'>
-              <div className='rounded-sm border p-1'>
+            className="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-accent"
+          >
+            <div className="flex items-center space-x-2">
+              <div className="rounded-sm border p-1">
                 <SimpleIcon name={item.icon} size={12} />
               </div>
               <span>{item.name}</span>

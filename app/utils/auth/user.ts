@@ -1,5 +1,6 @@
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { redirect } from "next/navigation";
+
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 
 /**
  * Requires a user to be authenticated
@@ -25,4 +26,4 @@ export const requireUser = async () => {
 export const getCurrentUser = async () => {
   const { getUser } = getKindeServerSession();
   return await getUser();
-}; 
+};

@@ -1,7 +1,9 @@
-import { DeleteFormClient } from "./DeleteFormClient";
-import prisma from "@/app/utils/db/prisma";
-import { requireUser } from "@/app/utils/auth/user";
 import { notFound, redirect } from "next/navigation";
+
+import { requireUser } from "@/app/utils/auth/user";
+import prisma from "@/app/utils/db/prisma";
+
+import { DeleteFormClient } from "./DeleteFormClient";
 
 // Server component to fetch article data
 export default async function DeletePage({
@@ -12,9 +14,9 @@ export default async function DeletePage({
   // Await params before accessing its properties
   const resolvedParams = await params;
   const { siteId, articleId } = resolvedParams;
-  
+
   const user = await requireUser();
-  
+
   if (!user) {
     redirect("/api/auth/login");
   }
@@ -42,11 +44,5 @@ export default async function DeletePage({
     redirect(`/dashboard/sites/${article.siteId}`);
   }
 
-  return (
-    <DeleteFormClient
-      siteId={siteId}
-      articleId={articleId}
-      articleTitle={article.title}
-    />
-  );
+  return <DeleteFormClient siteId={siteId} articleId={articleId} articleTitle={article.title} />;
 }

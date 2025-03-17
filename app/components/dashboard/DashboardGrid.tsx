@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
+
 import { EmptyState } from "./EmptyState";
 
 interface DashboardGridProps {
@@ -13,12 +14,7 @@ interface DashboardGridProps {
   className?: string;
 }
 
-export function DashboardGrid({ 
-  children, 
-  emptyState, 
-  isEmpty = false,
-  className = ""
-}: DashboardGridProps) {
+export function DashboardGrid({ children, emptyState, isEmpty = false, className = "" }: DashboardGridProps) {
   if (isEmpty && emptyState) {
     return (
       <EmptyState
@@ -31,10 +27,8 @@ export function DashboardGrid({
   }
 
   return (
-    <div className="px-4 md:px-8 lg:px-2 max-w-[1600px] mx-auto">
-      <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
-        {children}
-      </div>
+    <div className="mx-auto max-w-[1600px] px-4 md:px-8 lg:px-2">
+      <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>{children}</div>
     </div>
   );
-} 
+}

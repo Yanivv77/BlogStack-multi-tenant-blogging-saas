@@ -3,7 +3,7 @@
  */
 
 // Main settings component
-export { SettingsTabs } from './SettingsTabs';
+export { SettingsTabs } from "./SettingsTabs";
 
 // Export all edit components
-export * from './edit'; 
+export * from "./edit";

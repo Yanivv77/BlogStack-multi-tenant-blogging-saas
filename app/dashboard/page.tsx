@@ -1,12 +1,14 @@
-import { requireUser } from "../utils/auth/user";
-import { DEFAULT_IMAGE_URL } from "../utils/constants/images";
+import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+
 import { DashboardCard } from "../components/dashboard/DashboardCard";
 import { DashboardGrid } from "../components/dashboard/DashboardGrid";
 import { SectionHeader } from "../components/dashboard/SectionHeader";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { requireUser } from "../utils/auth/user";
+import { DEFAULT_IMAGE_URL } from "../utils/constants/images";
 import prisma from "../utils/db/prisma";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 async function getData(userId: string) {
   const [sites, articles] = await Promise.all([
@@ -43,7 +45,7 @@ async function getData(userId: string) {
 export default async function DashboardIndexPage() {
   const user = await requireUser();
   const { articles, sites } = await getData(user.id);
-  
+
   return (
     <div className="space-y-10">
       <section>
@@ -52,17 +54,17 @@ export default async function DashboardIndexPage() {
           action={{
             href: "/dashboard/sites/new",
             text: "Create Site",
-            icon: <SimpleIcon name="pluscircle" size={16} />
+            icon: <SimpleIcon name="pluscircle" size={16} />,
           }}
         />
-        
+
         <DashboardGrid
           isEmpty={sites.length === 0}
           emptyState={{
             title: "You don't have any sites created",
             description: "You currently don't have any Sites. Please create some so that you can see them right here.",
             href: "/dashboard/sites/new",
-            buttonText: "Create Site"
+            buttonText: "Create Site",
           }}
         >
           {sites.map((site, index) => (
@@ -80,9 +82,9 @@ export default async function DashboardIndexPage() {
             />
           ))}
         </DashboardGrid>
-        
+
         {sites.length > 0 && (
-          <div className="px-4 md:px-8 lg:px-12 max-w-[1600px] mx-auto mt-4 text-right">
+          <div className="mx-auto mt-4 max-w-[1600px] px-4 text-right md:px-8 lg:px-12">
             <Button variant="outline" asChild size="sm">
               <Link href="/dashboard/sites">View All Sites</Link>
             </Button>
@@ -91,17 +93,16 @@ export default async function DashboardIndexPage() {
       </section>
 
       <section>
-        <SectionHeader
-          title="Recent Articles"
-        />
-        
+        <SectionHeader title="Recent Articles" />
+
         <DashboardGrid
           isEmpty={articles.length === 0}
           emptyState={{
             title: "You don't have any articles created",
-            description: "You currently don't have any articles created. Please create some so that you can see them right here.",
+            description:
+              "You currently don't have any articles created. Please create some so that you can see them right here.",
             buttonText: "Create Article",
-            href: "/dashboard/sites"
+            href: "/dashboard/sites",
           }}
         >
           {articles.map((article, index) => (

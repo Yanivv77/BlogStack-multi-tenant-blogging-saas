@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface IconProps {
   size?: number;
@@ -6,21 +6,17 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-const EditIcon: React.FC<IconProps> = ({ 
-  size = 24, 
-  color = 'currentColor',
-  strokeWidth = 2
-}) => {
+const EditIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke={color} 
-      strokeWidth={strokeWidth} 
-      strokeLinecap="round" 
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -29,4 +25,4 @@ const EditIcon: React.FC<IconProps> = ({
   );
 };
 
-export default EditIcon; 
+export default EditIcon;

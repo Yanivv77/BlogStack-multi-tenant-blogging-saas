@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { conformZodMessage } from "@conform-to/zod";
+
 import { CommonFields, LanguageEnum } from "./common";
 import { ValidationMessages } from "./messages";
 
@@ -31,9 +31,7 @@ function isValidDomain(domain: string | null): boolean {
 /**
  * Helper to perform subdirectory uniqueness validation
  */
-const validateSubdirectoryUniqueness = (options?: {
-  isSubdirectoryUnique?: () => Promise<boolean>;
-}) => {
+const validateSubdirectoryUniqueness = (options?: { isSubdirectoryUnique?: () => Promise<boolean> }) => {
   return async (subdirectory: string, ctx: z.RefinementCtx) => {
     // Skip validation if the subdirectory is empty
     if (!subdirectory) return;
@@ -61,13 +59,12 @@ const validateSubdirectoryUniqueness = (options?: {
 /**
  * Schema for site creation with unique subdirectory validation
  */
-export function SiteCreationSchema(options?: {
-  isSubdirectoryUnique?: () => Promise<boolean>;
-}) {
+export function SiteCreationSchema(options?: { isSubdirectoryUnique?: () => Promise<boolean> }) {
   return z.object({
     name: CommonFields.name(),
     description: CommonFields.description(),
-    subdirectory: z.string()
+    subdirectory: z
+      .string()
       .min(3, ValidationMessages.TOO_SHORT(3))
       .max(40, ValidationMessages.TOO_LONG(40))
       .regex(/^[a-z0-9-]+$/, ValidationMessages.ALPHANUMERIC_HYPHEN)
@@ -102,4 +99,4 @@ export function SiteEditSchema() {
     customDomain: CommonFields.domain(),
     siteId: z.string().min(1, ValidationMessages.REQUIRED), // Required for identifying which site to update
   });
-} 
+}

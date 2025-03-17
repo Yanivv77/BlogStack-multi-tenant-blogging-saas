@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { CardContent, CardFooter } from "@/components/ui/card";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import { SocialStepProps } from "../../utils/types";
-import { validateField, ValidationErrors } from "../../utils/zodValidation";
+
+import type { SocialStepProps } from "../../utils/types";
+import type { ValidationErrors } from "../../utils/zodValidation";
+import { validateField } from "../../utils/zodValidation";
 
 /**
  * SocialStep component for collecting social media links
  * Final step in the site creation process
  */
-export function SocialStep({ 
-  fields, 
-  goToPrevStep, 
-  formValues, 
-  handleInputChange 
-}: SocialStepProps) {
+export function SocialStep({ fields, goToPrevStep, formValues, handleInputChange }: SocialStepProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [attemptedSubmit, setAttemptedSubmit] = useState(false);
@@ -28,7 +26,7 @@ export function SocialStep({
    */
   const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     // Pass to parent handler
     handleInputChange(e);
   };
@@ -38,13 +36,13 @@ export function SocialStep({
    */
   const handleFieldBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
+    setTouchedFields((prev) => ({ ...prev, [name]: true }));
+
     // Validate the field using Zod schema
     const fieldError = validateField(name as keyof typeof formValues, value);
-    setErrors(prev => ({ ...prev, [name]: fieldError }));
+    setErrors((prev) => ({ ...prev, [name]: fieldError }));
   };
 
   /**
@@ -56,27 +54,27 @@ export function SocialStep({
       email: true,
       githubUrl: true,
       linkedinUrl: true,
-      portfolioUrl: true
+      portfolioUrl: true,
     });
-    
+
     // Set attempted submit to true to show all errors
     setAttemptedSubmit(true);
-    
+
     const newErrors: ValidationErrors = {};
-    
+
     // Validate each field using Zod schema
-    const emailError = validateField('email', formValues.email);
+    const emailError = validateField("email", formValues.email);
     if (emailError) newErrors.email = emailError;
-    
-    const githubUrlError = validateField('githubUrl', formValues.githubUrl);
+
+    const githubUrlError = validateField("githubUrl", formValues.githubUrl);
     if (githubUrlError) newErrors.githubUrl = githubUrlError;
-    
-    const linkedinUrlError = validateField('linkedinUrl', formValues.linkedinUrl);
+
+    const linkedinUrlError = validateField("linkedinUrl", formValues.linkedinUrl);
     if (linkedinUrlError) newErrors.linkedinUrl = linkedinUrlError;
-    
-    const portfolioUrlError = validateField('portfolioUrl', formValues.portfolioUrl);
+
+    const portfolioUrlError = validateField("portfolioUrl", formValues.portfolioUrl);
     if (portfolioUrlError) newErrors.portfolioUrl = portfolioUrlError;
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -88,10 +86,10 @@ export function SocialStep({
 
   return (
     <>
-      <CardContent className="space-y-6 pt-6 px-6 sm:px-8">
+      <CardContent className="space-y-6 px-6 pt-6 sm:px-8">
         <div className="space-y-4">
           <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
               <SimpleIcon name="link" size={20} color="currentColor" />
               Contact & Social Links
             </h2>
@@ -114,7 +112,7 @@ export function SocialStep({
                 name="email"
                 type="email"
                 placeholder="contact@yourdomain.com"
-                className={`h-11 ${shouldShowError('email') ? 'border-destructive' : ''}`}
+                className={`h-11 ${shouldShowError("email") ? "border-destructive" : ""}`}
                 value={formValues.email}
                 onChange={handleFieldChange}
                 onBlur={handleFieldBlur}
@@ -124,8 +122,8 @@ export function SocialStep({
               <div id="email-hint" className="text-[0.8rem] text-muted-foreground">
                 This email will be displayed as a contact option on your site
               </div>
-              {shouldShowError('email') && (
-                <div id="email-error" className="text-destructive text-sm">
+              {shouldShowError("email") && (
+                <div id="email-error" className="text-sm text-destructive">
                   {errors.email}
                 </div>
               )}
@@ -143,7 +141,7 @@ export function SocialStep({
                 id="github-url"
                 name="githubUrl"
                 placeholder="https://github.com/yourusername"
-                className={`h-11 ${shouldShowError('githubUrl') ? 'border-destructive' : ''}`}
+                className={`h-11 ${shouldShowError("githubUrl") ? "border-destructive" : ""}`}
                 value={formValues.githubUrl}
                 onChange={handleFieldChange}
                 onBlur={handleFieldBlur}
@@ -153,8 +151,8 @@ export function SocialStep({
               <div id="github-hint" className="text-[0.8rem] text-muted-foreground">
                 Your GitHub profile URL (optional)
               </div>
-              {shouldShowError('githubUrl') && (
-                <div id="github-error" className="text-destructive text-sm">
+              {shouldShowError("githubUrl") && (
+                <div id="github-error" className="text-sm text-destructive">
                   {errors.githubUrl}
                 </div>
               )}
@@ -172,7 +170,7 @@ export function SocialStep({
                 id="linkedin-url"
                 name="linkedinUrl"
                 placeholder="https://linkedin.com/in/yourprofile"
-                className={`h-11 ${shouldShowError('linkedinUrl') ? 'border-destructive' : ''}`}
+                className={`h-11 ${shouldShowError("linkedinUrl") ? "border-destructive" : ""}`}
                 value={formValues.linkedinUrl}
                 onChange={handleFieldChange}
                 onBlur={handleFieldBlur}
@@ -182,8 +180,8 @@ export function SocialStep({
               <div id="linkedin-hint" className="text-[0.8rem] text-muted-foreground">
                 Your LinkedIn profile URL (optional)
               </div>
-              {shouldShowError('linkedinUrl') && (
-                <div id="linkedin-error" className="text-destructive text-sm">
+              {shouldShowError("linkedinUrl") && (
+                <div id="linkedin-error" className="text-sm text-destructive">
                   {errors.linkedinUrl}
                 </div>
               )}
@@ -201,7 +199,7 @@ export function SocialStep({
                 id="portfolio-url"
                 name="portfolioUrl"
                 placeholder="https://yourportfolio.com"
-                className={`h-11 ${shouldShowError('portfolioUrl') ? 'border-destructive' : ''}`}
+                className={`h-11 ${shouldShowError("portfolioUrl") ? "border-destructive" : ""}`}
                 value={formValues.portfolioUrl}
                 onChange={handleFieldChange}
                 onBlur={handleFieldBlur}
@@ -211,8 +209,8 @@ export function SocialStep({
               <div id="portfolio-hint" className="text-[0.8rem] text-muted-foreground">
                 Your personal website or portfolio URL (optional)
               </div>
-              {shouldShowError('portfolioUrl') && (
-                <div id="portfolio-error" className="text-destructive text-sm">
+              {shouldShowError("portfolioUrl") && (
+                <div id="portfolio-error" className="text-sm text-destructive">
                   {errors.portfolioUrl}
                 </div>
               )}
@@ -220,10 +218,10 @@ export function SocialStep({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between pb-8 px-6 sm:px-8 pt-2">
-        <Button 
-          type="button" 
-          variant="outline" 
+      <CardFooter className="flex justify-between px-6 pb-8 pt-2 sm:px-8">
+        <Button
+          type="button"
+          variant="outline"
           onClick={goToPrevStep}
           id="social-back-button"
           className="px-4 text-foreground"
@@ -233,7 +231,7 @@ export function SocialStep({
           <SimpleIcon name="arrowleft" size={16} color="currentColor" className="mr-2" />
           Back
         </Button>
-        <Button 
+        <Button
           type="submit"
           disabled={false} // Never disable since all fields are optional
           className="px-6"
@@ -245,4 +243,4 @@ export function SocialStep({
       </CardFooter>
     </>
   );
-} 
+}

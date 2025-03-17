@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface IconProps {
   size?: number;
@@ -6,11 +6,7 @@ interface IconProps {
   strokeWidth?: number;
 }
 
-const BellIcon: React.FC<IconProps> = ({ 
-  size = 24, 
-  color = 'currentColor', 
-  strokeWidth = 2 
-}) => {
+const BellIcon: React.FC<IconProps> = ({ size = 24, color = "currentColor", strokeWidth = 2 }) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -29,4 +25,4 @@ const BellIcon: React.FC<IconProps> = ({
   );
 };
 
-export default BellIcon; 
+export default BellIcon;

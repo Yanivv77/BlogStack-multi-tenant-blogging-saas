@@ -1,16 +1,23 @@
 "use server";
 
-import { parseWithZod } from "@conform-to/zod";
-import prisma from "../../utils/db/prisma";
+import type { parseWithZod } from "@conform-to/zod";
+
 import { requireUser } from "../../utils/auth/user";
+import prisma from "../../utils/db/prisma";
 import { serverLogger } from "../../utils/logger";
 
 // Setup logger
 const logger = serverLogger("ServerActionHelpers");
 
 // Types for action responses
-export type ActionError = { status: "error"; errors: string[] };
-export type ActionSuccess = { status: "success"; errors: never[] };
+export interface ActionError {
+  status: "error";
+  errors: string[];
+}
+export interface ActionSuccess {
+  status: "success";
+  errors: never[];
+}
 export type ActionResponse = ActionError | ActionSuccess;
 export type SubmissionResult = ReturnType<typeof parseWithZod>;
 
@@ -72,20 +79,20 @@ export async function verifyUserOwnsSite(siteId: string, userId: string) {
     logger.warn("Site verification failed - missing siteId or userId", { siteId, userId });
     return null;
   }
-  
+
   const site = await prisma.site.findFirst({
     where: {
       id: siteId,
       userId,
     },
   });
-  
+
   if (!site) {
     logger.warn("Site verification failed - site not found or not owned by user", { siteId, userId });
   } else {
     logger.debug("Site verification successful", { siteId, userId });
   }
-  
+
   return site;
 }
 
@@ -95,22 +102,22 @@ export async function verifyUserOwnsSite(siteId: string, userId: string) {
  * @param user The authenticated user from Kinde
  * @returns The user if successful, null if failed
  */
-export async function ensureUserInDatabase(user: any) {
+export async function ensureUserInDatabase(user: unknown) {
   if (!user || !user.id) {
     logger.warn("Cannot ensure user in database - missing user or user ID");
     return null;
   }
-  
+
   try {
     // Check if user exists
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
     });
-    
+
     // If user doesn't exist, create them
     if (!dbUser) {
       logger.info("User not found in database, creating user record", { userId: user.id });
-      
+
       return await prisma.user.create({
         data: {
           id: user.id,
@@ -121,11 +128,11 @@ export async function ensureUserInDatabase(user: any) {
         },
       });
     }
-    
+
     logger.debug("User exists in database", { userId: user.id });
     return dbUser;
   } catch (error) {
     logger.error("Error ensuring user in database", error, { userId: user.id });
     return null;
   }
-} 
+}

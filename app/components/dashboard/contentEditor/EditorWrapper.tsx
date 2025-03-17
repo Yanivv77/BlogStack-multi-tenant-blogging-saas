@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   EditorCommand,
   EditorCommandEmpty,
@@ -7,26 +9,23 @@ import {
   EditorCommandList,
   EditorContent,
   EditorRoot,
-  ImageResizer,
-  type JSONContent,
   handleCommandNavigation,
-  handleImageDrop,
-  handleImagePaste,
+  ImageResizer,
 } from "novel";
-import { useState, useEffect } from "react";
+
+import { Separator } from "@/components/ui/separator";
+
 import { defaultExtensions } from "./core/extensions";
+import { slashCommand, suggestionItems } from "./core/slash-command";
+import type { EditorProps } from "./core/types";
+import { useEditorState } from "./hooks/useEditorState";
 import { ColorSelector } from "./selectors/color-selector";
 import { LinkSelector } from "./selectors/link-selector";
 import { MathSelector } from "./selectors/math-selector";
 import { NodeSelector } from "./selectors/node-selector";
 import { TextButtons } from "./selectors/text-buttons";
-import { slashCommand, suggestionItems } from "./core/slash-command";
-import { uploadFn } from "./utils/image-upload";
 import { MenuSwitch } from "./ui/MenuSwitch";
-import { EditorProps } from "./core/types";
-import { Separator } from "@/components/ui/separator";
-import { useEditorState } from "./hooks/useEditorState";
-import { saveHtmlContent, saveEditorContent, loadEditorContent } from "./utils/storage";
+import { uploadFn } from "./utils/image-upload";
 
 // Import highlight.js for code highlighting
 const hljs = require("highlight.js");
@@ -37,29 +36,31 @@ const extensions = [...defaultExtensions, slashCommand];
 /**
  * Custom image paste handler that works with our uploadFn
  */
-const customImagePaste = (view: any, event: ClipboardEvent) => {
+const customImagePaste = (view: unknown, event: ClipboardEvent) => {
   if (!event.clipboardData) return false;
-  
+
   const items = Array.from(event.clipboardData.items);
-  const imageItem = items.find(item => item.type.startsWith('image'));
-  
+  const imageItem = items.find((item) => item.type.startsWith("image"));
+
   if (!imageItem) return false;
-  
+
   const file = imageItem.getAsFile();
   if (!file) return false;
-  
+
   event.preventDefault();
-  
+
   // Handle the image upload asynchronously
-  uploadFn(file).then(imageUrl => {
-    const { schema } = view.state;
-    const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
-    const transaction = view.state.tr.replaceSelectionWith(node);
-    view.dispatch(transaction);
-  }).catch(error => {
-    console.error('Error pasting image:', error);
-  });
-  
+  uploadFn(file)
+    .then((imageUrl) => {
+      const { schema } = view.state;
+      const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
+      const transaction = view.state.tr.replaceSelectionWith(node);
+      view.dispatch(transaction);
+    })
+    .catch((error) => {
+      console.error("Error pasting image:", error);
+    });
+
   // Return true to indicate we've handled the event
   return true;
 };
@@ -67,38 +68,38 @@ const customImagePaste = (view: any, event: ClipboardEvent) => {
 /**
  * Custom image drop handler that works with our uploadFn
  */
-const customImageDrop = (view: any, event: DragEvent, moved: boolean) => {
+const customImageDrop = (view: unknown, event: DragEvent, moved: boolean) => {
   if (moved) return false;
-  
+
   if (!event.dataTransfer) return false;
-  
+
   const hasFiles = event.dataTransfer.files.length > 0;
   if (!hasFiles) return false;
-  
-  const images = Array.from(event.dataTransfer.files).filter(file => 
-    file.type.startsWith('image/')
-  );
-  
+
+  const images = Array.from(event.dataTransfer.files).filter((file) => file.type.startsWith("image/"));
+
   if (images.length === 0) return false;
-  
+
   event.preventDefault();
-  
+
   // Get the position where the image is being dropped
   const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
   if (!coordinates) return false;
-  
+
   // Process each dropped image asynchronously
-  images.forEach(file => {
-    uploadFn(file).then(imageUrl => {
-      const { schema } = view.state;
-      const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
-      const transaction = view.state.tr.insert(coordinates.pos, node);
-      view.dispatch(transaction);
-    }).catch(error => {
-      console.error('Error dropping image:', error);
-    });
+  images.forEach((file) => {
+    uploadFn(file)
+      .then((imageUrl) => {
+        const { schema } = view.state;
+        const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
+        const transaction = view.state.tr.insert(coordinates.pos, node);
+        view.dispatch(transaction);
+      })
+      .catch((error) => {
+        console.error("Error dropping image:", error);
+      });
   });
-  
+
   // Return true to indicate we've handled the event
   return true;
 };
@@ -124,7 +125,7 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
   const [openColor, setOpenColor] = useState(false);
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(true);
-  
+
   // Log initial value to debug draft loading
   useEffect(() => {
     if (initialValue === undefined) {
@@ -132,18 +133,12 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
     } else if (initialValue === null) {
       console.log("EditorWrapper: initialValue is null - will use empty document");
     } else {
-      console.log("EditorWrapper: received initialValue", 
-        typeof initialValue === 'object' ? 'object' : initialValue);
+      console.log("EditorWrapper: received initialValue", typeof initialValue === "object" ? "object" : initialValue);
     }
   }, [initialValue]);
-  
+
   // Use our custom hook for editor state management
-  const { 
-    initialContent, 
-    saveStatus, 
-    wordCount, 
-    handleUpdate 
-  } = useEditorState({
+  const { initialContent, saveStatus, wordCount, handleUpdate } = useEditorState({
     onChange: (content) => {
       // Pass the content to the parent component for draft saving
       if (onChange) {
@@ -153,39 +148,40 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
     },
     // Only pass initialValue if it's defined and not null
     initialValue: initialValue || undefined,
-    highlightCodeFn: highlightCodeblocks
+    highlightCodeFn: highlightCodeblocks,
   });
 
   // Show loading indicator while waiting for content
   if (!initialContent) {
-    return <div className="min-h-[500px] w-full border-muted bg-background flex items-center justify-center">
-      <p className="text-muted-foreground">Loading editor...</p>
-    </div>;
+    return (
+      <div className="flex min-h-[500px] w-full items-center justify-center border-muted bg-background">
+        <p className="text-muted-foreground">Loading editor...</p>
+      </div>
+    );
   }
 
   return (
     <div className="relative w-full">
       {/* Status indicators */}
 
-      
       {/* Editor header with commands help */}
-      <div className="flex items-center border border-muted rounded-t-lg bg-background p-6 gap-2 mb-0">
-        <div className="text-muted-foreground text-sm hidden [@media(min-width:1200px)]:flex items-center gap-2">
-          <span className="bg-muted px-2 py-1 rounded font-mono">/</span>
+      <div className="mb-0 flex items-center gap-2 rounded-t-lg border border-muted bg-background p-6">
+        <div className="hidden items-center gap-2 text-sm text-muted-foreground [@media(min-width:1200px)]:flex">
+          <span className="rounded bg-muted px-2 py-1 font-mono">/</span>
           <span>Type to open command menu</span>
           <span className="mx-2">•</span>
-          <span className="bg-muted px-2 py-1 rounded">Select text</span>
+          <span className="rounded bg-muted px-2 py-1">Select text</span>
           <span>to show formatting options</span>
         </div>
-        <div className="flex absolute right-5 top-5 z-10  gap-2">
-        {wordCount && (
-          <div className="rounded-lg px-2 py-1 text-sm text-muted-foreground">
-            {wordCount} Words - {saveStatus}
-          </div>
-        )}
+        <div className="absolute right-5 top-5 z-10 flex gap-2">
+          {wordCount && (
+            <div className="rounded-lg px-2 py-1 text-sm text-muted-foreground">
+              {wordCount} Words - {saveStatus}
+            </div>
+          )}
+        </div>
       </div>
-      </div>
-      
+
       {/* Editor root */}
       <EditorRoot>
         <EditorContent
@@ -199,7 +195,8 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
             handlePaste: (view, event) => customImagePaste(view, event),
             handleDrop: (view, event, _slice, moved) => customImageDrop(view, event, moved),
             attributes: {
-              class: "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
+              class:
+                "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
             },
           }}
           onUpdate={handleUpdate}
@@ -208,14 +205,12 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
         >
           {/* Command menu */}
           <EditorCommand className="z-50 h-auto max-h-[330px] w-72 overflow-y-auto rounded-md border border-muted bg-background px-1 py-2 shadow-md transition-all">
-            <EditorCommandEmpty className="px-2 text-muted-foreground">
-              No results
-            </EditorCommandEmpty>
+            <EditorCommandEmpty className="px-2 text-muted-foreground">No results</EditorCommandEmpty>
             <EditorCommandList>
               {suggestionItems.map((item) => (
                 <EditorCommandItem
                   value={item.title}
-                  onCommand={(val) => typeof item.command === 'function' ? item.command(val) : null}
+                  onCommand={(val) => (typeof item.command === "function" ? item.command(val) : null)}
                   className="flex w-full items-center space-x-2 rounded-md px-2 py-1 text-left text-sm hover:bg-accent aria-selected:bg-accent"
                   key={item.title}
                 >

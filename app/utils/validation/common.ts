@@ -1,43 +1,45 @@
 import { z } from "zod";
+
 import { ValidationMessages } from "./messages";
-import { conformZodMessage } from "@conform-to/zod";
 
 /**
  * Common field definitions reused across schemas
  */
 export const CommonFields = {
-  name: () => z.string()
-    .min(1, ValidationMessages.REQUIRED)
-    .min(3, ValidationMessages.TOO_SHORT(3))
-    .max(35, ValidationMessages.TOO_LONG(35)),
+  name: () =>
+    z
+      .string()
+      .min(1, ValidationMessages.REQUIRED)
+      .min(3, ValidationMessages.TOO_SHORT(3))
+      .max(35, ValidationMessages.TOO_LONG(35)),
 
-  description: () => z.string()
-    .min(1, ValidationMessages.REQUIRED)
-    .min(10, ValidationMessages.TOO_SHORT(10))
-    .max(500, ValidationMessages.TOO_LONG(500)),
+  description: () =>
+    z
+      .string()
+      .min(1, ValidationMessages.REQUIRED)
+      .min(10, ValidationMessages.TOO_SHORT(10))
+      .max(500, ValidationMessages.TOO_LONG(500)),
 
-  url: () => z.string()
-    .url(ValidationMessages.INVALID_URL)
-    .optional()
-    .or(z.literal('')),
+  url: () => z.string().url(ValidationMessages.INVALID_URL).optional().or(z.literal("")),
 
-  email: () => z.string()
-    .email(ValidationMessages.INVALID_EMAIL)
-    .optional()
-    .or(z.literal('')),
-    
-  slug: () => z.string()
-    .min(3, ValidationMessages.TOO_SHORT(3))
-    .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens are allowed"),
-    
-  domain: () => z.string()
-    .regex(
-      /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
-      "Invalid domain format. Enter a valid domain without http:// or https://"
-    )
-    .optional()
-    .or(z.literal(''))
-    .transform(val => val === '' ? null : val),
+  email: () => z.string().email(ValidationMessages.INVALID_EMAIL).optional().or(z.literal("")),
+
+  slug: () =>
+    z
+      .string()
+      .min(3, ValidationMessages.TOO_SHORT(3))
+      .regex(/^[a-z0-9-]+$/, "Only lowercase letters, numbers, and hyphens are allowed"),
+
+  domain: () =>
+    z
+      .string()
+      .regex(
+        /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
+        "Invalid domain format. Enter a valid domain without http:// or https://"
+      )
+      .optional()
+      .or(z.literal(""))
+      .transform((val) => (val === "" ? null : val)),
 };
 
 /**
@@ -62,5 +64,5 @@ export const LanguageEnum = z.enum(["LTR", "RTL"]).default("LTR");
  */
 export const Language = {
   LTR: "LTR" as const,
-  RTL: "RTL" as const
-}; 
+  RTL: "RTL" as const,
+};

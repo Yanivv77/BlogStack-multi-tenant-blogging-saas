@@ -1,32 +1,25 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+
 import { DeleteSite } from "@/app/serverActions/site/deleteSite";
 
 // Define the props type
-type DeleteSiteProps = {
+interface DeleteSiteProps {
   siteId: string;
   siteName: string;
-};
+}
 
 // Client component for the delete form
-export function DeleteSiteClient({
-  siteId,
-  siteName,
-}: DeleteSiteProps) {
+export function DeleteSiteClient({ siteId, siteName }: DeleteSiteProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
@@ -41,7 +34,7 @@ export function DeleteSiteClient({
     setIsDeleting(true);
     try {
       const result = await DeleteSite(formData);
-      
+
       // If it's a redirect or success response
       toast.success("Site deleted successfully");
       router.push("/dashboard/sites");
@@ -58,8 +51,8 @@ export function DeleteSiteClient({
       <CardHeader>
         <CardTitle className="text-red-500">Danger Zone</CardTitle>
         <CardDescription>
-          This will permanently delete your site "<span className="font-semibold">{siteName}</span>" and 
-          all articles associated with it. This action cannot be undone.
+          This will permanently delete your site "<span className="font-semibold">{siteName}</span>" and all articles
+          associated with it. This action cannot be undone.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -81,9 +74,9 @@ export function DeleteSiteClient({
       <CardFooter>
         <form action={handleDelete}>
           <input type="hidden" name="siteId" value={siteId} />
-          <Button 
+          <Button
             type="submit"
-            variant="destructive" 
+            variant="destructive"
             disabled={confirmName !== siteName || isDeleting}
             className="flex items-center"
           >
@@ -93,4 +86,4 @@ export function DeleteSiteClient({
       </CardFooter>
     </Card>
   );
-} 
+}

@@ -1,9 +1,9 @@
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import type { Dispatch, SetStateAction } from "react";
 import { EditorBubbleItem, useEditor } from "novel";
 
-import { PopoverTrigger, Popover, PopoverContent } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 export interface BubbleColorMenuItem {
   name: string;
   color: string;
@@ -98,20 +98,19 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
   if (!editor) return null;
   const activeColorItem = TEXT_COLORS.find(({ color }) => editor.isActive("textStyle", { color }));
 
-  const activeHighlightItem = HIGHLIGHT_COLORS.find(({ color }) =>
-    editor.isActive("highlight", { color })
-  );
+  const activeHighlightItem = HIGHLIGHT_COLORS.find(({ color }) => editor.isActive("highlight", { color }));
 
   return (
     <Popover modal={true} open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
-        <Button className='gap-2 rounded-none' variant='ghost'>
+        <Button className="gap-2 rounded-none" variant="ghost">
           <span
-            className='rounded-sm px-1'
+            className="rounded-sm px-1"
             style={{
               color: activeColorItem?.color,
               backgroundColor: activeHighlightItem?.color,
-            }}>
+            }}
+          >
             A
           </span>
           <SimpleIcon name="chevrondown" size={16} />
@@ -120,10 +119,11 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
 
       <PopoverContent
         sideOffset={5}
-        className='my-1 flex max-h-80 w-48 flex-col overflow-hidden overflow-y-auto rounded border p-1 shadow-xl '
-        align='start'>
-        <div className='flex flex-col'>
-          <div className='my-1 px-2 text-sm font-semibold text-muted-foreground'>Color</div>
+        className="my-1 flex max-h-80 w-48 flex-col overflow-hidden overflow-y-auto rounded border p-1 shadow-xl"
+        align="start"
+      >
+        <div className="flex flex-col">
+          <div className="my-1 px-2 text-sm font-semibold text-muted-foreground">Color</div>
           {TEXT_COLORS.map(({ name, color }, index) => (
             <EditorBubbleItem
               key={index}
@@ -136,9 +136,10 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                     .setColor(color || "")
                     .run();
               }}
-              className='flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent'>
-              <div className='flex items-center gap-2'>
-                <div className='rounded-sm border px-2 py-px font-medium' style={{ color }}>
+              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent"
+            >
+              <div className="flex items-center gap-2">
+                <div className="rounded-sm border px-2 py-px font-medium" style={{ color }}>
                   A
                 </div>
                 <span>{name}</span>
@@ -147,7 +148,7 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
           ))}
         </div>
         <div>
-          <div className='my-1 px-2 text-sm font-semibold text-muted-foreground'>Background</div>
+          <div className="my-1 px-2 text-sm font-semibold text-muted-foreground">Background</div>
           {HIGHLIGHT_COLORS.map(({ name, color }, index) => (
             <EditorBubbleItem
               key={index}
@@ -155,11 +156,10 @@ export const ColorSelector = ({ open, onOpenChange }: ColorSelectorProps) => {
                 editor.commands.unsetHighlight();
                 name !== "Default" && editor.commands.setHighlight({ color });
               }}
-              className='flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent'>
-              <div className='flex items-center gap-2'>
-                <div
-                  className='rounded-sm border px-2 py-px font-medium'
-                  style={{ backgroundColor: color }}>
+              className="flex cursor-pointer items-center justify-between px-2 py-1 text-sm hover:bg-accent"
+            >
+              <div className="flex items-center gap-2">
+                <div className="rounded-sm border px-2 py-px font-medium" style={{ backgroundColor: color }}>
                   A
                 </div>
                 <span>{name}</span>

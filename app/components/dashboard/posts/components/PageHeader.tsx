@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+
+import { Button } from "@/components/ui/button";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 interface PageHeaderProps {
@@ -19,23 +20,15 @@ export function PageHeader({ siteId, onResetForm, onSaveDraft }: PageHeaderProps
         </Button>
         <h1 className="text-xl font-semibold">Create Article</h1>
       </div>
-      
+
       <div className="flex gap-2">
-        <Button 
-          size="sm" 
-          variant="outline" 
-          onClick={onResetForm}
-        >
+        <Button size="sm" variant="outline" onClick={onResetForm}>
           New Article
         </Button>
-        <Button 
-          size="sm" 
-          variant="secondary" 
-          onClick={onSaveDraft}
-        >
+        <Button size="sm" variant="secondary" onClick={onSaveDraft}>
           Save Draft
         </Button>
       </div>
     </div>
   );
-} 
+}

@@ -1,20 +1,21 @@
 "use server";
 
-import prisma from "../../utils/db/prisma";
-import { SiteCreationSchema } from "../../utils/validation/siteSchema";
-import { getAuthenticatedUser, toNullable } from "../utils/helpers";
 import { parseWithZod } from "@conform-to/zod";
-import { serverLogger } from "../../utils/logger";
 import { Language } from "@prisma/client";
 
-export async function CreateSiteAction(_prevState: any, formData: FormData) {
+import prisma from "../../utils/db/prisma";
+import { serverLogger } from "../../utils/logger";
+import { SiteCreationSchema } from "../../utils/validation/siteSchema";
+import { getAuthenticatedUser, toNullable } from "../utils/helpers";
+
+export async function CreateSiteAction(_prevState: unknown, formData: FormData) {
   const logger = serverLogger("CreateSiteAction");
   logger.start();
-  
+
   // Log form data for debugging
   logger.debug("Form data received", {
     name: formData.get("name"),
-    description: formData.get("description")?.toString().substring(0, 20) + "...",
+    description: `${formData.get("description")?.toString().substring(0, 20)}...`,
     subdirectory: formData.get("subdirectory"),
     language: formData.get("language"),
     email: formData.get("email") ? "Present" : "Not provided",
@@ -24,13 +25,13 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     siteImageCover: formData.get("siteImageCover") ? "Present" : "Not provided",
     logoImage: formData.get("logoImage") ? "Present" : "Not provided",
   });
-  
+
   const user = await getAuthenticatedUser();
   if (!user) {
     logger.error("Authentication error: User not logged in");
     return { error: { _form: ["You must be logged in to create a site"] } };
   }
-  
+
   logger.info("User authenticated", { id: user.id, email: user.email });
 
   // Check if the user exists in the database
@@ -38,10 +39,10 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
     });
-    
+
     if (!dbUser) {
       logger.info("User not found in database, creating user record", { userId: user.id });
-      
+
       // Create the user in the database
       await prisma.user.create({
         data: {
@@ -52,7 +53,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
           profileImage: user.picture || null,
         },
       });
-      
+
       logger.info("User created in database", { userId: user.id });
     } else {
       logger.info("User exists in database", { userId: user.id });
@@ -64,7 +65,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
 
   try {
     logger.debug("Validating form data with Zod schema");
-    
+
     // Validate form data using zod schema
     const submission = await parseWithZod(formData, {
       schema: SiteCreationSchema({
@@ -74,14 +75,14 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
             logger.error("Subdirectory validation failed: No subdirectory provided");
             return false;
           }
-          
+
           logger.debug(`Checking if subdirectory '${subdirectory}' is unique`);
           const existingSite = await prisma.site.findFirst({
             where: { subdirectory },
           });
-          
+
           const isUnique = !existingSite;
-          logger.debug(`Subdirectory '${subdirectory}' is ${isUnique ? 'unique' : 'already taken'}`);
+          logger.debug(`Subdirectory '${subdirectory}' is ${isUnique ? "unique" : "already taken"}`);
           return isUnique;
         },
       }),
@@ -94,7 +95,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     }
 
     logger.info("Validation successful");
-    
+
     const {
       name,
       description,
@@ -113,12 +114,11 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
       subdirectory,
       userId: user.id,
     });
-    
+
     // Make sure we have a valid language value
-    const languageValue = language === "LTR" || language === "RTL" 
-      ? language === "LTR" ? Language.LTR : Language.RTL
-      : Language.LTR; // Default to LTR for any unexpected values
-      
+    const languageValue =
+      language === "LTR" || language === "RTL" ? (language === "LTR" ? Language.LTR : Language.RTL) : Language.LTR; // Default to LTR for any unexpected values
+
     // Create the site
     const newSite = await prisma.site.create({
       data: {
@@ -135,7 +135,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
         language: languageValue,
       },
     });
-    
+
     logger.info("Site created successfully:", {
       id: newSite.id,
       name: newSite.name,
@@ -148,7 +148,7 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
     return { success: true, redirectUrl: "/dashboard/sites" };
   } catch (error: unknown) {
     logger.error("Error creating site:", error);
-    
+
     // Log detailed error information
     if (error instanceof Error) {
       logger.error("Error details:", {
@@ -157,23 +157,22 @@ export async function CreateSiteAction(_prevState: any, formData: FormData) {
         name: error.name,
       });
     }
-    
+
     // Check for Prisma-specific errors
-    if (typeof error === 'object' && error !== null && 'code' in error) {
+    if (typeof error === "object" && error !== null && "code" in error) {
       logger.error("Database error code:", (error as { code: string }).code);
-      
+
       // Handle common Prisma error codes
-      if ((error as { code: string }).code === 'P2002') {
-        logger.error("Unique constraint violation:", 
-          (error as { meta?: { target?: string[] } }).meta?.target);
+      if ((error as { code: string }).code === "P2002") {
+        logger.error("Unique constraint violation:", (error as { meta?: { target?: string[] } }).meta?.target);
         return { error: { _form: ["This subdirectory is already taken. Please choose another one."] } };
       }
     }
-    
+
     // Convert to the format expected by the form
     const errorObj: Record<string, string[]> = {};
-    errorObj._form = [`Failed to create site: ${error instanceof Error ? error.message : 'Unknown error'}`];
-    
+    errorObj._form = [`Failed to create site: ${error instanceof Error ? error.message : "Unknown error"}`];
+
     return { error: errorObj };
   }
-} 
+}

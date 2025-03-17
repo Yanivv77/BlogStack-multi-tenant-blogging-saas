@@ -2,8 +2,10 @@
  * Client-side validation utilities using Zod schemas
  */
 import { z } from "zod";
+
 import { siteSchema } from "@/app/utils/validation/siteSchema";
-import { SiteFormValues } from "./types";
+
+import type { SiteFormValues } from "./types";
 
 /**
  * Type for validation errors
@@ -54,22 +56,19 @@ function validateWithZod<T>(schema: z.ZodType<T>, value: unknown): string | unde
  * @param values Form values to validate
  * @returns Object with validation errors
  */
-function validateFormWithZod<T>(
-  schema: z.ZodType<T>,
-  values: unknown
-): ValidationErrors {
+function validateFormWithZod<T>(schema: z.ZodType<T>, values: unknown): ValidationErrors {
   const result = schema.safeParse(values);
   if (!result.success) {
     const errors: ValidationErrors = {};
-    
+
     // Extract error messages for each field
     for (const issue of result.error.errors) {
       const path = issue.path[0];
-      if (typeof path === 'string' && !errors[path as keyof SiteFormValues]) {
+      if (typeof path === "string" && !errors[path as keyof SiteFormValues]) {
         errors[path as keyof SiteFormValues] = issue.message;
       }
     }
-    
+
     return errors;
   }
   return {};
@@ -99,21 +98,21 @@ export async function checkSubdirectoryAvailability(subdirectory: string): Promi
  */
 export function validateField(fieldName: keyof SiteFormValues, value: unknown): string | undefined {
   switch (fieldName) {
-    case 'name':
+    case "name":
       return validateWithZod(clientSiteSchema.shape.name, value);
-    case 'subdirectory':
+    case "subdirectory":
       return validateWithZod(clientSiteSchema.shape.subdirectory, value);
-    case 'description':
+    case "description":
       return validateWithZod(clientSiteSchema.shape.description, value);
-    case 'language':
+    case "language":
       return validateWithZod(clientSiteSchema.shape.language, value);
-    case 'email':
+    case "email":
       return validateWithZod(clientSiteSchema.shape.email, value);
-    case 'githubUrl':
+    case "githubUrl":
       return validateWithZod(clientSiteSchema.shape.githubUrl, value);
-    case 'linkedinUrl':
+    case "linkedinUrl":
       return validateWithZod(clientSiteSchema.shape.linkedinUrl, value);
-    case 'portfolioUrl':
+    case "portfolioUrl":
       return validateWithZod(clientSiteSchema.shape.portfolioUrl, value);
     default:
       return undefined;
@@ -137,14 +136,14 @@ export function validateForm(formValues: SiteFormValues): ValidationErrors {
  */
 export function validateStepFields(formValues: SiteFormValues, stepName: string): ValidationErrors {
   switch (stepName) {
-    case 'basics':
+    case "basics":
       return validateFormWithZod(basicsSchema, formValues);
-    case 'social':
+    case "social":
       return validateFormWithZod(socialSchema, formValues);
-    case 'branding':
-    case 'summary':
+    case "branding":
+    case "summary":
       return {}; // No validation needed for these steps
     default:
       return {};
   }
-} 
+}

@@ -1,13 +1,13 @@
 "use server";
 
 import prisma from "../../utils/db/prisma";
-import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 import { serverLogger } from "../../utils/logger";
+import { getAuthenticatedUser, verifyUserOwnsSite } from "../utils/helpers";
 
 /**
  * Soft deletes a post by setting the deletedAt timestamp
  */
-export async function DeletePost(_prevState: any, formData: FormData) {
+export async function DeletePost(_prevState: unknown, formData: FormData) {
   const logger = serverLogger("DeletePost");
   logger.start();
 
@@ -21,12 +21,12 @@ export async function DeletePost(_prevState: any, formData: FormData) {
     // Get postId and siteId from formData
     const postId = formData.get("postId") as string;
     const siteId = formData.get("siteId") as string;
-    
+
     if (!postId) {
       logger.error("Post ID is missing", null, { userId: user.id });
       return { error: { _form: ["Post ID is required"] } };
     }
-    
+
     if (!siteId) {
       logger.error("Site ID is missing", null, { userId: user.id, postId });
       return { error: { _form: ["Site ID is required"] } };
@@ -35,11 +35,11 @@ export async function DeletePost(_prevState: any, formData: FormData) {
     logger.debug("Form data received", {
       postId,
       siteId,
-      userId: user.id
+      userId: user.id,
     });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
-    
+
     // Verify the user owns the site
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
@@ -62,7 +62,7 @@ export async function DeletePost(_prevState: any, formData: FormData) {
     }
 
     logger.info("Soft deleting post", { postId, title: post.title });
-    
+
     try {
       // Soft delete the post by setting deletedAt
       await prisma.post.update({
@@ -74,7 +74,7 @@ export async function DeletePost(_prevState: any, formData: FormData) {
       return { success: true };
     } catch (dbError) {
       logger.error("Database error deleting post", dbError);
-      
+
       // Add detailed error logging for database errors
       if (dbError instanceof Error) {
         logger.error("Database error details", {
@@ -83,12 +83,14 @@ export async function DeletePost(_prevState: any, formData: FormData) {
           name: dbError.name,
         });
       }
-      
-      return { error: { _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] } };
+
+      return {
+        error: { _form: [`Database error: ${dbError instanceof Error ? dbError.message : "Unknown database error"}`] },
+      };
     }
   } catch (error) {
     logger.error("Error deleting post", error);
-    
+
     // Add detailed error logging
     if (error instanceof Error) {
       logger.error("Error details", {
@@ -97,7 +99,7 @@ export async function DeletePost(_prevState: any, formData: FormData) {
         name: error.name,
       });
     }
-    
-    return { error: { _form: [`Failed to delete post: ${error instanceof Error ? error.message : 'Unknown error'}`] } };
+
+    return { error: { _form: [`Failed to delete post: ${error instanceof Error ? error.message : "Unknown error"}`] } };
   }
-} 
+}

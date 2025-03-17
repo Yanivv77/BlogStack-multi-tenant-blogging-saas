@@ -1,23 +1,24 @@
 "use server";
 
 import { parseWithZod } from "@conform-to/zod";
+
 import prisma from "../../utils/db/prisma";
+import { serverLogger } from "../../utils/logger";
 import { PostEditSchema } from "../../utils/validation/postSchema";
 import { getAuthenticatedUser, toNullable, verifyUserOwnsSite } from "../utils/helpers";
-import { serverLogger } from "../../utils/logger";
 
 /**
  * Edits an existing post
  */
-export async function EditPostActions(_prevState: any, formData: FormData) {
+export async function EditPostActions(_prevState: unknown, formData: FormData) {
   const logger = serverLogger("EditPostActions");
   logger.start();
 
   const user = await getAuthenticatedUser();
   if (!user) {
     logger.error("Authentication required", null, { userId: null });
-    return { 
-      error: { _form: ["You must be logged in to edit a post"] } 
+    return {
+      error: { _form: ["You must be logged in to edit a post"] },
     };
   }
 
@@ -25,44 +26,52 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     // Get postId and siteId from formData
     const postId = formData.get("postId") as string;
     const siteId = formData.get("siteId") as string;
-    
+
     if (!postId) {
       logger.error("Post ID is missing", null, { userId: user.id });
-      return { 
-        error: { _form: ["Post ID is required"] } 
+      return {
+        error: { _form: ["Post ID is required"] },
       };
     }
-    
+
     if (!siteId) {
       logger.error("Site ID is missing", null, { userId: user.id, postId });
-      return { 
-        error: { _form: ["Site ID is required"] } 
+      return {
+        error: { _form: ["Site ID is required"] },
       };
     }
 
     // Log form data for debugging
     const postCoverImageValue = formData.get("postCoverImage");
     const contentImagesValue = formData.get("contentImages");
-    
+
     logger.debug("Form data received", {
       postId,
       siteId,
       title: formData.get("title"),
-      smallDescription: formData.get("smallDescription")?.toString().substring(0, 20) + "...",
+      smallDescription: `${formData.get("smallDescription")?.toString().substring(0, 20)}...`,
       slug: formData.get("slug"),
-      postCoverImage: postCoverImageValue ? (typeof postCoverImageValue === 'string' ? `Present (${postCoverImageValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
+      postCoverImage: postCoverImageValue
+        ? typeof postCoverImageValue === "string"
+          ? `Present (${postCoverImageValue.substring(0, 30)}...)`
+          : "Present (non-string)"
+        : "Not provided",
       articleContent: formData.get("articleContent") ? "Present" : "Not provided",
-      contentImages: contentImagesValue ? (typeof contentImagesValue === 'string' ? `Present (${contentImagesValue.substring(0, 30)}...)` : "Present (non-string)") : "Not provided",
+      contentImages: contentImagesValue
+        ? typeof contentImagesValue === "string"
+          ? `Present (${contentImagesValue.substring(0, 30)}...)`
+          : "Present (non-string)"
+        : "Not provided",
     });
 
     logger.debug("Verifying site ownership", { siteId, userId: user.id });
-    
+
     // Verify the user owns the site
     const site = await verifyUserOwnsSite(siteId, user.id);
     if (!site) {
       logger.error("Site ownership verification failed", null, { siteId, userId: user.id });
-      return { 
-        error: { _form: ["Site not found or you don't have permission"] } 
+      return {
+        error: { _form: ["Site not found or you don't have permission"] },
       };
     }
 
@@ -77,22 +86,22 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
 
     if (!existingPost) {
       logger.error("Post not found or doesn't belong to site", null, { postId, siteId });
-      return { 
-        error: { _form: ["Post not found or doesn't belong to this site"] } 
+      return {
+        error: { _form: ["Post not found or doesn't belong to this site"] },
       };
     }
 
     logger.debug("Validating form data", { postId });
-    
+
     // Validate form data
     const submission = await parseWithZod(formData, {
       schema: PostEditSchema({
         isSlugUnique: async () => {
           const slug = formData.get("slug") as string;
           if (!slug) return false;
-          
+
           logger.debug("Checking if slug is unique", { slug, postId, siteId });
-          
+
           const existingPostWithSlug = await prisma.post.findFirst({
             where: {
               slug,
@@ -100,12 +109,12 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
               id: { not: postId }, // Exclude the current post
             },
           });
-          
+
           const isUnique = !existingPostWithSlug;
-          logger.debug(`Slug '${slug}' is ${isUnique ? 'unique' : 'already taken'}`);
+          logger.debug(`Slug '${slug}' is ${isUnique ? "unique" : "already taken"}`);
           return isUnique;
         },
-        currentPostId: postId
+        currentPostId: postId,
       }),
       async: true,
     });
@@ -136,16 +145,15 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     let contentImages = [];
     if (rawContentImages) {
       try {
-        contentImages = typeof rawContentImages === 'string'
-          ? JSON.parse(rawContentImages)
-          : rawContentImages;
-        logger.debug("Processed content images", { 
+        contentImages = typeof rawContentImages === "string" ? JSON.parse(rawContentImages) : rawContentImages;
+        logger.debug("Processed content images", {
           count: Array.isArray(contentImages) ? contentImages.length : 0,
           type: typeof contentImages,
           isArray: Array.isArray(contentImages),
-          sample: Array.isArray(contentImages) && contentImages.length > 0 
-            ? contentImages[0].substring(0, 30) + "..." 
-            : "No images"
+          sample:
+            Array.isArray(contentImages) && contentImages.length > 0
+              ? `${contentImages[0].substring(0, 30)}...`
+              : "No images",
         });
       } catch (e) {
         logger.error("Error parsing content images", e);
@@ -156,9 +164,7 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     // Convert articleContent to proper JSON if it's a string
     let processedArticleContent;
     try {
-      processedArticleContent = typeof articleContent === 'string' 
-        ? JSON.parse(articleContent) 
-        : articleContent;
+      processedArticleContent = typeof articleContent === "string" ? JSON.parse(articleContent) : articleContent;
     } catch (e) {
       logger.error("Error parsing article content", e);
       return { error: { _form: ["Invalid article content format"] } };
@@ -168,10 +174,10 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     let processedCoverImage = null;
     try {
       processedCoverImage = await toNullable(postCoverImage);
-      logger.debug("Processed cover image", { 
+      logger.debug("Processed cover image", {
         hasImage: processedCoverImage ? "Yes" : "No",
         type: typeof processedCoverImage,
-        sample: processedCoverImage ? processedCoverImage.substring(0, 30) + "..." : "None"
+        sample: processedCoverImage ? `${processedCoverImage.substring(0, 30)}...` : "None",
       });
     } catch (e) {
       logger.error("Error processing cover image", e);
@@ -179,7 +185,7 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
     }
 
     logger.info("Updating post", { postId, title, slug });
-    
+
     // Update the post
     try {
       const updatedPost = await prisma.post.update({
@@ -195,38 +201,37 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
         },
       });
 
-      logger.success("Post updated successfully", { 
+      logger.success("Post updated successfully", {
         postId,
         hasCoverImage: updatedPost.postCoverImage ? "Yes" : "No",
-        hasContentImages: updatedPost.contentImages ? "Yes" : "No"
+        hasContentImages: updatedPost.contentImages ? "Yes" : "No",
       });
-      
+
       // Return success
       return { success: true, postId };
     } catch (dbError) {
       logger.error("Database error updating post", dbError);
-      
+
       // Check for Prisma-specific errors
-      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError) {
+      if (typeof dbError === "object" && dbError !== null && "code" in dbError) {
         logger.error("Database error code:", (dbError as { code: string }).code);
-        
+
         // Handle common Prisma error codes
-        if ((dbError as { code: string }).code === 'P2002') {
-          logger.error("Unique constraint violation:", 
-            (dbError as { meta?: { target?: string[] } }).meta?.target);
+        if ((dbError as { code: string }).code === "P2002") {
+          logger.error("Unique constraint violation:", (dbError as { meta?: { target?: string[] } }).meta?.target);
           return { error: { _form: ["This slug is already taken. Please choose another one."] } };
         }
       }
-      
-      return { 
-        error: { 
-          _form: [`Database error: ${dbError instanceof Error ? dbError.message : 'Unknown database error'}`] 
-        } 
+
+      return {
+        error: {
+          _form: [`Database error: ${dbError instanceof Error ? dbError.message : "Unknown database error"}`],
+        },
       };
     }
   } catch (error) {
     logger.error("Error editing post", error);
-    
+
     // Add detailed error logging
     if (error instanceof Error) {
       logger.error("Error details", {
@@ -235,11 +240,11 @@ export async function EditPostActions(_prevState: any, formData: FormData) {
         name: error.name,
       });
     }
-    
-    return { 
-      error: { 
-        _form: [`Failed to edit post: ${error instanceof Error ? error.message : 'Unknown error'}`] 
-      } 
+
+    return {
+      error: {
+        _form: [`Failed to edit post: ${error instanceof Error ? error.message : "Unknown error"}`],
+      },
     };
   }
-} 
+}

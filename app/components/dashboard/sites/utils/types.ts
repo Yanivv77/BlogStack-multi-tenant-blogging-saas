@@ -62,7 +62,7 @@ export type StepName = "basics" | "branding" | "social" | "summary";
  * Props shared across step components
  */
 export interface StepBaseProps {
-  fields: any; // Form fields from conform
+  fields: unknown; // Form fields from conform
 }
 
 /**
@@ -172,4 +172,4 @@ export interface UpdateSiteFormProps {
 export interface DeleteSiteProps {
   siteId: string;
   siteName: string;
-} 
+}

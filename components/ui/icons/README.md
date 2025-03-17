@@ -34,11 +34,11 @@ import { SimpleIcon } from '@/components/ui/icons/SimpleIcon';
 
 ```tsx
 // Using automatic dark mode detection
-<SimpleIcon 
-  name="github" 
-  size={24} 
+<SimpleIcon
+  name="github"
+  size={24}
   color="#333333"
-  darkModeColor="#ffffff" 
+  darkModeColor="#ffffff"
 />
 
 // Using theme colors with currentColor
@@ -61,11 +61,7 @@ import { SimpleIcon } from '@/components/ui/icons/SimpleIcon';
 
 ```tsx
 // Adding custom classes for additional styling
-<SimpleIcon 
-  name="linkedin" 
-  size={24} 
-  className="hover:opacity-80 transition-opacity" 
-/>
+<SimpleIcon name="linkedin" size={24} className="transition-opacity hover:opacity-80" />
 ```
 
 ## How It Works
@@ -105,26 +101,28 @@ This implementation provides several benefits:
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `name` | `string` | (required) | Name of the icon to display |
-| `size` | `number` | `24` | Size of the icon in pixels |
-| `color` | `string` | Brand color or currentColor | Color of the icon in light mode |
-| `darkModeColor` | `string` | Dark brand color or currentColor | Color of the icon in dark mode |
-| `className` | `string` | `''` | Additional CSS classes |
-| `strokeWidth` | `number` | `2` | Width of strokes for outline icons |
-| `ariaHidden` | `boolean` | `undefined` | Whether to hide the icon from screen readers |
+| Prop            | Type      | Default                          | Description                                  |
+| --------------- | --------- | -------------------------------- | -------------------------------------------- |
+| `name`          | `string`  | (required)                       | Name of the icon to display                  |
+| `size`          | `number`  | `24`                             | Size of the icon in pixels                   |
+| `color`         | `string`  | Brand color or currentColor      | Color of the icon in light mode              |
+| `darkModeColor` | `string`  | Dark brand color or currentColor | Color of the icon in dark mode               |
+| `className`     | `string`  | `''`                             | Additional CSS classes                       |
+| `strokeWidth`   | `number`  | `2`                              | Width of strokes for outline icons           |
+| `ariaHidden`    | `boolean` | `undefined`                      | Whether to hide the icon from screen readers |
 
 ## Default Brand Colors
 
 The component includes default brand colors for common icons:
 
 ### Light Mode
+
 - GitHub: `#181717`
 - LinkedIn: `#0A66C2`
 - Email/Mail: `#EA4335`
 
 ### Dark Mode
+
 - GitHub: `#f0f6fc`
 - LinkedIn: `#0A66C2` (works in both modes)
 - Email/Mail: `#EA4335` (works in both modes)
@@ -140,7 +138,7 @@ To add a new icon:
 ```tsx
 // 1. Create the icon component (e.g., icons/NewIcon.tsx)
 // 2. Import it in SimpleIcon.tsx
-import NewIcon from './icons/NewIcon';
+import NewIcon from "./icons/NewIcon";
 
 // 3. Add it to the iconComponents mapping
 const iconComponents = {
@@ -175,4 +173,4 @@ For decorative icons, use `aria-hidden="true"` to hide them from screen readers:
   <SimpleIcon name="check" size={16} ariaHidden={true} />
   <span>Task completed</span>
 </div>
-``` 
+```

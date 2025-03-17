@@ -1,12 +1,12 @@
-import { JSONContent } from "novel";
+import type { JSONContent } from "novel";
 
 /**
  * Storage constants
  */
 const STORAGE_KEYS = {
-  HTML_CONTENT: 'html-content',
-  EDITOR_CONTENT: 'novel-content',
-  FORM_DRAFT: 'article-form-draft'
+  HTML_CONTENT: "html-content",
+  EDITOR_CONTENT: "novel-content",
+  FORM_DRAFT: "article-form-draft",
 };
 
 /**
@@ -19,7 +19,7 @@ export interface FormDraft {
   keywords?: string;
   coverImage?: string | null;
   siteId?: string;
-  articleContent?: any; // For rich text editor content
+  articleContent?: unknown; // For rich text editor content
   lastUpdated?: number;
 }
 
@@ -34,10 +34,7 @@ export const saveHtmlContent = (html: string): void => {
  * Save editor JSON content to localStorage
  */
 export const saveEditorContent = (content: JSONContent): void => {
-  window.localStorage.setItem(
-    STORAGE_KEYS.EDITOR_CONTENT, 
-    JSON.stringify(content)
-  );
+  window.localStorage.setItem(STORAGE_KEYS.EDITOR_CONTENT, JSON.stringify(content));
 };
 
 /**
@@ -50,7 +47,7 @@ export const loadEditorContent = (): JSONContent | null => {
     try {
       return JSON.parse(content);
     } catch (error) {
-      console.error('Error parsing editor content from localStorage', error);
+      console.error("Error parsing editor content from localStorage", error);
       return null;
     }
   }
@@ -67,13 +64,10 @@ export const saveFormDraft = (data: FormDraft): void => {
   const mergedData = {
     ...existingData,
     ...data,
-    lastUpdated: Date.now()
+    lastUpdated: Date.now(),
   };
-  
-  window.localStorage.setItem(
-    STORAGE_KEYS.FORM_DRAFT,
-    JSON.stringify(mergedData)
-  );
+
+  window.localStorage.setItem(STORAGE_KEYS.FORM_DRAFT, JSON.stringify(mergedData));
 };
 
 /**
@@ -86,7 +80,7 @@ export const loadFormDraft = (): FormDraft | null => {
     try {
       return JSON.parse(data);
     } catch (error) {
-      console.error('Error parsing form draft data from localStorage', error);
+      console.error("Error parsing form draft data from localStorage", error);
       return null;
     }
   }
@@ -99,9 +93,15 @@ export const loadFormDraft = (): FormDraft | null => {
  */
 export const hasFormDraft = (): boolean => {
   const draft = loadFormDraft();
-  return draft !== null && Object.keys(draft).some(key => 
-    key !== 'lastUpdated' && draft[key as keyof FormDraft] !== undefined && 
-    draft[key as keyof FormDraft] !== null && draft[key as keyof FormDraft] !== ''
+  return (
+    draft !== null &&
+    Object.keys(draft).some(
+      (key) =>
+        key !== "lastUpdated" &&
+        draft[key as keyof FormDraft] !== undefined &&
+        draft[key as keyof FormDraft] !== null &&
+        draft[key as keyof FormDraft] !== ""
+    )
   );
 };
 
@@ -126,4 +126,4 @@ export const clearFormDraft = (): void => {
 export const clearAllStorage = (): void => {
   clearEditorStorage();
   clearFormDraft();
-}; 
+};

@@ -12,8 +12,8 @@ let uploadedImages: string[] = [];
  */
 export const uploadFn = async (file: File): Promise<string> => {
   // For security, only allow image file types
-  if (!file.type.startsWith('image/')) {
-    throw new Error('Only image files are allowed');
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Only image files are allowed");
   }
 
   return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export const uploadFn = async (file: File): Promise<string> => {
       resolve(result);
     };
     reader.onerror = () => {
-      reject(new Error('Error reading file'));
+      reject(new Error("Error reading file"));
     };
     reader.readAsDataURL(file);
   });
@@ -54,4 +54,4 @@ export const addExistingImages = (images: string[]): void => {
  */
 export const clearUploadedImages = (): void => {
   uploadedImages = [];
-}; 
+};

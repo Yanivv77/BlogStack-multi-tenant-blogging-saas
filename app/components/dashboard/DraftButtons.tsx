@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
 // Constants
-const DRAFT_STORAGE_KEY = 'article-form-draft';
+const DRAFT_STORAGE_KEY = "article-form-draft";
 
 /**
  * Client component that checks for drafts and renders appropriate buttons
@@ -14,7 +15,7 @@ const DRAFT_STORAGE_KEY = 'article-form-draft';
  */
 export function DraftButtons({ siteId }: { siteId: string }) {
   const [hasDraft, setHasDraft] = useState(false);
-  
+
   // Check if a draft exists on component mount
   useEffect(() => {
     try {
@@ -50,4 +51,4 @@ export function DraftButtons({ siteId }: { siteId: string }) {
       </Button>
     </div>
   );
-} 
+}

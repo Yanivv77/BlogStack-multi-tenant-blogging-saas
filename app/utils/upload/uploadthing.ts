@@ -1,9 +1,6 @@
-import {
-  generateUploadButton,
-  generateUploadDropzone,
-  generateUploader,
-} from "@uploadthing/react";
-import { OurFileRouter } from "../../api/uploadthing/core";
+import { generateUploadButton, generateUploadDropzone, generateUploader } from "@uploadthing/react";
+
+import type { OurFileRouter } from "../../api/uploadthing/core";
 
 /**
  * Basic upload components from uploadthing
@@ -23,9 +20,10 @@ export const uploader = generateUploader<OurFileRouter>();
 export const getOptimizedDropzoneConfig = () => ({
   config: { mode: "auto" as const },
   appearance: {
-    container: "border-dashed border-2 border-muted-foreground rounded-md p-8 flex flex-col items-center justify-center",
+    container:
+      "border-dashed border-2 border-muted-foreground rounded-md p-8 flex flex-col items-center justify-center",
     uploadIcon: { color: "currentColor" },
     allowedContent: "text-xs text-muted-foreground",
-    button: "bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md"
-  }
-}); 
+    button: "bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded-md",
+  },
+});

@@ -1,17 +1,15 @@
 // This file will remain a server component
+import * as React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
-import { EmptyState } from "@/app/components/dashboard/EmptyState";
-import prisma from "@/app/utils/db/prisma";
+import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
+import { formatDistanceToNow } from "date-fns";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,22 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import Image from "next/image";
-import Link from "next/link";
-import { redirect } from "next/navigation";
-import * as React from 'react';
-import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 import { DraftButtons } from "@/app/components/dashboard/DraftButtons";
-import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/app/components/dashboard/EmptyState";
+import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
+import prisma from "@/app/utils/db/prisma";
 
 // Keep all database fetching and server-side code here
 async function getData(userId: string, siteId: string) {
@@ -54,8 +43,8 @@ async function getData(userId: string, siteId: string) {
             postCoverImage: true,
           },
           orderBy: {
-            createdAt: 'desc'
-          }
+            createdAt: "desc",
+          },
         },
       },
     });
@@ -76,14 +65,12 @@ async function getData(userId: string, siteId: string) {
       posts: site.posts || [],
     };
   } catch (error) {
-    console.error(`Error fetching site data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    console.error(`Error fetching site data: ${error instanceof Error ? error.message : "Unknown error"}`);
     return null;
   }
 }
 
-export default async function SiteIdRoute(props: {
-  params: { siteId: string } | Promise<{ siteId: string }>
-}) {
+export default async function SiteIdRoute(props: { params: { siteId: string } | Promise<{ siteId: string }> }) {
   try {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
@@ -97,13 +84,13 @@ export default async function SiteIdRoute(props: {
     const siteId = params.siteId;
 
     // Validate siteId format
-    if (!siteId || typeof siteId !== 'string' || siteId.trim() === '') {
-      console.error('Invalid siteId provided');
+    if (!siteId || typeof siteId !== "string" || siteId.trim() === "") {
+      console.error("Invalid siteId provided");
       return redirect("/dashboard/sites");
     }
 
     const data = await getData(user.id, siteId);
-    
+
     if (!data) {
       console.error(`No data returned for site: ${siteId}`);
       return redirect("/dashboard/sites");
@@ -114,13 +101,13 @@ export default async function SiteIdRoute(props: {
         {/* Page header with site info */}
         <div className="flex flex-col space-y-4">
           <div className="flex items-center text-sm text-muted-foreground">
-            <Link href="/dashboard/sites" className="flex items-center hover:text-foreground transition-colors">
+            <Link href="/dashboard/sites" className="flex items-center transition-colors hover:text-foreground">
               <SimpleIcon name="arrowleft" size={14} className="mr-1" />
               <span>Back to sites</span>
             </Link>
           </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
+
+          <div className="flex flex-col justify-between gap-4 border-b pb-4 sm:flex-row sm:items-center">
             <div className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight">{data.site.name}</h1>
               <div className="flex items-center text-sm text-muted-foreground">
@@ -128,7 +115,7 @@ export default async function SiteIdRoute(props: {
                 <span className="font-mono">blogstack.io/{data.site.subdirectory}</span>
               </div>
             </div>
-            
+
             <div className="flex flex-wrap gap-2">
               <Button asChild variant="outline" size="sm">
                 <Link href={`/blog/${data.site.subdirectory}`} className="flex items-center">
@@ -160,12 +147,10 @@ export default async function SiteIdRoute(props: {
           ) : (
             <Card className="shadow-sm">
               <CardHeader className="pb-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                   <div>
                     <CardTitle>Articles ({data.posts.length})</CardTitle>
-                    <CardDescription>
-                      Manage your published articles
-                    </CardDescription>
+                    <CardDescription>Manage your published articles</CardDescription>
                   </div>
                   <Button asChild size="sm">
                     <Link href={`/dashboard/sites/${siteId}/create`} className="flex items-center">
@@ -191,7 +176,7 @@ export default async function SiteIdRoute(props: {
                         <TableRow key={post.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
-                              <div className="relative w-10 h-10 rounded-md overflow-hidden flex-shrink-0">
+                              <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-md">
                                 <Image
                                   fill
                                   src={post.postCoverImage || DEFAULT_IMAGE_URL}
@@ -201,7 +186,7 @@ export default async function SiteIdRoute(props: {
                                 />
                               </div>
                               <div className="flex flex-col">
-                                <span className="font-medium truncate max-w-[200px] sm:max-w-[300px]">
+                                <span className="max-w-[200px] truncate font-medium sm:max-w-[300px]">
                                   {post.title}
                                 </span>
                                 <span className="text-xs text-muted-foreground md:hidden">
@@ -211,9 +196,11 @@ export default async function SiteIdRoute(props: {
                             </div>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            <Badge variant="secondary" className="text-xs">Published</Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              Published
+                            </Badge>
                           </TableCell>
-                          <TableCell className="hidden md:table-cell text-muted-foreground text-sm">
+                          <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                             {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
                           </TableCell>
                           <TableCell className="text-right">
@@ -229,7 +216,7 @@ export default async function SiteIdRoute(props: {
                                 <DropdownMenuItem asChild>
                                   <Link
                                     href={`/dashboard/sites/${siteId}/editor/${post.id}`}
-                                    className="flex items-center cursor-pointer"
+                                    className="flex cursor-pointer items-center"
                                   >
                                     <SimpleIcon name="edit" size={16} className="mr-2" />
                                     Edit Article
@@ -238,7 +225,7 @@ export default async function SiteIdRoute(props: {
                                 <DropdownMenuItem asChild>
                                   <Link
                                     href={`/blog/${data.site.subdirectory}/${post.id}`}
-                                    className="flex items-center cursor-pointer"
+                                    className="flex cursor-pointer items-center"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -250,7 +237,7 @@ export default async function SiteIdRoute(props: {
                                 <DropdownMenuItem asChild>
                                   <Link
                                     href={`/dashboard/sites/${siteId}/editor/${post.id}/delete`}
-                                    className="flex items-center cursor-pointer text-destructive"
+                                    className="flex cursor-pointer items-center text-destructive"
                                   >
                                     <SimpleIcon name="trash2" size={16} className="mr-2" />
                                     Delete Article
@@ -271,25 +258,26 @@ export default async function SiteIdRoute(props: {
       </div>
     );
   } catch (error) {
-    console.error(`Unexpected error in SiteIdRoute: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    
+    console.error(`Unexpected error in SiteIdRoute: ${error instanceof Error ? error.message : "Unknown error"}`);
+
     // Return a user-friendly error page
     return (
       <div className="space-y-8">
         <div className="flex items-center text-sm text-muted-foreground">
-          <Link href="/dashboard/sites" className="flex items-center hover:text-foreground transition-colors">
+          <Link href="/dashboard/sites" className="flex items-center transition-colors hover:text-foreground">
             <SimpleIcon name="arrowleft" size={14} className="mr-1" />
             <span>Back to sites</span>
           </Link>
         </div>
-        
+
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="rounded-full bg-destructive/10 p-4 mb-4">
+          <div className="mb-4 rounded-full bg-destructive/10 p-4">
             <SimpleIcon name="trash2" size={32} className="text-destructive" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Site or Article Not Found</h2>
-          <p className="text-muted-foreground max-w-md mb-6">
-            We couldn't find the site or article you're looking for. It may have been deleted or you might not have permission to access it.
+          <h2 className="mb-2 text-2xl font-bold">Site or Article Not Found</h2>
+          <p className="mb-6 max-w-md text-muted-foreground">
+            We couldn't find the site or article you're looking for. It may have been deleted or you might not have
+            permission to access it.
           </p>
           <Button asChild>
             <Link href="/dashboard/sites">Return to Sites</Link>

@@ -1,8 +1,11 @@
-import { cn } from "@/lib/utils";
 import { EditorBubbleItem, useEditor } from "novel";
-import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
-import type { SelectorItem } from "./node-selector";
+
 import { Button } from "@/components/ui/button";
+import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
+
+import { cn } from "@/lib/utils";
+
+import type { SelectorItem } from "./node-selector";
 
 export const TextButtons = () => {
   const { editor } = useEditor();
@@ -40,14 +43,15 @@ export const TextButtons = () => {
     },
   ];
   return (
-    <div className='flex'>
+    <div className="flex">
       {items.map((item, index) => (
         <EditorBubbleItem
           key={index}
           onSelect={(editor) => {
             item.command(editor);
-          }}>
-          <Button size='icon' className='rounded-none' variant='ghost'>
+          }}
+        >
+          <Button size="icon" className="rounded-none" variant="ghost">
             <SimpleIcon
               name={item.icon}
               size={16}
