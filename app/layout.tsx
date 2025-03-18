@@ -10,18 +10,18 @@ import { ServiceWorkerRegistration } from "./components/ServiceWorkerRegistratio
 import "./globals.css";
 
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
+  src: "../public/fonts/GeistVF.woff",
   variable: "--font-geist-sans",
   display: "swap",
-  preload: true,
+  preload: false,
   fallback: ["system-ui", "sans-serif"],
 });
 
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
+  src: "../public/fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
   display: "swap",
-  preload: true,
+  preload: false,
   fallback: ["monospace"],
 });
 
@@ -77,6 +77,20 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/globe.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/globe.svg" />
+        <link 
+          rel="preload" 
+          href="/fonts/GeistVF.woff" 
+          as="font" 
+          type="font/woff" 
+          crossOrigin="anonymous" 
+        />
+        <link 
+          rel="preload" 
+          href="/fonts/GeistMonoVF.woff" 
+          as="font" 
+          type="font/woff" 
+          crossOrigin="anonymous" 
+        />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
