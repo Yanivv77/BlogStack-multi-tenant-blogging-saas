@@ -13,7 +13,7 @@ export const ourFileRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ req }) => {
+    .middleware(async () => {
       // Authentication check
       const { getUser } = getKindeServerSession();
       const user = await getUser();

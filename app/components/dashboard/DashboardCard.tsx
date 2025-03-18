@@ -28,7 +28,6 @@ export interface DashboardCardProps {
 }
 
 export function DashboardCard({
-  id,
   title,
   description,
   imageUrl,

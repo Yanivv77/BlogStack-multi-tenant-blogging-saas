@@ -19,7 +19,7 @@ import { checkSubdirectoryAvailability, validateField } from "../../utils/zodVal
  * BasicsStep component for collecting basic site information
  * First step in the site creation process
  */
-export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange }: BasicsStepProps) {
+export function BasicsStep({ goToNextStep, formValues, handleInputChange }: BasicsStepProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
   const [isCheckingSubdirectory, setIsCheckingSubdirectory] = useState(false);
@@ -92,7 +92,7 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
 
       debouncedCheckSubdirectory(formValues.subdirectory);
     }
-  }, [formValues.subdirectory, touchedFields.subdirectory, attemptedNext]);
+  }, [formValues.subdirectory, touchedFields.subdirectory, attemptedNext, debouncedCheckSubdirectory]);
 
   /**
    * Handle input change with validation
@@ -290,12 +290,8 @@ export function BasicsStep({ fields, goToNextStep, formValues, handleInputChange
                   name="subdirectory"
                   placeholder="your-site"
                   className={`h-11 rounded-l-none pr-8 ${
-                    subdirectoryStatus === "available"
-                      ? "border-green-500 focus-visible:ring-green-500"
-                      : shouldShowError("subdirectory")
-                        ? "border-destructive"
-                        : ""
-                  }`}
+                    subdirectoryStatus === "available" && "border-green-500 focus-visible:ring-green-500"
+                  } ${shouldShowError("subdirectory") && "border-destructive"}`}
                   required
                   value={formValues.subdirectory}
                   onChange={handleFieldChange}

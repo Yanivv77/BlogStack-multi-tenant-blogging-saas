@@ -12,6 +12,16 @@ interface FormData {
   keywords?: string;
 }
 
+interface FormError {
+  error?: {
+    articleContent?: string;
+  };
+  success?: boolean;
+  postId?: string;
+  status?: "success" | "error";
+  errors?: string[];
+}
+
 interface ArticleContentFormProps {
   siteId: string;
   formData: FormData;
@@ -19,16 +29,10 @@ interface ArticleContentFormProps {
   setEditorValue: (value: JSONContent | undefined) => void;
   onSubmit: (formData: FormData, content: JSONContent | undefined, imageUrl: string | null) => void;
   isSubmitting: boolean;
-  lastResult: unknown;
+  lastResult: FormError | undefined;
 }
 
-export function ArticleContentForm({
-  siteId,
-  formData,
-  editorValue,
-  setEditorValue,
-  lastResult,
-}: ArticleContentFormProps) {
+export function ArticleContentForm({ formData, editorValue, setEditorValue, lastResult }: ArticleContentFormProps) {
   const { title, smallDescription } = formData;
 
   return (

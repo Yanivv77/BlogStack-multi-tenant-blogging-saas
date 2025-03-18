@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useMemo, useState, useTransition } from "react";
 
 import { useForm } from "@conform-to/react";
+import type { SubmissionResult } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod";
 import { toast } from "sonner";
 
@@ -30,7 +31,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 
 import { CreateSiteAction } from "@/app/serverActions/site/createSite";
-import { SiteCreationSchema } from "@/app/utils/validation/site-schema";
+import { SiteCreationSchema } from "@/app/utils/validation/siteSchema";
 
 import { addHiddenInput } from "../utils/hooks";
 // Import types and utilities
@@ -50,7 +51,7 @@ export function NewSiteForm() {
   const [siteImageCover, setSiteImageCover] = useState<string>("");
   const [logoImage, setLogoImage] = useState<string>("");
   const [activeStep, setActiveStep] = useState<StepName>("basics");
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [_formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Define steps for the form - memoize to prevent recreation
   const steps: StepName[] = useMemo(() => ["basics", "branding", "social", "summary"], []);
@@ -69,7 +70,7 @@ export function NewSiteForm() {
 
   const [form, fields] = useForm({
     id: "create-site-form",
-    lastResult: lastResult as unknown,
+    lastResult: lastResult as SubmissionResult<string[]> | null | undefined,
     shouldValidate: "onSubmit",
     onValidate({ formData }) {
       return parseWithZod(formData, { schema: SiteCreationSchema() });
@@ -124,7 +125,7 @@ export function NewSiteForm() {
 
       setActiveStep(stepName);
     },
-    [activeStep, formValues, steps]
+    [activeStep, formValues, steps, setFormErrors]
   );
 
   /**
@@ -150,7 +151,7 @@ export function NewSiteForm() {
         setActiveStep(steps[currentIndex + 1]);
       }
     },
-    [activeStep, formValues, steps]
+    [activeStep, formValues, steps, setFormErrors]
   );
 
   /**
@@ -230,7 +231,7 @@ export function NewSiteForm() {
         formAction(formData);
       });
     },
-    [activeStep, formValues, goToNextStep, siteImageCover, logoImage, formAction, startTransition]
+    [activeStep, formValues, goToNextStep, siteImageCover, logoImage, formAction, startTransition, setFormErrors]
   );
 
   // Memoize the active index calculation

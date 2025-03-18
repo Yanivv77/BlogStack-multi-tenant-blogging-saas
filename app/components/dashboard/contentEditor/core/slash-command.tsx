@@ -106,7 +106,7 @@ export const suggestionItems = createSuggestionItems([
       input.onchange = async () => {
         if (input.files?.length) {
           const file = input.files[0];
-          const pos = editor.view.state.selection.from;
+          const _pos = editor.view.state.selection.from;
 
           // Upload the file to get the URL
           try {

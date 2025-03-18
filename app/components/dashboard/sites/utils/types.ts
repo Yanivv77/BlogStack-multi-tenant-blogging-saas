@@ -126,7 +126,7 @@ export interface AppearanceTabProps {
  * Props for the DomainTab component
  */
 export interface DomainTabProps {
-  siteId: string;
+  _siteId: string;
   site?: {
     siteName?: string;
     customDomain?: string;

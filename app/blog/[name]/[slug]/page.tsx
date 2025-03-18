@@ -12,7 +12,7 @@ import { DEFAULT_IMAGE_URL } from "@/app/utils/constants/images";
 import prisma from "@/app/utils/db/prisma";
 
 // Keep all database fetching and server-side code here
-async function getData(slug: string, siteName: string) {
+async function getData(slug: string, _siteName: string) {
   try {
     const data = await prisma.post.findUnique({
       where: {

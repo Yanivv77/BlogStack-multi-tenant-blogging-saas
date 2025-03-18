@@ -22,11 +22,10 @@ interface SlugInputProps {
  * Shows status indicators for availability and validation
  */
 const SlugInputComponent = forwardRef<{ checkSlug: (slug: string) => Promise<void> }, SlugInputProps>(
-  ({ siteId, value, onChange, onBlur, autoGenerateFromTitle = true, title = "", error, onAvailabilityChange }, ref) => {
-    const { slugStatus, isCheckingSlug, slugError, handleSlugChange, formatSlug, checkSlug } =
-      useSlugValidation(siteId);
+  ({ siteId, value, onChange, onBlur, error, onAvailabilityChange }, ref) => {
+    const { slugStatus, isCheckingSlug, slugError, handleSlugChange, checkSlug } = useSlugValidation(siteId);
 
-    const [isFocused, setIsFocused] = useState(false);
+    const [, setIsFocused] = useState(false);
 
     // Expose the checkSlug method to parent components
     useImperativeHandle(ref, () => ({
@@ -66,12 +65,8 @@ const SlugInputComponent = forwardRef<{ checkSlug: (slug: string) => Promise<voi
                 if (onBlur) onBlur();
               }}
               placeholder="your-post-slug"
-              className={`pr-8 ${
-                slugStatus === "available"
-                  ? "border-green-500 focus-visible:ring-green-500"
-                  : slugStatus === "unavailable" || slugStatus === "invalid" || error
-                    ? "border-destructive"
-                    : ""
+              className={`pr-8 ${slugStatus === "available" && "border-green-500 focus-visible:ring-green-500"} ${
+                (slugStatus === "unavailable" || slugStatus === "invalid" || error) && "border-destructive"
               }`}
               aria-describedby="slug-hint slug-error slug-success"
               aria-invalid={slugStatus === "unavailable" || slugStatus === "invalid" || !!error}

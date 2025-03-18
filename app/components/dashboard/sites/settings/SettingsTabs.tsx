@@ -55,7 +55,7 @@ export function SettingsTabs({ site }: SettingsTabsProps) {
       icon: <SimpleIcon name="globe" size={16} />,
       content: (
         <SiteDomainTab
-          siteId={site.id}
+          _siteId={site.id}
           site={{
             siteName: site.name,
             customDomain: site.customDomain || undefined,
@@ -114,14 +114,11 @@ export function SettingsTabs({ site }: SettingsTabsProps) {
               aria-current={activeTab === tab.id ? "page" : undefined}
             >
               <span
-                className={cn(
-                  "flex-shrink-0",
-                  tab.variant === "destructive"
-                    ? "text-destructive/90"
-                    : activeTab === tab.id
-                      ? "text-secondary-foreground"
-                      : "text-muted-foreground"
-                )}
+                className={cn("flex-shrink-0", {
+                  "text-destructive/90": tab.variant === "destructive",
+                  "text-secondary-foreground": activeTab === tab.id && tab.variant !== "destructive",
+                  "text-muted-foreground": activeTab !== tab.id && tab.variant !== "destructive",
+                })}
               >
                 {tab.icon}
               </span>

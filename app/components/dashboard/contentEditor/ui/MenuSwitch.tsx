@@ -8,7 +8,7 @@ import type { MenuSwitchProps } from "../core/types";
 /**
  * Bubble menu component that shows formatting options when text is selected
  */
-export const MenuSwitch = ({ open, onOpenChange, children }: MenuSwitchProps) => {
+export const MenuSwitch = ({ onOpenChange, children }: MenuSwitchProps) => {
   const { editor } = useEditor();
 
   if (!editor) {

@@ -75,27 +75,27 @@ export function useEditorState(options: {
 
   // Load initial content on mount
   useEffect(() => {
-    console.log("useEditorState: Initializing with value:", initialValue);
+    console.info("useEditorState: Initializing with value:", initialValue);
 
     if (initialValue) {
       // If we have initialValue prop, use it directly
       setInitialContent(initialValue);
-      console.log("useEditorState: Using provided initialValue");
+      console.info("useEditorState: Using provided initialValue");
     } else if (autosave) {
       // Otherwise try to load from storage if autosave is enabled
       const content = loadEditorContent();
       if (content) {
         setInitialContent(content);
-        console.log("useEditorState: Loaded content from localStorage");
+        console.info("useEditorState: Loaded content from localStorage");
       } else {
         // If nothing in storage, use empty content
         setInitialContent(EMPTY_DOCUMENT);
-        console.log("useEditorState: No content found, using empty doc");
+        console.info("useEditorState: No content found, using empty doc");
       }
     } else {
       // If autosave disabled and no initialValue, use empty content
       setInitialContent(EMPTY_DOCUMENT);
-      console.log("useEditorState: No initialValue provided, using empty doc");
+      console.info("useEditorState: No initialValue provided, using empty doc");
     }
   }, [initialValue, autosave]);
 

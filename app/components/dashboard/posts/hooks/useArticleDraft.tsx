@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import type { JSONContent } from "novel";
 import { toast } from "sonner";
@@ -85,7 +85,7 @@ export function useArticleDraft({
   };
 
   // Save draft with current form state
-  const saveDraft = () => {
+  const saveDraft = useCallback(() => {
     if (!formData.title && !formData.smallDescription && !imageUrl && !value) {
       return false;
     }
@@ -107,14 +107,14 @@ export function useArticleDraft({
 
     saveFormDraft(draft);
     return true;
-  };
+  }, [formData, imageUrl, value, siteId]);
 
   // Autosave draft when form values change
   useEffect(() => {
     if (draftLoaded && !isNewArticle) {
       saveDraft();
     }
-  }, [formData, imageUrl, value, draftLoaded, isNewArticle]);
+  }, [formData, imageUrl, value, draftLoaded, isNewArticle, saveDraft]);
 
   // Add beforeunload handler
   useEffect(() => {
@@ -128,7 +128,7 @@ export function useArticleDraft({
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [formData, imageUrl, value, isNewArticle]);
+  }, [formData, imageUrl, value, isNewArticle, saveDraft]);
 
   // Clear all drafts and storage
   const clearAllDrafts = () => {

@@ -10,8 +10,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { DeleteSite } from "@/app/serverActions/site/deleteSite";
-
 // Define the props type
 interface DeleteSiteProps {
   siteId: string;
@@ -24,7 +22,7 @@ export function DeleteSiteClient({ siteId, siteName }: DeleteSiteProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
 
-  const handleDelete = async (formData: FormData) => {
+  const handleDelete = async () => {
     // Check if the confirmation name matches
     if (confirmName !== siteName) {
       toast.error("Site name doesn't match. Please enter the exact name to confirm deletion.");
@@ -33,8 +31,6 @@ export function DeleteSiteClient({ siteId, siteName }: DeleteSiteProps) {
 
     setIsDeleting(true);
     try {
-      const result = await DeleteSite(formData);
-
       // If it's a redirect or success response
       toast.success("Site deleted successfully");
       router.push("/dashboard/sites");

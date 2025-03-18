@@ -13,6 +13,9 @@ import type { AppearanceTabProps } from "@/app/components/dashboard/sites/utils/
 import { UpdateImage } from "@/app/serverActions/image/updateImage";
 import { getOptimizedDropzoneConfig, UploadDropzone } from "@/app/utils/upload/uploadthing";
 
+// Define the upload response type
+type UploadResponse = { ufsUrl: string }[];
+
 /**
  * Tab component for site appearance settings
  */
@@ -139,84 +142,98 @@ function SiteImageCard({
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
         <div className="flex flex-1 flex-col items-center justify-center">
-          {imageUrl && !isChanging ? (
-            <div className="relative w-full">
-              <div className={imageContainerClass}>
-                <Image
-                  src={imageUrl}
-                  alt={title}
-                  className="rounded-lg object-cover"
-                  fill
-                  sizes={aspectRatio === "landscape" ? "(max-width: 768px) 100vw, 400px" : "120px"}
-                />
-              </div>
-            </div>
-          ) : uploadError ? (
-            <div className="flex w-full flex-1 items-center justify-center">
-              <div className="mx-auto flex flex-col items-center justify-center space-y-3 rounded-md border-2 border-dashed border-destructive/30 bg-destructive/5 p-4">
-                <SimpleIcon name="alerttriangle" className="size-6 text-destructive" />
-                <div className="text-center">
-                  <h3 className="mb-1 text-sm font-semibold text-foreground">Upload Error</h3>
-                  <p className="mb-1 text-xs text-muted-foreground">{uploadError}</p>
+          {(() => {
+            if (imageUrl && !isChanging) {
+              return (
+                <div className="relative w-full">
+                  <div className={imageContainerClass}>
+                    <Image
+                      src={imageUrl}
+                      alt={title}
+                      className="rounded-lg object-cover"
+                      fill
+                      sizes={aspectRatio === "landscape" ? "(max-width: 768px) 100vw, 400px" : "120px"}
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-          ) : isUploading ? (
-            <div className="flex w-full flex-1 items-center justify-center">
-              <div className="mx-auto flex flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/40 p-6">
-                <div className="flex flex-col items-center gap-2">
-                  <SimpleIcon name="loader" className="h-7 w-7 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Uploading image...</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex w-full flex-1 items-center justify-center">
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/50 p-4">
-                <div className={`${imageContainerClass} flex items-center justify-center bg-muted/30`}>
-                  <SimpleIcon name="image" className="size-10 text-muted-foreground/40" />
-                </div>
-                <p className="mb-4 mt-2 text-center text-xs text-muted-foreground">
-                  {isChanging && imageUrl ? "Select a new image" : "No image uploaded"}
-                </p>
-                <UploadDropzone
-                  endpoint="imageUploader"
-                  onUploadBegin={() => {
-                    setIsUploading(true);
-                    setUploadError(null);
-                  }}
-                  onClientUploadComplete={(res: unknown) => {
-                    setIsUploading(false);
-                    if (res && res[0] && res[0].ufsUrl) {
-                      console.log("Upload response:", res[0]);
-                      const url = res[0].ufsUrl;
-                      setImageUrl(url);
-                      toast.success("Image uploaded successfully!");
+              );
+            }
 
-                      // Auto-submit if the user is changing an existing image
-                      if (isChanging) {
-                        setTimeout(submitForm, 500);
+            if (uploadError) {
+              return (
+                <div className="flex w-full flex-1 items-center justify-center">
+                  <div className="mx-auto flex flex-col items-center justify-center space-y-3 rounded-md border-2 border-dashed border-destructive/30 bg-destructive/5 p-4">
+                    <SimpleIcon name="alerttriangle" className="size-6 text-destructive" />
+                    <div className="text-center">
+                      <h3 className="mb-1 text-sm font-semibold text-foreground">Upload Error</h3>
+                      <p className="mb-1 text-xs text-muted-foreground">{uploadError}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isUploading) {
+              return (
+                <div className="flex w-full flex-1 items-center justify-center">
+                  <div className="mx-auto flex flex-col items-center justify-center rounded-md border-2 border-dashed border-muted-foreground/40 p-6">
+                    <div className="flex flex-col items-center gap-2">
+                      <SimpleIcon name="loader" className="h-7 w-7 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Uploading image...</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex w-full flex-1 items-center justify-center">
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/50 p-4">
+                  <div className={`${imageContainerClass} flex items-center justify-center bg-muted/30`}>
+                    <SimpleIcon name="image" className="size-10 text-muted-foreground/40" />
+                  </div>
+                  <p className="mb-4 mt-2 text-center text-xs text-muted-foreground">
+                    {isChanging && imageUrl ? "Select a new image" : "No image uploaded"}
+                  </p>
+                  <UploadDropzone
+                    endpoint="imageUploader"
+                    onUploadBegin={() => {
+                      setIsUploading(true);
+                      setUploadError(null);
+                    }}
+                    onClientUploadComplete={(res: UploadResponse) => {
+                      setIsUploading(false);
+                      if (res?.[0]?.ufsUrl) {
+                        console.info("Upload response:", res[0]);
+                        const url = res[0].ufsUrl;
+                        setImageUrl(url);
+                        toast.success("Image uploaded successfully!");
+
+                        // Auto-submit if the user is changing an existing image
+                        if (isChanging) {
+                          setTimeout(submitForm, 500);
+                        }
+                      } else {
+                        console.error("Invalid upload response:", res);
+                        setUploadError("Received invalid response from upload service");
                       }
-                    } else {
-                      console.error("Invalid upload response:", res);
-                      setUploadError("Received invalid response from upload service");
-                    }
-                  }}
-                  onUploadError={(error: Error) => {
-                    setIsUploading(false);
-                    console.error("Upload error:", error);
-                    setUploadError(`Upload failed: ${error.message || "Network issue detected"}`);
-                  }}
-                  {...optimizedConfig}
-                  appearance={{
-                    button: "bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded",
-                    allowedContent: "hidden",
-                    container: "w-full",
-                  }}
-                />
+                    }}
+                    onUploadError={(error: Error) => {
+                      setIsUploading(false);
+                      console.error("Upload error:", error);
+                      setUploadError(`Upload failed: ${error.message || "Network issue detected"}`);
+                    }}
+                    {...optimizedConfig}
+                    appearance={{
+                      button: "bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded",
+                      allowedContent: "hidden",
+                      container: "w-full",
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
       </CardContent>
       <CardFooter className="mt-auto flex justify-center border-t pb-4 pt-2">

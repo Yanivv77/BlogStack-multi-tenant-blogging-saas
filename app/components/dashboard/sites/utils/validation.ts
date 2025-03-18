@@ -126,7 +126,7 @@ export function validateUrl(url: string, fieldName: string): string | undefined 
   try {
     new URL(url);
     return undefined;
-  } catch (e) {
+  } catch {
     return `Please enter a valid URL for ${fieldName}`;
   }
 }

@@ -129,13 +129,16 @@ export function ArticleBasicForm({
           <span id="keywords-hint">Add 3-5 relevant keywords to improve SEO (separated by commas)</span>
           <span
             id="keywords-count"
-            className={`${
-              !formData.keywords
-                ? "text-muted-foreground"
-                : formData.keywords.split(",").filter((k) => k.trim()).length >= 3 &&
-                    formData.keywords.split(",").filter((k) => k.trim()).length <= 5
-                  ? "text-green-500"
-                  : "text-amber-500"
+            className={`${!formData.keywords && "text-muted-foreground"} ${
+              formData.keywords &&
+              formData.keywords.split(",").filter((k) => k.trim()).length >= 3 &&
+              formData.keywords.split(",").filter((k) => k.trim()).length <= 5 &&
+              "text-green-500"
+            } ${
+              formData.keywords &&
+              (formData.keywords.split(",").filter((k) => k.trim()).length < 3 ||
+                formData.keywords.split(",").filter((k) => k.trim()).length > 5) &&
+              "text-amber-500"
             }`}
             aria-live="polite"
           >
@@ -166,13 +169,7 @@ export function ArticleBasicForm({
         <div className="flex justify-between text-xs text-muted-foreground">
           <span id="title-hint">Optimum length for SEO (55-60 characters)</span>
           <span
-            className={`${
-              title.length < 3
-                ? "text-destructive"
-                : title.length >= 55 && title.length <= 60
-                  ? "text-green-500"
-                  : "text-amber-500"
-            }`}
+            className={` ${title.length < 3 && "text-destructive"} ${title.length >= 55 && title.length <= 60 && "text-green-500"} ${title.length >= 3 && (title.length < 55 || title.length > 60) && "text-amber-500"} `}
             aria-live="polite"
           >
             {title.length}/60
@@ -260,13 +257,7 @@ export function ArticleBasicForm({
         <div className="flex justify-between text-xs text-muted-foreground">
           <span id="description-hint">Optimum length for SEO (120-160 characters)</span>
           <span
-            className={`${
-              smallDescription.length < 10 || smallDescription.length > 160
-                ? "text-destructive"
-                : smallDescription.length >= 120 && smallDescription.length <= 160
-                  ? "text-green-500"
-                  : "text-amber-500"
-            }`}
+            className={` ${(smallDescription.length < 10 || smallDescription.length > 160) && "text-destructive"} ${smallDescription.length >= 120 && smallDescription.length <= 160 && "text-green-500"} ${smallDescription.length >= 10 && smallDescription.length < 120 && "text-amber-500"} `}
             aria-live="polite"
           >
             {smallDescription.length}/160

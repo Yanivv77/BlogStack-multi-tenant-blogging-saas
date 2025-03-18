@@ -18,9 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { UpdateSiteAction } from "@/app/serverActions/site/updateSite";
 import type { LanguageEnum } from "@/app/utils/validation";
-import { Language } from "@/app/utils/validation";
+import { Language, SiteEditSchema, siteSchema } from "@/app/utils/validation";
 import { parseFormWithZod } from "@/app/utils/validation/conform";
-import { SiteEditSchema, siteSchema } from "@/app/utils/validation/site-schema";
 
 // Define the props type
 interface UpdateSiteFormProps {

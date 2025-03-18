@@ -12,7 +12,7 @@ import type { DomainTabProps } from "@/app/components/dashboard/sites/utils/type
 /**
  * Tab component for managing site domain settings
  */
-export function SiteDomainTab({ siteId, site }: DomainTabProps) {
+export function SiteDomainTab({ _siteId, site }: DomainTabProps) {
   const defaultDomain = `${site?.siteName?.toLowerCase().replace(/\s+/g, "-")}.blogstack.io`;
 
   return (

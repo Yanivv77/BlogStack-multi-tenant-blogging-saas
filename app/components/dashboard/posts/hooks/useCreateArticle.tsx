@@ -72,17 +72,20 @@ export function useCreateArticle({ siteId, onSuccess }: UseCreateArticleProps) {
   useEffect(() => {
     if (!lastResult) return;
 
-    if ("success" in lastResult || (lastResult as unknown).status === "success") {
+    const result = lastResult as ActionResult;
+    if ("success" in result || ("status" in result && result.status === "success")) {
       // Don't show a toast here, let the onSuccess callback handle it
       onSuccess();
       setIsSubmitting(false);
     } else if (lastResult) {
-      const errors =
-        "error" in lastResult && lastResult.error
-          ? "_form" in lastResult.error
-            ? lastResult.error._form
-            : []
-          : (lastResult as unknown).errors || [];
+      let errors: string[] = [];
+      if ("error" in result && result.error) {
+        if ("_form" in result.error) {
+          errors = result.error._form;
+        }
+      } else if ("errors" in result) {
+        errors = result.errors;
+      }
 
       (Array.isArray(errors) ? errors : [errors]).forEach((error: string) => toast.error(error));
       setIsSubmitting(false);

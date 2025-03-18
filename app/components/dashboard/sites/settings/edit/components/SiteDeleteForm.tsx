@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { toast } from "sonner";
@@ -11,17 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import type { DeleteSiteProps } from "@/app/components/dashboard/sites/utils/types";
-import { DeleteSite } from "@/app/serverActions/site/deleteSite";
 
 /**
  * Form component for site deletion with confirmation
  */
 export function SiteDeleteForm({ siteId, siteName }: DeleteSiteProps) {
-  const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
   const [confirmName, setConfirmName] = useState("");
 
-  const handleDelete = async (formData: FormData) => {
+  const handleDelete = async () => {
     // Check if the confirmation name matches
     if (confirmName !== siteName) {
       toast.error("Site name doesn't match. Please enter the exact name to confirm deletion.");
@@ -29,18 +26,6 @@ export function SiteDeleteForm({ siteId, siteName }: DeleteSiteProps) {
     }
 
     setIsDeleting(true);
-    try {
-      const result = await DeleteSite(formData);
-
-      // If it's a redirect or success response
-      toast.success("Site deleted successfully");
-      router.push("/dashboard/sites");
-    } catch (error) {
-      toast.error("Failed to delete site");
-      console.error("Delete error:", error);
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   return (

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
+import hljs from "highlight.js";
 import {
   EditorCommand,
   EditorCommandEmpty,
@@ -27,11 +28,26 @@ import { TextButtons } from "./selectors/text-buttons";
 import { MenuSwitch } from "./ui/MenuSwitch";
 import { uploadFn } from "./utils/image-upload";
 
-// Import highlight.js for code highlighting
-const hljs = require("highlight.js");
-
 // Combine all extensions
 const extensions = [...defaultExtensions, slashCommand];
+
+interface EditorView {
+  state: {
+    schema: {
+      nodes: {
+        image: {
+          create: (attrs: { src: string; alt: string }) => unknown;
+        };
+      };
+    };
+    tr: {
+      replaceSelectionWith: (node: unknown) => unknown;
+      insert: (pos: number, node: unknown) => unknown;
+    };
+  };
+  dispatch: (tr: unknown) => void;
+  posAtCoords: (coords: { left: number; top: number }) => { pos: number } | null;
+}
 
 /**
  * Custom image paste handler that works with our uploadFn
@@ -52,10 +68,10 @@ const customImagePaste = (view: unknown, event: ClipboardEvent) => {
   // Handle the image upload asynchronously
   uploadFn(file)
     .then((imageUrl) => {
-      const { schema } = view.state;
+      const { schema } = (view as EditorView).state;
       const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
-      const transaction = view.state.tr.replaceSelectionWith(node);
-      view.dispatch(transaction);
+      const transaction = (view as EditorView).state.tr.replaceSelectionWith(node);
+      (view as EditorView).dispatch(transaction);
     })
     .catch((error) => {
       console.error("Error pasting image:", error);
@@ -83,17 +99,17 @@ const customImageDrop = (view: unknown, event: DragEvent, moved: boolean) => {
   event.preventDefault();
 
   // Get the position where the image is being dropped
-  const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+  const coordinates = (view as EditorView).posAtCoords({ left: event.clientX, top: event.clientY });
   if (!coordinates) return false;
 
   // Process each dropped image asynchronously
   images.forEach((file) => {
     uploadFn(file)
       .then((imageUrl) => {
-        const { schema } = view.state;
+        const { schema } = (view as EditorView).state;
         const node = schema.nodes.image.create({ src: imageUrl, alt: file.name });
-        const transaction = view.state.tr.insert(coordinates.pos, node);
-        view.dispatch(transaction);
+        const transaction = (view as EditorView).state.tr.insert(coordinates.pos, node);
+        (view as EditorView).dispatch(transaction);
       })
       .catch((error) => {
         console.error("Error dropping image:", error);
@@ -110,7 +126,7 @@ const customImageDrop = (view: unknown, event: DragEvent, moved: boolean) => {
 const highlightCodeblocks = (content: string): string => {
   const doc = new DOMParser().parseFromString(content, "text/html");
   doc.querySelectorAll("pre code").forEach((el) => {
-    hljs.highlightElement(el);
+    hljs.highlightElement(el as HTMLElement);
   });
   return new XMLSerializer().serializeToString(doc);
 };
@@ -126,24 +142,13 @@ const EditorWrapper = ({ onChange, initialValue }: EditorProps) => {
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(true);
 
-  // Log initial value to debug draft loading
-  useEffect(() => {
-    if (initialValue === undefined) {
-      console.log("EditorWrapper: initialValue is undefined - will use empty document");
-    } else if (initialValue === null) {
-      console.log("EditorWrapper: initialValue is null - will use empty document");
-    } else {
-      console.log("EditorWrapper: received initialValue", typeof initialValue === "object" ? "object" : initialValue);
-    }
-  }, [initialValue]);
-
   // Use our custom hook for editor state management
   const { initialContent, saveStatus, wordCount, handleUpdate } = useEditorState({
     onChange: (content) => {
       // Pass the content to the parent component for draft saving
       if (onChange) {
         onChange(content);
-        console.log("Editor content changed, reporting to parent");
+        console.info("Editor content changed, reporting to parent");
       }
     },
     // Only pass initialValue if it's defined and not null

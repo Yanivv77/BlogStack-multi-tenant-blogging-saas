@@ -43,7 +43,7 @@ interface iAppProps {
 export function EditArticleForm({ data, siteId }: iAppProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(data.postCoverImage || null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [value, setValue] = useState<JSONContent | undefined>(data.articleContent);
+  const [value, setValue] = useState<JSONContent | undefined>(data.articleContent as JSONContent);
   const [slug, setSlugValue] = useState<string>(data.slug || "");
   const [title, setTitle] = useState<string>(data.title || "");
   const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
@@ -86,11 +86,16 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
   useEffect(() => {
     if (lastResult) {
       // Check if it has a status property
-      const result = lastResult as unknown; // Type assertion for safer access
-      if (result.status === "success") {
+      interface ActionResult {
+        success: boolean;
+        postId?: string;
+        error?: { message: string };
+      }
+      const result = lastResult as ActionResult;
+      if (result.success) {
         toast.success("Article updated successfully!");
-      } else if (result.status === "error") {
-        toast.error(result.message || "Failed to update article");
+      } else if (result.error) {
+        toast.error(result.error.message || "Failed to update article");
       }
     }
   }, [lastResult]);
@@ -153,9 +158,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                     onUploadBegin={() => {
                       setIsUploadingImage(true);
                     }}
-                    onClientUploadComplete={(res: unknown) => {
+                    onClientUploadComplete={(res: { ufsUrl: string }[]) => {
                       setIsUploadingImage(false);
-                      console.log("Upload response:", res[0]);
+                      console.info("Upload response:", res[0]);
                       const imageUrl = res[0].ufsUrl;
                       setImageUrl(imageUrl);
                       toast.success("Image uploaded successfully!");
@@ -174,7 +179,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                 )}
               </div>
             )}
-            <p className="text-sm text-red-500">{fields.postCoverImage.errors}</p>
+            <p className="text-sm text-red-500">{fields.postCoverImage.errors as string}</p>
           </div>
 
           <div className="grid gap-2">
@@ -190,13 +195,16 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               <span id="edit-keywords-hint">Add 3-5 relevant keywords to improve SEO (separated by commas)</span>
               <span
                 id="edit-keywords-count"
-                className={`${
-                  !keywords
-                    ? "text-muted-foreground"
-                    : keywords.split(",").filter((k) => k.trim()).length >= 3 &&
-                        keywords.split(",").filter((k) => k.trim()).length <= 5
-                      ? "text-green-500"
-                      : "text-amber-500"
+                className={`${!keywords ? "text-muted-foreground" : ""} ${
+                  keywords &&
+                  keywords.split(",").filter((k) => k.trim()).length >= 3 &&
+                  keywords.split(",").filter((k) => k.trim()).length <= 5 &&
+                  "text-green-500"
+                } ${
+                  keywords &&
+                  (keywords.split(",").filter((k) => k.trim()).length < 3 ||
+                    keywords.split(",").filter((k) => k.trim()).length > 5) &&
+                  "text-amber-500"
                 }`}
                 aria-live="polite"
               >
@@ -226,11 +234,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               <span id="edit-title-hint">Optimum length for SEO (55-60 characters)</span>
               <span
                 className={`${
-                  title.length < 3
-                    ? "text-destructive"
-                    : title.length >= 55 && title.length <= 60
-                      ? "text-green-500"
-                      : "text-amber-500"
+                  title.length < 3 && "text-destructive"
+                } ${title.length >= 55 && title.length <= 60 && "text-green-500"} ${
+                  title.length >= 3 && (title.length < 55 || title.length > 60) && "text-amber-500"
                 }`}
                 aria-live="polite"
               >
@@ -261,11 +267,11 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                 })()}
               </div>
             )}
-            {fields.title.errors && (
+            {fields.title.errors ? (
               <p id="edit-title-error" className="text-sm text-red-500">
-                {fields.title.errors}
+                {fields.title.errors as unknown as React.ReactNode}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="grid gap-2">
@@ -280,7 +286,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <Button onClick={handleSlugGeneration} className="w-fit" variant="secondary" type="button">
               <SimpleIcon name="atom" size={16} className="mr-2" /> Generate Slug
             </Button>
-            <p className="text-sm text-red-500">{fields.slug.errors}</p>
+            {fields.slug.errors ? (
+              <p className="text-sm text-red-500">{fields.slug.errors as unknown as React.ReactNode}</p>
+            ) : null}
           </div>
 
           <div className="grid gap-2">
@@ -298,7 +306,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <div className="flex justify-between text-xs text-muted-foreground">
               <span id="edit-description-hint">Optimum length for SEO (120-160 characters)</span>
               <span
-                className={`${smallDescription.length < 10 || smallDescription.length > 160 ? "text-destructive" : smallDescription.length >= 120 && smallDescription.length <= 160 ? "text-green-500" : "text-amber-500"}`}
+                className={`${(smallDescription.length < 10 || smallDescription.length > 160) && "text-destructive"} ${
+                  smallDescription.length >= 120 && smallDescription.length <= 160 && "text-green-500"
+                } ${smallDescription.length >= 10 && smallDescription.length < 120 && "text-amber-500"}`}
                 aria-live="polite"
               >
                 {smallDescription.length}/160
@@ -328,11 +338,11 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
                 })()}
               </div>
             )}
-            {fields.smallDescription.errors && (
+            {fields.smallDescription.errors ? (
               <p id="edit-description-error" className="text-sm text-red-500">
-                {fields.smallDescription.errors}
+                {fields.smallDescription.errors as unknown as React.ReactNode}
               </p>
-            )}
+            ) : null}
           </div>
 
           <div className="grid gap-2">
@@ -350,7 +360,9 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               value={JSON.stringify(getUploadedImages())}
             />
             <EditorWrapper onChange={setValue} initialValue={value} />
-            <p className="text-sm text-red-500">{fields.articleContent.errors}</p>
+            {fields.articleContent.errors ? (
+              <p className="text-sm text-red-500">{fields.articleContent.errors as unknown as React.ReactNode}</p>
+            ) : null}
 
             {/* SEO Recommendations */}
             <SeoRecommendations content={value} title={title} smallDescription={smallDescription} keywords={keywords} />

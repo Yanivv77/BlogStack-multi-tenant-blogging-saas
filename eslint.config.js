@@ -156,7 +156,6 @@ export default [
       "no-use-before-define": "off", // TypeScript handles this better
       "no-warning-comments": "off", // Allow TODO and FIXME comments
       semi: ["error"],
-      quotes: ["error", "double"],
       "no-useless-escape": "warn",
       "no-console": ["warn", { allow: ["warn", "error", "info"] }],
       "no-var": "error",

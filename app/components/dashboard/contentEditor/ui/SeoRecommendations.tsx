@@ -7,6 +7,20 @@ import type { JSONContent } from "novel";
 import { Badge } from "@/components/ui/badge";
 import { SimpleIcon } from "@/components/ui/icons/SimpleIcon";
 
+// Add type definitions at the top of the file after the imports
+
+// Define types for Novel JSONContent nodes
+interface NovelNode {
+  type?: string;
+  attrs?: {
+    level?: number;
+    [key: string]: unknown;
+  };
+  text?: string;
+  content?: NovelNode[];
+  [key: string]: unknown;
+}
+
 // Status icon component for SEO checks
 const StatusIcon = ({ status }: { status: CheckStatus }) => {
   switch (status) {
@@ -24,11 +38,11 @@ const StatusIcon = ({ status }: { status: CheckStatus }) => {
 // Create simplified Accordion components if the UI components are not available
 const AccordionItem = ({
   children,
-  value,
+  _value,
   className,
 }: {
   children: React.ReactNode;
-  value: string;
+  _value: string;
   className?: string;
 }) => <div className={`mb-2 overflow-hidden rounded-md border ${className || ""}`}>{children}</div>;
 
@@ -112,8 +126,8 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     }
 
     // Debug logging for keywords
-    console.log("SEO Analysis - Keywords value:", keywords);
-    console.log("SEO Analysis - Keywords type:", typeof keywords);
+    console.info("SEO Analysis - Keywords value:", keywords);
+    console.info("SEO Analysis - Keywords type:", typeof keywords);
 
     // Normalize keywords parameter for more robust handling
     const normalizedKeywords = (() => {
@@ -229,9 +243,9 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     const h1Count = headings.filter((h) => h.level === 1).length;
     const h2Count = headings.filter((h) => h.level === 2).length;
     const h3Count = headings.filter((h) => h.level === 3).length;
-    const h4Count = headings.filter((h) => h.level === 4).length;
-    const h5Count = headings.filter((h) => h.level === 5).length;
-    const h6Count = headings.filter((h) => h.level === 6).length;
+    const _h4Count = headings.filter((h) => h.level === 4).length;
+    const _h5Count = headings.filter((h) => h.level === 5).length;
+    const _h6Count = headings.filter((h) => h.level === 6).length;
 
     // Check heading structure
     const headingStructureCheck: SeoCheckResult = {
@@ -653,17 +667,14 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
           if (keywordDensities.filter((k) => k.count > 0).length > 0) {
             let densityDetails = "Keyword density breakdown:\n";
             keywordDensities.forEach((kw) => {
-              const densityClass =
-                kw.count === 0
-                  ? "missing"
-                  : kw.density > 3
-                    ? "too high"
-                    : kw.density >= 1 && kw.density <= 2
-                      ? "optimal"
-                      : kw.density < 0.5
-                        ? "low"
-                        : "acceptable";
-
+              const getDensityClass = (kw: { count: number; density: number }) => {
+                if (kw.count === 0) return "missing";
+                if (kw.density > 3) return "too high";
+                if (kw.density >= 1 && kw.density <= 2) return "optimal";
+                if (kw.density < 0.5) return "low";
+                return "acceptable";
+              };
+              const densityClass = getDensityClass(kw);
               densityDetails += `• "${kw.keyword}": ${kw.count === 0 ? "not found" : `${kw.density.toFixed(1)}% (${kw.count} occurrences) - ${densityClass}`}\n`;
             });
 
@@ -738,8 +749,8 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     setSeoResults(results);
   }, [content, title, smallDescription, keywords]);
 
-  // Get background color based on status
-  const getBgColor = (status: CheckStatus) => {
+  // Get background color based on status - prefix with underscore since it's unused
+  const _getBgColor = (status: CheckStatus) => {
     switch (status) {
       case "pass":
         return "bg-green-100 dark:bg-green-900/20";
@@ -752,8 +763,8 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
     }
   };
 
-  // Get icon based on status
-  const getStatusIcon = (status: CheckStatus) => {
+  // Get icon based on status - prefix with underscore since it's unused
+  const _getStatusIcon = (status: CheckStatus) => {
     switch (status) {
       case "pass":
         return <SimpleIcon name="check" size={20} className="text-green-500" />;
@@ -763,20 +774,6 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
         return <SimpleIcon name="info" size={20} className="text-yellow-500" />;
       default:
         return null;
-    }
-  };
-
-  // Get text color based on status
-  const getTextColor = (status: CheckStatus) => {
-    switch (status) {
-      case "pass":
-        return "text-green-800 dark:text-green-200";
-      case "fail":
-        return "text-red-800 dark:text-red-200";
-      case "warning":
-        return "text-yellow-800 dark:text-yellow-200";
-      default:
-        return "";
     }
   };
 
@@ -806,7 +803,7 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
         {seoResults.map((result) => (
           <AccordionItem
             key={result.id}
-            value={result.id}
+            _value={result.id}
             className={` ${result.status === "pass" ? "border-green-200 dark:border-green-800" : ""} ${result.status === "warning" ? "border-amber-200 dark:border-amber-800" : ""} ${result.status === "fail" ? "border-red-200 dark:border-red-800" : ""} `}
           >
             <AccordionTrigger
@@ -838,17 +835,7 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
                                 <span>{keywordPart}</span>
                                 <Badge
                                   variant="outline"
-                                  className={
-                                    densityClass === "optimal"
-                                      ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300"
-                                      : densityClass === "too high"
-                                        ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
-                                        : densityClass === "low"
-                                          ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
-                                          : densityClass === "missing"
-                                            ? "bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300"
-                                            : "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
-                                  }
+                                  className={` ${densityClass === "optimal" ? "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300" : ""} ${densityClass === "too high" ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300" : ""} ${densityClass === "low" ? "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300" : ""} ${densityClass === "missing" ? "bg-gray-50 text-gray-700 dark:bg-gray-950 dark:text-gray-300" : ""} ${densityClass === "acceptable" ? "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300" : ""} `}
                                 >
                                   {densityClass}
                                 </Badge>
@@ -1024,21 +1011,22 @@ export function SeoRecommendations({ content, title, smallDescription, keywords 
 function extractHeadings(content: JSONContent): { level: number; text: string }[] {
   const headings: { level: number; text: string }[] = [];
 
-  function traverse(node: unknown) {
+  function traverse(node: NovelNode | unknown) {
     if (!node) return;
+    const nodeData = node as NovelNode;
 
     // Check if this is a heading
-    if (node.type === "heading" && node.attrs && node.attrs.level) {
-      const text = extractTextFromNode(node);
+    if (nodeData.type === "heading" && nodeData.attrs && nodeData.attrs.level) {
+      const text = extractTextFromNode(nodeData);
       headings.push({
-        level: node.attrs.level,
+        level: nodeData.attrs.level,
         text,
       });
     }
 
     // Traverse any children
-    if (node.content && Array.isArray(node.content)) {
-      node.content.forEach(traverse);
+    if (nodeData.content && Array.isArray(nodeData.content)) {
+      nodeData.content.forEach(traverse);
     }
   }
 
@@ -1049,15 +1037,16 @@ function extractHeadings(content: JSONContent): { level: number; text: string }[
 /**
  * Extract text content from a node
  */
-function extractTextFromNode(node: unknown): string {
+function extractTextFromNode(node: NovelNode | unknown): string {
   let text = "";
+  const nodeData = node as NovelNode;
 
-  if (node.text) {
-    return node.text;
+  if (nodeData.text) {
+    return nodeData.text;
   }
 
-  if (node.content && Array.isArray(node.content)) {
-    node.content.forEach((child: unknown) => {
+  if (nodeData.content && Array.isArray(nodeData.content)) {
+    nodeData.content.forEach((child: NovelNode) => {
       text += extractTextFromNode(child);
     });
   }
@@ -1079,15 +1068,16 @@ function countWords(content: JSONContent): number {
 function getFullText(content: JSONContent): string {
   let text = "";
 
-  function traverse(node: unknown) {
+  function traverse(node: NovelNode | unknown) {
     if (!node) return;
+    const nodeData = node as NovelNode;
 
-    if (node.text) {
-      text += `${node.text} `;
+    if (nodeData.text) {
+      text += `${nodeData.text} `;
     }
 
-    if (node.content && Array.isArray(node.content)) {
-      node.content.forEach(traverse);
+    if (nodeData.content && Array.isArray(nodeData.content)) {
+      nodeData.content.forEach(traverse);
     }
   }
 
@@ -1122,7 +1112,7 @@ function countKeywordOccurrences(content: JSONContent, keyword: string): number 
     const regex = new RegExp(`\\b${escapedKeyword}\\b`, "gi");
     const matches = text.match(regex);
     return matches ? matches.length : 0;
-  } catch (error) {
+  } catch {
     // Fallback method in case regex fails
     const words = text.split(/\s+/);
     return words.filter((word) => word === cleanKeyword).length;

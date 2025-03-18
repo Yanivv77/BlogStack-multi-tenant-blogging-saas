@@ -3,7 +3,7 @@
  */
 import { z } from "zod";
 
-import { siteSchema } from "@/app/utils/validation/site-schema";
+import { siteSchema } from "@/app/utils/validation/siteSchema";
 
 import type { SiteFormValues } from "./types";
 
@@ -15,7 +15,18 @@ export type ValidationErrors = Partial<Record<keyof SiteFormValues, string>>;
 /**
  * Basic site schema without async validation
  */
-const clientSiteSchema = siteSchema;
+const clientSiteSchema = z.object({
+  name: siteSchema.shape.name,
+  subdirectory: siteSchema.shape.subdirectory,
+  description: siteSchema.shape.description,
+  language: siteSchema.shape.language,
+  email: siteSchema.shape.email,
+  githubUrl: siteSchema.shape.githubUrl,
+  linkedinUrl: siteSchema.shape.linkedinUrl,
+  portfolioUrl: siteSchema.shape.portfolioUrl,
+  siteImageCover: z.string().optional(),
+  logoImage: z.string().optional(),
+});
 
 /**
  * Step-specific schemas

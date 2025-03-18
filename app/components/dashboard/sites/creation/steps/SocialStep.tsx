@@ -16,17 +16,15 @@ import { validateField } from "../../utils/zodValidation";
  * SocialStep component for collecting social media links
  * Final step in the site creation process
  */
-export function SocialStep({ fields, goToPrevStep, formValues, handleInputChange }: SocialStepProps) {
+export function SocialStep({ goToPrevStep, formValues, handleInputChange }: SocialStepProps) {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
-  const [attemptedSubmit, setAttemptedSubmit] = useState(false);
+  const [attemptedSubmit] = useState(false);
 
   /**
    * Handle input change
    */
   const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-
     // Pass to parent handler
     handleInputChange(e);
   };
@@ -43,40 +41,6 @@ export function SocialStep({ fields, goToPrevStep, formValues, handleInputChange
     // Validate the field using Zod schema
     const fieldError = validateField(name as keyof typeof formValues, value);
     setErrors((prev) => ({ ...prev, [name]: fieldError }));
-  };
-
-  /**
-   * Validate all fields before proceeding
-   */
-  const validateAllFields = () => {
-    // Mark all fields as touched
-    setTouchedFields({
-      email: true,
-      githubUrl: true,
-      linkedinUrl: true,
-      portfolioUrl: true,
-    });
-
-    // Set attempted submit to true to show all errors
-    setAttemptedSubmit(true);
-
-    const newErrors: ValidationErrors = {};
-
-    // Validate each field using Zod schema
-    const emailError = validateField("email", formValues.email);
-    if (emailError) newErrors.email = emailError;
-
-    const githubUrlError = validateField("githubUrl", formValues.githubUrl);
-    if (githubUrlError) newErrors.githubUrl = githubUrlError;
-
-    const linkedinUrlError = validateField("linkedinUrl", formValues.linkedinUrl);
-    if (linkedinUrlError) newErrors.linkedinUrl = linkedinUrlError;
-
-    const portfolioUrlError = validateField("portfolioUrl", formValues.portfolioUrl);
-    if (portfolioUrlError) newErrors.portfolioUrl = portfolioUrlError;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   // Helper function to determine if an error should be shown

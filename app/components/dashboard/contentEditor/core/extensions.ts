@@ -162,4 +162,5 @@ export const defaultExtensions = [
   Color,
   CustomKeymap,
   GlobalDragHandle,
+  tiptapImage,
 ];

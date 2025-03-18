@@ -5,7 +5,6 @@ import type { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import type { JSONContent } from "novel";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -66,7 +65,7 @@ export function ArticleFormContainer({ siteId, router, isNewFromUrl, initialStep
   const [slugAvailable, setSlugAvailable] = useState(false);
 
   // Custom hooks for article management
-  const { draftLoaded, loadDraft, clearAllDrafts, handleSaveDraft } = useArticleDraft({
+  const { draftLoaded, loadDraft, clearAllDrafts } = useArticleDraft({
     siteId,
     formData,
     setFormData: (data: FormData) => {
@@ -122,18 +121,9 @@ export function ArticleFormContainer({ siteId, router, isNewFromUrl, initialStep
       // Load draft if exists
       loadDraft();
     }
-  }, [isNewFromUrl, router, draftLoaded]);
+  }, [isNewFromUrl, router, draftLoaded, clearAllDrafts, loadDraft]);
 
   // Reset form to create a new article
-  const resetForm = () => {
-    setFormData({ title: "", slug: "", smallDescription: "", keywords: "" });
-    setImageUrl(null);
-    setValue(undefined);
-    clearAllDrafts();
-    setIsNewArticle(true);
-    setCurrentStep(1);
-    toast.success("Form cleared for new article");
-  };
 
   // Navigate to next step
   const goToNextStep = () => {

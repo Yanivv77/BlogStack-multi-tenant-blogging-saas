@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 import { toast } from "sonner";
@@ -13,12 +14,13 @@ import { getOptimizedDropzoneConfig, UploadDropzone } from "@/app/utils/upload/u
 
 import type { BrandingStepProps } from "../../utils/types";
 
+type UploadResponse = { ufsUrl: string }[];
+
 /**
  * BrandingStep component for uploading site images
  * Second step in the site creation process
  */
 export function BrandingStep({
-  fields,
   siteImageCover,
   setSiteImageCover,
   logoImage,
@@ -71,7 +73,7 @@ export function BrandingStep({
             <div className="flex flex-col items-center gap-4">
               {siteImageCover ? (
                 <div className="relative w-full max-w-[500px]">
-                  <img
+                  <Image
                     src={siteImageCover}
                     alt="Cover"
                     className="aspect-video h-auto w-full rounded-md object-cover"
@@ -102,8 +104,9 @@ export function BrandingStep({
                       onUploadBegin={() => {
                         setIsUploadingCover(true);
                       }}
-                      onClientUploadComplete={(res: unknown) => {
-                        const imageUrl = res[0].ufsUrl;
+                      onClientUploadComplete={(res) => {
+                        const response = res as UploadResponse;
+                        const imageUrl = response[0].ufsUrl;
                         handleCoverImageUpload(imageUrl);
                       }}
                       onUploadError={(error: Error) => {
@@ -145,7 +148,7 @@ export function BrandingStep({
             <div className="flex flex-col items-center gap-4">
               {logoImage ? (
                 <div className="relative w-full max-w-[200px]">
-                  <img src={logoImage} alt="Logo" className="h-auto w-full rounded-md" />
+                  <Image src={logoImage} alt="Logo" className="h-auto w-full rounded-md" />
                   <Button
                     type="button"
                     variant="destructive"
@@ -172,8 +175,9 @@ export function BrandingStep({
                       onUploadBegin={() => {
                         setIsUploadingLogo(true);
                       }}
-                      onClientUploadComplete={(res: unknown) => {
-                        const imageUrl = res[0].ufsUrl;
+                      onClientUploadComplete={(res) => {
+                        const response = res as UploadResponse;
+                        const imageUrl = response[0].ufsUrl;
                         handleLogoImageUpload(imageUrl);
                       }}
                       onUploadError={(error: Error) => {
