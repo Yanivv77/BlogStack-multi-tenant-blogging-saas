@@ -1,5 +1,3 @@
-
-
 export async function CreateSubscription() {
   const user = await requireUser();
 
