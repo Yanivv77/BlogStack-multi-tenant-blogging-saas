@@ -77,20 +77,8 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/globe.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/globe.svg" />
-        <link 
-          rel="preload" 
-          href="/fonts/GeistVF.woff" 
-          as="font" 
-          type="font/woff" 
-          crossOrigin="anonymous" 
-        />
-        <link 
-          rel="preload" 
-          href="/fonts/GeistMonoVF.woff" 
-          as="font" 
-          type="font/woff" 
-          crossOrigin="anonymous" 
-        />
+        <link rel="preload" href="/fonts/GeistVF.woff" as="font" type="font/woff" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/GeistMonoVF.woff" as="font" type="font/woff" crossOrigin="anonymous" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
