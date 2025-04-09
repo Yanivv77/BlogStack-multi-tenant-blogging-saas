@@ -23,12 +23,7 @@ export function SubmitButton({ text, className, variant, disabled }: iAppProps) 
           <SimpleIcon name="loader" size={16} className="mr-2 animate-spin" /> Please Wait
         </Button>
       ) : (
-        <Button 
-          className={cn("w-fit", className)} 
-          variant={variant} 
-          type="submit" 
-          disabled={disabled}
-        >
+        <Button className={cn("w-fit", className)} variant={variant} type="submit" disabled={disabled}>
           {text}
         </Button>
       )}

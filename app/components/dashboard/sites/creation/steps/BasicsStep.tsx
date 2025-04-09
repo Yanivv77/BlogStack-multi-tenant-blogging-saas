@@ -88,21 +88,20 @@ export function BasicsStep({ goToNextStep, formValues, handleInputChange }: Basi
       if (isCheckingSubdirectory) {
         return;
       }
-      
+
       // Skip if this subdirectory is already known to be available
-      if (validatedSubdirectories.current.has(formValues.subdirectory) && 
-          subdirectoryStatus === "available") {
+      if (validatedSubdirectories.current.has(formValues.subdirectory) && subdirectoryStatus === "available") {
         return;
       }
-      
+
       // Start the validation process
       debouncedCheckSubdirectory(formValues.subdirectory);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    formValues.subdirectory, 
-    touchedFields.subdirectory, 
-    attemptedNext, 
+    formValues.subdirectory,
+    touchedFields.subdirectory,
+    attemptedNext,
     isCheckingSubdirectory,
     subdirectoryStatus,
     // debouncedCheckSubdirectory is intentionally omitted as it's a debounced function

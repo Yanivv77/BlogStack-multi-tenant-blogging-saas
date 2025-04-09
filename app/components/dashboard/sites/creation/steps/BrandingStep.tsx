@@ -51,31 +51,31 @@ export function BrandingStep({
     // Preload and preconnect to image domains
     const preloadImage = (url: string) => {
       if (!url) return;
-      
+
       let preconnect: HTMLLinkElement | null = null;
       let dns: HTMLLinkElement | null = null;
-      const link = document.createElement('link');
-      
+      const link = document.createElement("link");
+
       // Create preconnect for domain
       const domain = extractDomain(url);
       if (domain) {
-        preconnect = document.createElement('link');
-        preconnect.rel = 'preconnect';
+        preconnect = document.createElement("link");
+        preconnect.rel = "preconnect";
         preconnect.href = `https://${domain}`;
         document.head.appendChild(preconnect);
-        
-        dns = document.createElement('link');
-        dns.rel = 'dns-prefetch';
+
+        dns = document.createElement("link");
+        dns.rel = "dns-prefetch";
         dns.href = `https://${domain}`;
         document.head.appendChild(dns);
       }
-      
+
       // Create image preload
-      link.rel = 'preload';
-      link.as = 'image';
+      link.rel = "preload";
+      link.as = "image";
       link.href = url;
       document.head.appendChild(link);
-      
+
       return () => {
         if (link.parentNode) link.parentNode.removeChild(link);
         if (domain && preconnect && dns) {
@@ -84,11 +84,11 @@ export function BrandingStep({
         }
       };
     };
-    
+
     // Set up preloading
     const cleanupCover = siteImageCover ? preloadImage(siteImageCover) : undefined;
     const cleanupLogo = logoImage ? preloadImage(logoImage) : undefined;
-    
+
     // Cleanup function
     return () => {
       if (cleanupCover) cleanupCover();

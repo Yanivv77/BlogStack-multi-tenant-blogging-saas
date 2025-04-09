@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useState, useMemo, useCallback } from "react";
+import { useActionState, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useForm } from "@conform-to/react";
 import type { SubmissionResult } from "@conform-to/react";
@@ -51,16 +51,19 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
   const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
   const [keywords, setKeywords] = useState<string>(data.keywords || "");
   const [hasChanges, setHasChanges] = useState(false);
-  
+
   // Memoize initial data to avoid recreating on each render
-  const initialData = useMemo(() => ({
-    postCoverImage: data.postCoverImage || null,
-    title: data.title || "",
-    slug: data.slug || "",
-    smallDescription: data.smallDescription || "",
-    keywords: data.keywords || "",
-    articleContent: JSON.stringify(data.articleContent || {})
-  }), [data]);
+  const initialData = useMemo(
+    () => ({
+      postCoverImage: data.postCoverImage || null,
+      title: data.title || "",
+      slug: data.slug || "",
+      smallDescription: data.smallDescription || "",
+      keywords: data.keywords || "",
+      articleContent: JSON.stringify(data.articleContent || {}),
+    }),
+    [data]
+  );
 
   // Create a stable callback for detecting changes
   const detectChanges = useCallback(() => {
@@ -69,17 +72,17 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
     const hasSlugChanged = slug !== initialData.slug;
     const hasDescriptionChanged = smallDescription !== initialData.smallDescription;
     const hasKeywordsChanged = keywords !== initialData.keywords;
-    
+
     // Stringify current value only once
     const currentContentString = JSON.stringify(value || {});
     const hasContentChanged = currentContentString !== initialData.articleContent;
 
     return (
-      hasImageChanged || 
-      hasTitleChanged || 
-      hasSlugChanged || 
-      hasDescriptionChanged || 
-      hasKeywordsChanged || 
+      hasImageChanged ||
+      hasTitleChanged ||
+      hasSlugChanged ||
+      hasDescriptionChanged ||
+      hasKeywordsChanged ||
       hasContentChanged
     );
   }, [imageUrl, title, slug, smallDescription, keywords, value, initialData]);
@@ -100,30 +103,33 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
   }, [detectChanges]);
 
   const [lastResult, action] = useActionState(EditPostActions, undefined);
-  
+
   // Memoize the form configuration to prevent infinite loops
-  const formConfig = useMemo(() => ({
-    // Use type assertion with a more specific type to ensure compatibility
-    lastResult: lastResult
-      ? ({
-          status: "error" in lastResult && lastResult.error ? "error" : "success",
-          error: "error" in lastResult && lastResult.error ? lastResult.error : undefined,
-          value: "success" in lastResult && lastResult.success ? { postId: lastResult.postId } : undefined,
-        } as SubmissionResult<unknown>)
-      : undefined,
+  const formConfig = useMemo(
+    () => ({
+      // Use type assertion with a more specific type to ensure compatibility
+      lastResult: lastResult
+        ? ({
+            status: "error" in lastResult && lastResult.error ? "error" : "success",
+            error: "error" in lastResult && lastResult.error ? lastResult.error : undefined,
+            value: "success" in lastResult && lastResult.success ? { postId: lastResult.postId } : undefined,
+          } as SubmissionResult<unknown>)
+        : undefined,
 
-    onValidate({ formData }: { formData: FormData }) {
-      // Use the PostSchema for basic validation
-      // In a server action we'd use PostEditSchema with slug uniqueness check
-      return parseWithZod(formData, {
-        schema: PostSchema,
-      });
-    },
+      onValidate({ formData }: { formData: FormData }) {
+        // Use the PostSchema for basic validation
+        // In a server action we'd use PostEditSchema with slug uniqueness check
+        return parseWithZod(formData, {
+          schema: PostSchema,
+        });
+      },
 
-    shouldValidate: "onBlur" as const,
-    shouldRevalidate: "onInput" as const,
-  }), [lastResult]);
-  
+      shouldValidate: "onBlur" as const,
+      shouldRevalidate: "onInput" as const,
+    }),
+    [lastResult]
+  );
+
   const [form, fields] = useForm(formConfig);
 
   // Add a useEffect to show toast messages when the article is successfully saved
@@ -417,7 +423,11 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <SeoRecommendations content={value} title={title} smallDescription={smallDescription} keywords={keywords} />
           </div>
 
-          <SubmitButton text="Save" className={!hasChanges ? "opacity-50 cursor-not-allowed" : ""} disabled={!hasChanges} />
+          <SubmitButton
+            text="Save"
+            className={!hasChanges ? "cursor-not-allowed opacity-50" : ""}
+            disabled={!hasChanges}
+          />
         </form>
       </CardContent>
     </Card>

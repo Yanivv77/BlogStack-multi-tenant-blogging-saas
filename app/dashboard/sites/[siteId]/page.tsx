@@ -36,6 +36,9 @@ async function getData(userId: string, siteId: string) {
       },
       include: {
         posts: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             title: true,

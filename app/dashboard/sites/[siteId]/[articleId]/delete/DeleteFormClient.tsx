@@ -35,14 +35,19 @@ export function DeleteFormClient({ siteId, articleId, articleTitle }: DeleteForm
 
     setIsDeleting(true);
     try {
-      const result = await DeletePost(formData);
+      const result = await DeletePost(null, formData);
 
       if (result && typeof result === "object") {
         if ("success" in result && result.success) {
           toast.success("Article deleted successfully");
           router.push(`/dashboard/sites/${siteId}`);
-        } else if ("error" in result && result.error) {
-          toast.error(result.error.toString());
+        } else if ("error" in result) {
+          // The server action returns errors in the format { error: { _form: [string] } }
+          if (result.error && result.error._form && Array.isArray(result.error._form)) {
+            toast.error(result.error._form[0] || "Failed to delete article");
+          } else {
+            toast.error("Failed to delete article");
+          }
         } else if ("status" in result) {
           if (result.status === "success") {
             toast.success("Article deleted successfully");
@@ -93,7 +98,7 @@ export function DeleteFormClient({ siteId, articleId, articleTitle }: DeleteForm
             <Link href={`/dashboard/sites/${siteId}`}>Cancel</Link>
           </Button>
           <form action={handleDelete}>
-            <input type="hidden" name="articleId" value={articleId} />
+            <input type="hidden" name="postId" value={articleId} />
             <input type="hidden" name="siteId" value={siteId} />
             <Button
               type="submit"
