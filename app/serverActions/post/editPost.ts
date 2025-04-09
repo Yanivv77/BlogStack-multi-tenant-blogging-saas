@@ -143,6 +143,7 @@ export async function EditPostActions(_prevState: unknown, formData: FormData) {
       slug,
       postCoverImage,
       contentImages: rawContentImages,
+      keywords,
     } = submission.value;
 
     // Log the extracted values
@@ -207,6 +208,7 @@ export async function EditPostActions(_prevState: unknown, formData: FormData) {
           slug,
           postCoverImage: processedCoverImage,
           contentImages: contentImages.length > 0 ? contentImages : null,
+          keywords,
           updatedAt: new Date(),
         },
       });

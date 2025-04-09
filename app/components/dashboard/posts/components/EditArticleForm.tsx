@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState, useMemo, useCallback } from "react";
 
 import { useForm } from "@conform-to/react";
 import type { SubmissionResult } from "@conform-to/react";
@@ -41,6 +42,7 @@ interface iAppProps {
 }
 
 export function EditArticleForm({ data, siteId }: iAppProps) {
+  const router = useRouter();
   const [imageUrl, setImageUrl] = useState<string | null>(data.postCoverImage || null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [value, setValue] = useState<JSONContent | undefined>(data.articleContent as JSONContent);
@@ -48,6 +50,39 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
   const [title, setTitle] = useState<string>(data.title || "");
   const [smallDescription, setSmallDescription] = useState<string>(data.smallDescription || "");
   const [keywords, setKeywords] = useState<string>(data.keywords || "");
+  const [hasChanges, setHasChanges] = useState(false);
+  
+  // Memoize initial data to avoid recreating on each render
+  const initialData = useMemo(() => ({
+    postCoverImage: data.postCoverImage || null,
+    title: data.title || "",
+    slug: data.slug || "",
+    smallDescription: data.smallDescription || "",
+    keywords: data.keywords || "",
+    articleContent: JSON.stringify(data.articleContent || {})
+  }), [data]);
+
+  // Create a stable callback for detecting changes
+  const detectChanges = useCallback(() => {
+    const hasImageChanged = imageUrl !== initialData.postCoverImage;
+    const hasTitleChanged = title !== initialData.title;
+    const hasSlugChanged = slug !== initialData.slug;
+    const hasDescriptionChanged = smallDescription !== initialData.smallDescription;
+    const hasKeywordsChanged = keywords !== initialData.keywords;
+    
+    // Stringify current value only once
+    const currentContentString = JSON.stringify(value || {});
+    const hasContentChanged = currentContentString !== initialData.articleContent;
+
+    return (
+      hasImageChanged || 
+      hasTitleChanged || 
+      hasSlugChanged || 
+      hasDescriptionChanged || 
+      hasKeywordsChanged || 
+      hasContentChanged
+    );
+  }, [imageUrl, title, slug, smallDescription, keywords, value, initialData]);
 
   // Initialize uploaded images with existing content images
   useEffect(() => {
@@ -59,8 +94,15 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
     }
   }, [data.contentImages]);
 
+  // Track form changes without causing an infinite loop
+  useEffect(() => {
+    setHasChanges(detectChanges());
+  }, [detectChanges]);
+
   const [lastResult, action] = useActionState(EditPostActions, undefined);
-  const [form, fields] = useForm({
+  
+  // Memoize the form configuration to prevent infinite loops
+  const formConfig = useMemo(() => ({
     // Use type assertion with a more specific type to ensure compatibility
     lastResult: lastResult
       ? ({
@@ -70,7 +112,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
         } as SubmissionResult<unknown>)
       : undefined,
 
-    onValidate({ formData }) {
+    onValidate({ formData }: { formData: FormData }) {
       // Use the PostSchema for basic validation
       // In a server action we'd use PostEditSchema with slug uniqueness check
       return parseWithZod(formData, {
@@ -78,9 +120,11 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
       });
     },
 
-    shouldValidate: "onBlur",
-    shouldRevalidate: "onInput",
-  });
+    shouldValidate: "onBlur" as const,
+    shouldRevalidate: "onInput" as const,
+  }), [lastResult]);
+  
+  const [form, fields] = useForm(formConfig);
 
   // Add a useEffect to show toast messages when the article is successfully saved
   useEffect(() => {
@@ -94,11 +138,15 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
       const result = lastResult as ActionResult;
       if (result.success) {
         toast.success("Article updated successfully!");
+        // Redirect back to the site dashboard after a short delay
+        setTimeout(() => {
+          router.push(`/dashboard/sites/${siteId}`);
+        }, 1500);
       } else if (result.error) {
         toast.error(result.error.message || "Failed to update article");
       }
     }
-  }, [lastResult]);
+  }, [lastResult, router, siteId]);
 
   // Get optimized config
   const optimizedConfig = getOptimizedDropzoneConfig();
@@ -127,7 +175,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
         <form className="flex flex-col gap-6" id={form.id} onSubmit={form.onSubmit} action={action}>
           <input type="hidden" name="id" value={data.id} />
           <input type="hidden" name="siteId" value={siteId} />
-          <input type="hidden" name="keywords" value={keywords} />
+          <input type="hidden" name="postId" value={data.id} />
           {/* Hidden input to store the post cover image URL */}
           {imageUrl && (
             <input type="hidden" name={fields.postCoverImage.name} key={fields.postCoverImage.key} value={imageUrl} />
@@ -188,7 +236,8 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
               placeholder="Enter keywords separated by commas (e.g., react, nextjs, web development)"
               onChange={(e) => setKeywords(e.target.value)}
               value={keywords}
-              name="keywords"
+              name={fields.keywords?.name || "keywords"}
+              key={fields.keywords?.key}
               aria-describedby="edit-keywords-hint edit-keywords-count"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -368,7 +417,7 @@ export function EditArticleForm({ data, siteId }: iAppProps) {
             <SeoRecommendations content={value} title={title} smallDescription={smallDescription} keywords={keywords} />
           </div>
 
-          <SubmitButton text="Edit Article" />
+          <SubmitButton text="Save" className={!hasChanges ? "opacity-50 cursor-not-allowed" : ""} disabled={!hasChanges} />
         </form>
       </CardContent>
     </Card>

@@ -11,9 +11,10 @@ interface iAppProps {
   text: string;
   className?: string;
   variant?: "link" | "default" | "destructive" | "outline" | "secondary" | "ghost" | null | undefined;
+  disabled?: boolean;
 }
 
-export function SubmitButton({ text, className, variant }: iAppProps) {
+export function SubmitButton({ text, className, variant, disabled }: iAppProps) {
   const { pending } = useFormStatus();
   return (
     <>
@@ -22,7 +23,12 @@ export function SubmitButton({ text, className, variant }: iAppProps) {
           <SimpleIcon name="loader" size={16} className="mr-2 animate-spin" /> Please Wait
         </Button>
       ) : (
-        <Button className={cn("w-fit", className)} variant={variant} type="submit">
+        <Button 
+          className={cn("w-fit", className)} 
+          variant={variant} 
+          type="submit" 
+          disabled={disabled}
+        >
           {text}
         </Button>
       )}

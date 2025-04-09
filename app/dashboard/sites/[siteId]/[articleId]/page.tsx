@@ -36,6 +36,7 @@ async function getData(articleId: string, userId: string, siteId: string) {
       articleContent: true,
       contentImages: true,
       postCoverImage: true,
+      keywords: true,
     },
   });
 
@@ -54,6 +55,7 @@ async function getData(articleId: string, userId: string, siteId: string) {
     // Handle contentImages - must be a string array or undefined
     contentImages: Array.isArray(article.contentImages) ? article.contentImages.map((item) => String(item)) : [],
     postCoverImage: article.postCoverImage || "",
+    keywords: article.keywords || "",
   };
 }
 
