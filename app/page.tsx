@@ -23,7 +23,7 @@ export default async function Home() {
               <span className="text-xl font-medium">BlogStack</span>
             </div>
             <div className="nav-links">
-              <Link href="/features" className="nav-link">
+              {/* <Link href="/features" className="nav-link">
                 Features
               </Link>
               <Link href="/pricing" className="nav-link">
@@ -31,7 +31,7 @@ export default async function Home() {
               </Link>
               <Link href="/docs" className="nav-link">
                 Docs
-              </Link>
+              </Link> */}
               {session ? (
                 <div className="flex items-center gap-4">
                   <Link href="/dashboard" className="nav-link">
