@@ -115,7 +115,7 @@ export default [
       "unicorn/prefer-node-protocol": "error", // Use node: protocol
       "unicorn/no-null": "off", // Allow null
       "unicorn/no-array-reduce": "off", // Allow reduce
-      "unicorn/prefer-module": "error", // Prefer ESM
+      "unicorn/prefer-module": "off", // Prefer ESM
       "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true, camelCase: true } }], // Consistent file naming
       "unicorn/prevent-abbreviations": "off", // Allow common abbreviations
 
@@ -131,7 +131,7 @@ export default [
           ignoreRestArgs: false,
         },
       ],
-      "@typescript-eslint/no-require-imports": "warn",
+      "@typescript-eslint/no-require-imports": "off",
       "@typescript-eslint/no-unsafe-function-type": "warn",
       "@typescript-eslint/no-unused-expressions": "warn",
       "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
