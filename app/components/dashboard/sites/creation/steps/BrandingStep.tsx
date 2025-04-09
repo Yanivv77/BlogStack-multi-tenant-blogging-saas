@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { toast } from "sonner";
 
@@ -15,6 +15,17 @@ import { getOptimizedDropzoneConfig, UploadDropzone } from "@/app/utils/upload/u
 import type { BrandingStepProps } from "../../utils/types";
 
 type UploadResponse = { ufsUrl: string }[];
+
+/**
+ * Extracts domain from URL
+ */
+function extractDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname;
+  } catch (e) {
+    return null;
+  }
+}
 
 /**
  * BrandingStep component for uploading site images
@@ -34,6 +45,56 @@ export function BrandingStep({
 
   // Get optimized config
   const optimizedConfig = getOptimizedDropzoneConfig();
+
+  // Preload images when URLs are available
+  useEffect(() => {
+    // Preload and preconnect to image domains
+    const preloadImage = (url: string) => {
+      if (!url) return;
+      
+      let preconnect: HTMLLinkElement | null = null;
+      let dns: HTMLLinkElement | null = null;
+      const link = document.createElement('link');
+      
+      // Create preconnect for domain
+      const domain = extractDomain(url);
+      if (domain) {
+        preconnect = document.createElement('link');
+        preconnect.rel = 'preconnect';
+        preconnect.href = `https://${domain}`;
+        document.head.appendChild(preconnect);
+        
+        dns = document.createElement('link');
+        dns.rel = 'dns-prefetch';
+        dns.href = `https://${domain}`;
+        document.head.appendChild(dns);
+      }
+      
+      // Create image preload
+      link.rel = 'preload';
+      link.as = 'image';
+      link.href = url;
+      document.head.appendChild(link);
+      
+      return () => {
+        if (link.parentNode) link.parentNode.removeChild(link);
+        if (domain && preconnect && dns) {
+          if (preconnect.parentNode) preconnect.parentNode.removeChild(preconnect);
+          if (dns.parentNode) dns.parentNode.removeChild(dns);
+        }
+      };
+    };
+    
+    // Set up preloading
+    const cleanupCover = siteImageCover ? preloadImage(siteImageCover) : undefined;
+    const cleanupLogo = logoImage ? preloadImage(logoImage) : undefined;
+    
+    // Cleanup function
+    return () => {
+      if (cleanupCover) cleanupCover();
+      if (cleanupLogo) cleanupLogo();
+    };
+  }, [siteImageCover, logoImage]);
 
   /**
    * Handler for cover image upload
@@ -76,6 +137,13 @@ export function BrandingStep({
                   <Image
                     src={siteImageCover}
                     alt="Cover"
+                    width={500}
+                    height={280}
+                    priority
+                    quality={80}
+                    sizes="(max-width: 768px) 100vw, 500px"
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjI4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjI4MCIgZmlsbD0iI2YxZjVmOSIvPjwvc3ZnPg=="
                     className="aspect-video h-auto w-full rounded-md object-cover"
                   />
                   <Button
@@ -148,7 +216,18 @@ export function BrandingStep({
             <div className="flex flex-col items-center gap-4">
               {logoImage ? (
                 <div className="relative w-full max-w-[200px]">
-                  <Image src={logoImage} alt="Logo" className="h-auto w-full rounded-md" />
+                  <Image
+                    src={logoImage}
+                    alt="Logo"
+                    width={200}
+                    height={200}
+                    priority
+                    quality={90}
+                    sizes="200px"
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YxZjVmOSIvPjwvc3ZnPg=="
+                    className="h-auto w-full rounded-md"
+                  />
                   <Button
                     type="button"
                     variant="destructive"

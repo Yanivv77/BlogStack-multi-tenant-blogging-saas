@@ -74,25 +74,39 @@ export function BasicsStep({ goToNextStep, formValues, handleInputChange }: Basi
 
   // Check subdirectory availability when it changes
   useEffect(() => {
+    // Skip if subdirectory is empty
     if (!formValues.subdirectory) {
-      setSubdirectoryStatus(null);
-      setErrors((prev) => ({ ...prev, subdirectory: undefined }));
+      if (subdirectoryStatus !== null) {
+        setSubdirectoryStatus(null);
+      }
       return;
     }
 
     // Only validate if the user has interacted with the field or attempted to proceed
     if (touchedFields.subdirectory || attemptedNext) {
-      // Validate subdirectory format first
-      const formatError = validateField("subdirectory", formValues.subdirectory);
-      if (formatError) {
-        setSubdirectoryStatus("invalid");
-        setErrors((prev) => ({ ...prev, subdirectory: formatError }));
+      // Skip if we're already checking
+      if (isCheckingSubdirectory) {
         return;
       }
-
+      
+      // Skip if this subdirectory is already known to be available
+      if (validatedSubdirectories.current.has(formValues.subdirectory) && 
+          subdirectoryStatus === "available") {
+        return;
+      }
+      
+      // Start the validation process
       debouncedCheckSubdirectory(formValues.subdirectory);
     }
-  }, [formValues.subdirectory, touchedFields.subdirectory, attemptedNext, debouncedCheckSubdirectory]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    formValues.subdirectory, 
+    touchedFields.subdirectory, 
+    attemptedNext, 
+    isCheckingSubdirectory,
+    subdirectoryStatus,
+    // debouncedCheckSubdirectory is intentionally omitted as it's a debounced function
+  ]);
 
   /**
    * Handle input change with validation
